@@ -407,6 +407,33 @@ img {
   padding: 6px;
 }
 
+.nexus-section-toggle {
+  display: inline-flex;
+  min-width: 0;
+  flex: 1;
+  align-items: flex-start;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+
+.nexus-section-toggle:hover .nexus-section-chevron {
+  color: var(--text);
+}
+
+.nexus-section-chevron {
+  margin-top: 1px;
+  flex: 0 0 auto;
+  color: var(--muted);
+  transition: transform 140ms ease, color 140ms ease;
+}
+
+.nexus-section-chevron.is-open {
+  transform: rotate(90deg);
+}
+
 .nexus-section-empty {
   border: 1px solid var(--border);
   border-radius: 4px;
