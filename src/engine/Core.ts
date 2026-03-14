@@ -612,6 +612,7 @@ class MainScene extends Phaser.Scene {
     body.setEnable(Boolean(rigidBody || collider));
     body.setCollideWorldBounds(true);
     body.moves = true;
+    const colliderMetrics = collider ? this.resolveColliderMetrics(collider, sprite) : null;
 
     if (rigidBody) {
       body.setAllowGravity(this.isPlaying && !rigidBody.isStatic);
@@ -636,28 +637,28 @@ class MainScene extends Phaser.Scene {
       body.gravity.set(0, 0);
     }
 
-    if (collider) {
-      if (collider.shape === 'circle') {
-        body.setCircle(collider.radius);
+    if (colliderMetrics) {
+      if (colliderMetrics.shape === 'circle') {
+        body.setCircle(colliderMetrics.radius);
         body.setOffset(
-          sprite.displayWidth / 2 - collider.radius + collider.offsetX,
-          sprite.displayHeight / 2 - collider.radius + collider.offsetY,
+          sprite.displayWidth / 2 - colliderMetrics.radius + colliderMetrics.offsetX,
+          sprite.displayHeight / 2 - colliderMetrics.radius + colliderMetrics.offsetY,
         );
       } else {
-        body.setSize(collider.width, collider.height);
+        body.setSize(colliderMetrics.width, colliderMetrics.height);
         body.setOffset(
-          sprite.displayWidth / 2 - collider.width / 2 + collider.offsetX,
-          sprite.displayHeight / 2 - collider.height / 2 + collider.offsetY,
+          sprite.displayWidth / 2 - colliderMetrics.width / 2 + colliderMetrics.offsetX,
+          sprite.displayHeight / 2 - colliderMetrics.height / 2 + colliderMetrics.offsetY,
         );
       }
 
-      body.checkCollision.none = collider.isTrigger;
-      body.checkCollision.up = !collider.isTrigger;
-      body.checkCollision.down = !collider.isTrigger && !collider.isPassThrough;
-      body.checkCollision.left = !collider.isTrigger;
-      body.checkCollision.right = !collider.isTrigger;
+      body.checkCollision.none = colliderMetrics.isTrigger;
+      body.checkCollision.up = !colliderMetrics.isTrigger;
+      body.checkCollision.down = !colliderMetrics.isTrigger && !colliderMetrics.isPassThrough;
+      body.checkCollision.left = !colliderMetrics.isTrigger;
+      body.checkCollision.right = !colliderMetrics.isTrigger;
 
-      if (!collider.isTrigger) {
+      if (!colliderMetrics.isTrigger) {
         this.solidGroup.add(sprite);
       }
     } else {
@@ -1125,19 +1126,20 @@ class MainScene extends Phaser.Scene {
           continue;
         }
 
-        this.overlayGraphics.lineStyle(2, collider.isTrigger ? 0xb7a57d : 0x7f8994, 0.85);
-        if (collider.shape === 'circle') {
+        const colliderMetrics = this.resolveColliderMetrics(collider, instance.sprite);
+        this.overlayGraphics.lineStyle(2, colliderMetrics.isTrigger ? 0xb7a57d : 0x7f8994, 0.85);
+        if (colliderMetrics.shape === 'circle') {
           this.overlayGraphics.strokeCircle(
-            instance.sprite.x + collider.offsetX,
-            instance.sprite.y + collider.offsetY,
-            collider.radius,
+            instance.sprite.x + colliderMetrics.offsetX,
+            instance.sprite.y + colliderMetrics.offsetY,
+            colliderMetrics.radius,
           );
         } else {
           this.overlayGraphics.strokeRect(
-            instance.sprite.x - collider.width / 2 + collider.offsetX,
-            instance.sprite.y - collider.height / 2 + collider.offsetY,
-            collider.width,
-            collider.height,
+            instance.sprite.x - colliderMetrics.width / 2 + colliderMetrics.offsetX,
+            instance.sprite.y - colliderMetrics.height / 2 + colliderMetrics.offsetY,
+            colliderMetrics.width,
+            colliderMetrics.height,
           );
         }
       }
@@ -1243,6 +1245,28 @@ class MainScene extends Phaser.Scene {
       this.cameras.main.width / scene.settings.worldSize.x,
       this.cameras.main.height / scene.settings.worldSize.y,
     );
+  }
+
+  private resolveColliderMetrics(collider: ColliderComponent, sprite: Phaser.GameObjects.Sprite) {
+    const baseWidth = Math.max(8, Math.abs(sprite.displayWidth));
+    const baseHeight = Math.max(8, Math.abs(sprite.displayHeight));
+    const radians = (sprite.angle * Math.PI) / 180;
+    const cos = Math.abs(Math.cos(radians));
+    const sin = Math.abs(Math.sin(radians));
+    const width = collider.autoSize ? Math.max(8, baseWidth * cos + baseHeight * sin) : collider.width;
+    const height = collider.autoSize ? Math.max(8, baseWidth * sin + baseHeight * cos) : collider.height;
+    const radius = collider.autoSize ? Math.max(4, Math.min(width, height) / 2) : collider.radius;
+
+    return {
+      shape: collider.shape,
+      width,
+      height,
+      radius,
+      offsetX: collider.offsetX,
+      offsetY: collider.offsetY,
+      isTrigger: collider.isTrigger,
+      isPassThrough: collider.isPassThrough,
+    };
   }
 
   private resolveTextureKey(sprite: SpriteComponent) {

@@ -274,11 +274,13 @@ function NumberField({
   value,
   onChange,
   step = 1,
+  disabled = false,
 }: {
   label: string;
   value: number;
   onChange: (value: number) => void;
   step?: number;
+  disabled?: boolean;
 }) {
   return (
     <LabeledField label={label}>
@@ -286,8 +288,9 @@ function NumberField({
         type="number"
         value={Number.isFinite(value) ? value : 0}
         step={step}
+        disabled={disabled}
         onChange={(event) => onChange(Number(event.target.value))}
-        className="nexus-input"
+        className={`nexus-input ${disabled ? 'cursor-not-allowed opacity-70' : ''}`}
       />
     </LabeledField>
   );
@@ -838,6 +841,22 @@ function ComponentInspector({
     showMissingCollider ||
     showMissingBehavior ||
     showMissingScript;
+  const autoColliderSize = (() => {
+    if (!collider || !sprite || !transform) {
+      return null;
+    }
+
+    const baseWidth = Math.max(8, Math.abs(sprite.width * transform.scale.x));
+    const baseHeight = Math.max(8, Math.abs(sprite.height * transform.scale.y));
+    const radians = (transform.rotation * Math.PI) / 180;
+    const cos = Math.abs(Math.cos(radians));
+    const sin = Math.abs(Math.sin(radians));
+    const width = Math.max(8, baseWidth * cos + baseHeight * sin);
+    const height = Math.max(8, baseWidth * sin + baseHeight * cos);
+    const radius = Math.max(4, Math.min(width, height) / 2);
+
+    return {width, height, radius};
+  })();
 
   return (
     <div className="space-y-2">
@@ -974,6 +993,13 @@ function ComponentInspector({
 
       {showColliderSection ? (
         <SectionCard title="Collider" subtitle="Collision shape and trigger settings" action={<DangerTextButton onClick={() => removeComponent(ComponentType.Collider)}>Remove</DangerTextButton>}>
+          <div className="mb-3 space-y-2">
+            <ToggleRow
+              label="Auto Size"
+              checked={collider.autoSize}
+              onChange={(checked) => replaceCollider((component) => ({...component, autoSize: checked}))}
+            />
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <LabeledField label="Shape">
               <select value={collider.shape} onChange={(event) => replaceCollider((component) => ({...component, shape: event.target.value as ColliderComponent['shape']}))} className="nexus-select">
@@ -981,9 +1007,24 @@ function ComponentInspector({
                 <option value="circle">Circle</option>
               </select>
             </LabeledField>
-            <NumberField label="Radius" value={collider.radius} onChange={(value) => replaceCollider((component) => ({...component, radius: value}))} />
-            <NumberField label="Width" value={collider.width} onChange={(value) => replaceCollider((component) => ({...component, width: value}))} />
-            <NumberField label="Height" value={collider.height} onChange={(value) => replaceCollider((component) => ({...component, height: value}))} />
+            <NumberField
+              label="Radius"
+              value={collider.autoSize ? (autoColliderSize?.radius ?? collider.radius) : collider.radius}
+              disabled={collider.autoSize}
+              onChange={(value) => replaceCollider((component) => ({...component, radius: value}))}
+            />
+            <NumberField
+              label="Width"
+              value={collider.autoSize ? (autoColliderSize?.width ?? collider.width) : collider.width}
+              disabled={collider.autoSize}
+              onChange={(value) => replaceCollider((component) => ({...component, width: value}))}
+            />
+            <NumberField
+              label="Height"
+              value={collider.autoSize ? (autoColliderSize?.height ?? collider.height) : collider.height}
+              disabled={collider.autoSize}
+              onChange={(value) => replaceCollider((component) => ({...component, height: value}))}
+            />
             <NumberField label="Offset X" value={collider.offsetX} onChange={(value) => replaceCollider((component) => ({...component, offsetX: value}))} />
             <NumberField label="Offset Y" value={collider.offsetY} onChange={(value) => replaceCollider((component) => ({...component, offsetY: value}))} />
           </div>

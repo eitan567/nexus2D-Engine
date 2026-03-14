@@ -73,6 +73,7 @@ export interface RigidBodyComponent extends BaseComponent {
 export interface ColliderComponent extends BaseComponent {
   type: ComponentType.Collider;
   shape: ColliderShape;
+  autoSize: boolean;
   width: number;
   height: number;
   radius: number;
