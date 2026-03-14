@@ -1031,6 +1031,11 @@ class MainScene extends Phaser.Scene {
     const scene = getActiveScene(this.project);
     const width = scene.settings.worldSize.x;
     const height = scene.settings.worldSize.y;
+    const innerMaxX = Math.max(0, width - 1);
+    const innerMaxY = Math.max(0, height - 1);
+    const borderInset = 1;
+    const borderWidth = Math.max(0, width - borderInset * 2);
+    const borderHeight = Math.max(0, height - borderInset * 2);
 
     this.backgroundGraphics.clear();
     this.backgroundGraphics.fillGradientStyle(
@@ -1044,7 +1049,7 @@ class MainScene extends Phaser.Scene {
 
     if (!scene.settings.showGrid) {
       this.backgroundGraphics.lineStyle(2, 0x686d76, 0.55);
-      this.backgroundGraphics.strokeRect(0, 0, scene.settings.worldSize.x, scene.settings.worldSize.y);
+      this.backgroundGraphics.strokeRect(borderInset, borderInset, borderWidth, borderHeight);
       return;
     }
 
@@ -1056,27 +1061,27 @@ class MainScene extends Phaser.Scene {
     this.backgroundGraphics.lineStyle(1, minorColor, 0.16);
     for (let x = 0; x <= scene.settings.worldSize.x; x += scene.settings.gridSize) {
       this.backgroundGraphics.moveTo(x, 0);
-      this.backgroundGraphics.lineTo(x, scene.settings.worldSize.y);
+      this.backgroundGraphics.lineTo(x, innerMaxY);
     }
     for (let y = 0; y <= scene.settings.worldSize.y; y += scene.settings.gridSize) {
       this.backgroundGraphics.moveTo(0, y);
-      this.backgroundGraphics.lineTo(scene.settings.worldSize.x, y);
+      this.backgroundGraphics.lineTo(innerMaxX, y);
     }
     this.backgroundGraphics.strokePath();
 
     this.backgroundGraphics.lineStyle(1, majorColor, 0.28);
     for (let x = 0; x <= scene.settings.worldSize.x; x += majorStep) {
       this.backgroundGraphics.moveTo(x, 0);
-      this.backgroundGraphics.lineTo(x, scene.settings.worldSize.y);
+      this.backgroundGraphics.lineTo(x, innerMaxY);
     }
     for (let y = 0; y <= scene.settings.worldSize.y; y += majorStep) {
       this.backgroundGraphics.moveTo(0, y);
-      this.backgroundGraphics.lineTo(scene.settings.worldSize.x, y);
+      this.backgroundGraphics.lineTo(innerMaxX, y);
     }
     this.backgroundGraphics.strokePath();
 
     this.backgroundGraphics.lineStyle(2, majorColor, 0.75);
-    this.backgroundGraphics.strokeRect(0, 0, scene.settings.worldSize.x, scene.settings.worldSize.y);
+    this.backgroundGraphics.strokeRect(borderInset, borderInset, borderWidth, borderHeight);
   }
 
   private drawOverlay() {
