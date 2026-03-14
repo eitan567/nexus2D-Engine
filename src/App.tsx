@@ -105,9 +105,19 @@ type DragState = {
   transformStart: TransformComponent;
 } | null;
 
-type PanState = {
-  screenStart: Vector2;
-} | null;
+type PanState =
+  | {
+      mode: 'editor-pan';
+      screenStart: Vector2;
+    }
+  | {
+      mode: 'camera-drag';
+      screenStart: Vector2;
+      cameraStart: Vector2;
+      frameSize: Vector2;
+      zoomStart: number;
+    }
+  | null;
 
 type StageViewportMode = 'world' | 'camera';
 type TopMenuKey = 'file' | 'edit' | 'scene' | 'window' | 'assistant';
@@ -1479,12 +1489,52 @@ export default function App() {
       });
 
   const handleCanvasMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    const primaryModifier = event.ctrlKey || event.metaKey;
+    if (
+      !isPlaying &&
+      stageViewportMode === 'world' &&
+      event.button === 0 &&
+      primaryModifier &&
+      runtimeSnapshot
+    ) {
+      const screenPoint = getCanvasScreenPoint(event);
+      const point = getWorldPoint(event);
+      if (point && screenPoint) {
+        const cameraFrame = runtimeSnapshot.camera;
+        const insideCameraFrame =
+          point.x >= cameraFrame.x &&
+          point.x <= cameraFrame.x + cameraFrame.width &&
+          point.y >= cameraFrame.y &&
+          point.y <= cameraFrame.y + cameraFrame.height;
+
+        if (insideCameraFrame) {
+          event.preventDefault();
+          engineRef.current?.panEditor(0, 0);
+          const editorFrame = engineRef.current?.getEditorCameraFrame();
+          setPanState({
+            mode: 'camera-drag',
+            screenStart: screenPoint,
+            cameraStart: {
+              x: activeScene.settings.cameraStart.x,
+              y: activeScene.settings.cameraStart.y,
+            },
+            frameSize: {
+              x: cameraFrame.width,
+              y: cameraFrame.height,
+            },
+            zoomStart: Math.max(0.0001, editorFrame?.zoom ?? 1),
+          });
+          return;
+        }
+      }
+    }
+
     const panMouseButton = event.button === 1 || event.button === 2;
     if (panMouseButton) {
       event.preventDefault();
       const screenPoint = getCanvasScreenPoint(event);
       if (screenPoint) {
-        setPanState({screenStart: screenPoint});
+        setPanState({mode: 'editor-pan', screenStart: screenPoint});
       }
       return;
     }
@@ -1528,14 +1578,42 @@ export default function App() {
   };
 
   const handleCanvasPointerMove = useEffectEvent((clientX: number, clientY: number) => {
-    if (panState) {
+    if (panState?.mode === 'editor-pan') {
       const screenPoint = getCanvasScreenPointFromClient(clientX, clientY);
       if (!screenPoint) {
         return;
       }
 
       engineRef.current?.panEditor(screenPoint.x - panState.screenStart.x, screenPoint.y - panState.screenStart.y);
-      setPanState({screenStart: screenPoint});
+      setPanState({mode: 'editor-pan', screenStart: screenPoint});
+      return;
+    }
+
+    if (panState?.mode === 'camera-drag') {
+      const screenPoint = getCanvasScreenPointFromClient(clientX, clientY, {clampToCanvas: true});
+      if (!screenPoint) {
+        return;
+      }
+
+      const dx = (screenPoint.x - panState.screenStart.x) / panState.zoomStart;
+      const dy = (screenPoint.y - panState.screenStart.y) / panState.zoomStart;
+      const maxCameraStartX = Math.max(0, activeScene.settings.worldSize.x - panState.frameSize.x);
+      const maxCameraStartY = Math.max(0, activeScene.settings.worldSize.y - panState.frameSize.y);
+      const nextCameraStartX = Math.round(clampScalar(panState.cameraStart.x + dx, 0, maxCameraStartX));
+      const nextCameraStartY = Math.round(clampScalar(panState.cameraStart.y + dy, 0, maxCameraStartY));
+
+      if (
+        nextCameraStartX !== activeScene.settings.cameraStart.x ||
+        nextCameraStartY !== activeScene.settings.cameraStart.y
+      ) {
+        mutateActiveScene(
+          (scene) => {
+            scene.settings.cameraStart.x = nextCameraStartX;
+            scene.settings.cameraStart.y = nextCameraStartY;
+          },
+          {replace: true},
+        );
+      }
       return;
     }
 
@@ -2960,7 +3038,7 @@ export default function App() {
         <div className="nexus-status-line">
           {isPlaying
             ? 'Runtime active. Grid controls stay available: Mouse Wheel zoom, Middle/Right Mouse pan.'
-            : 'Editor ready. Shortcuts: W/E/R, Delete, Mouse Wheel zoom, Middle/Right Mouse pan, Ctrl/Cmd+S, Ctrl/Cmd+Z.'}
+            : 'Editor ready. Shortcuts: W/E/R, Delete, Mouse Wheel zoom, Middle/Right Mouse pan, Ctrl/Cmd+Drag inside camera frame to move camera start, Ctrl/Cmd+S, Ctrl/Cmd+Z.'}
         </div>
       </footer>
 
