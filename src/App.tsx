@@ -1,1188 +1,2841 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Plus, 
-  Play, 
-  Pause, 
-  Square, 
-  Layers, 
-  Settings, 
-  Image as ImageIcon, 
-  Box, 
-  Trash2, 
-  ChevronRight, 
-  ChevronDown,
-  Move,
-  RotateCcw,
-  Maximize,
-  Smartphone,
-  Monitor,
-  Save,
+import {
+  startTransition,
+  type ReactNode,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+} from 'react';
+import {
+  Bot,
+  Copy,
+  Download,
   FolderOpen,
-  X
+  Gamepad2,
+  ImagePlus,
+  Layers3,
+  Map,
+  Maximize2,
+  Monitor,
+  Move,
+  Pause,
+  Play,
+  Plus,
+  Redo2,
+  RotateCcw,
+  Save,
+  Settings2,
+  Smartphone,
+  Sparkles,
+  Trash2,
+  Undo2,
+  Wand2,
+  X,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Entity, 
-  ComponentType, 
-  Project, 
-  Scene, 
-  TransformComponent, 
-  SpriteComponent,
-  RigidBodyComponent, 
+import {motion} from 'motion/react';
+import {GameEngine} from './engine/Core';
+import {useProjectHistory} from './hooks/useProjectHistory';
+import {
+  createBlankProject,
+  createBlankScene,
+  cloneProject,
+  createBehavior,
+  createCollider,
+  createDefaultProject,
+  createEntityFromPrefab,
+  createRigidBody,
+  createSampleProject,
+  createScript,
+  duplicateEntity,
+  getActiveScene,
+  getComponent,
+  normalizeAiResponse,
+  normalizeProject,
+  projectStats,
+  snapPoint,
+  STORAGE_KEY,
+} from './lib/project-utils';
+import {
+  AIResponsePayload,
+  BehaviorComponent,
   ColliderComponent,
-  ScriptComponent,
-  Component,
-  Vector2
+  ComponentType,
+  Entity,
+  EntityPrefab,
+  Project,
+  RigidBodyComponent,
+  RuntimeSnapshot,
+  Scene,
+  SpriteComponent,
+  TransformComponent,
+  TransformMode,
+  Vector2,
+  ViewportMode,
 } from './types';
-import { GameEngine } from './engine/Core';
 
-// Initial Project State
-const INITIAL_PROJECT: Project = {
-  name: "New Mobile Game",
-  assets: [],
-  activeSceneId: "scene-1",
-  controls: {
-    left: 'ArrowLeft',
-    right: 'ArrowRight',
-    up: 'ArrowUp',
-    down: 'ArrowDown',
-    jump: ' '
-  },
-  scenes: [
-    {
-      id: "scene-1",
-      name: "Main Scene",
-      entities: [
-        {
-          id: "player",
-          name: "Player",
-          parent: null,
-          children: [],
-          components: [
-            {
-              id: "t1",
-              type: ComponentType.Transform,
-              enabled: true,
-              position: { x: 180, y: 360 },
-              rotation: 0,
-              scale: { x: 0.5, y: 0.5 }
-            },
-            {
-              id: "s1",
-              type: ComponentType.Sprite,
-              enabled: true,
-              assetId: "",
-              color: "#3b82f6",
-              opacity: 1,
-              flipX: false,
-              flipY: false
-            },
-            {
-              id: "p1",
-              type: ComponentType.RigidBody,
-              enabled: true,
-              mass: 1,
-              isStatic: false,
-              gravityScale: 1,
-              velocity: { x: 0, y: 0 }
-            },
-            {
-              id: "c1",
-              type: ComponentType.Collider,
-              enabled: true,
-              shape: 'box',
-              width: 50,
-              height: 50,
-              radius: 25,
-              offsetX: 0,
-              offsetY: 0,
-              isTrigger: false,
-              isPassThrough: false
-            }
-          ]
-        },
-        {
-          id: "ground",
-          name: "Ground",
-          parent: null,
-          children: [],
-          components: [
-            {
-              id: "t2",
-              type: ComponentType.Transform,
-              enabled: true,
-              position: { x: 180, y: 650 },
-              rotation: 0,
-              scale: { x: 4, y: 0.5 }
-            },
-            {
-              id: "s2",
-              type: ComponentType.Sprite,
-              enabled: true,
-              assetId: "",
-              color: "#10b981",
-              opacity: 1,
-              flipX: false,
-              flipY: false
-            },
-            {
-              id: "c2",
-              type: ComponentType.Collider,
-              enabled: true,
-              shape: 'box',
-              width: 400,
-              height: 50,
-              radius: 50,
-              offsetX: 0,
-              offsetY: 0,
-              isTrigger: false,
-              isPassThrough: false
-            }
-          ]
-        }
-      ]
-    }
-  ]
+const PREFABS: Array<{prefab: EntityPrefab; label: string; hint: string}> = [
+  {prefab: 'player', label: 'Player', hint: 'Controllable hero'},
+  {prefab: 'platform', label: 'Platform', hint: 'Static collision surface'},
+  {prefab: 'enemy', label: 'Enemy', hint: 'Patrol behavior ready'},
+  {prefab: 'collectible', label: 'Collectible', hint: 'Score pickup'},
+  {prefab: 'goal', label: 'Goal', hint: 'Level objective'},
+  {prefab: 'hazard', label: 'Hazard', hint: 'Respawn trigger'},
+  {prefab: 'decoration', label: 'Decoration', hint: 'Visual dressing'},
+  {prefab: 'custom', label: 'Custom', hint: 'Manual setup object'},
+];
+
+const AI_IDEAS = [
+  'בנה לי משחק פלטפורמה קצר עם 3 collectibles ובוס קטן בסוף',
+  'הוסף לשלב הנוכחי moving platforms, hazard lava ו־checkpoint אחד',
+  'הפוך את המשחק ל־top-down dungeon עם מטרה לאסוף 5 אנרגיות',
+];
+
+type AiHealth = {
+  ok: boolean;
+  vertexAiConfigured?: boolean;
+  project?: string | null;
+  location?: string | null;
 };
 
+type DragState = {
+  entityId: string;
+  pointerStart: Vector2;
+  transformStart: TransformComponent;
+} | null;
+
+type PanState = {
+  screenStart: Vector2;
+} | null;
+
+type StageViewportMode = 'world' | 'camera';
+type TopMenuKey = 'file' | 'edit' | 'scene' | 'window' | 'assistant';
+type MenuAction = {
+  label: string;
+  hint: string;
+  shortcut?: string;
+  disabled?: boolean;
+  onSelect: () => void;
+};
+
+function loadInitialProject() {
+  return createDefaultProject();
+}
+
+function readStoredProject() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (!saved) {
+    return null;
+  }
+
+  try {
+    return normalizeProject(JSON.parse(saved), createDefaultProject());
+  } catch {
+    return null;
+  }
+}
+
+function matchesFilterQuery(filterText: string, ...values: Array<string | number | null | undefined>) {
+  const query = filterText.trim().toLowerCase();
+  if (!query) {
+    return true;
+  }
+
+  return values.some((value) => String(value ?? '').toLowerCase().includes(query));
+}
+
+function PanelHeader({
+  icon,
+  title,
+  actions,
+}: {
+  icon: ReactNode;
+  title: string;
+  actions?: ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between border-b border-[var(--border)] bg-[#26282d] px-2.5 py-1.5">
+      <div className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--text)]">
+        <span className="text-[var(--accent)]">{icon}</span>
+        {title}
+      </div>
+      {actions}
+    </div>
+  );
+}
+
+function TopMenuTrigger({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button onClick={onClick} className={`nexus-menu-button ${active ? 'is-active' : ''}`}>
+      {label}
+    </button>
+  );
+}
+
+function TopMenuPanel({
+  actions,
+}: {
+  actions: MenuAction[];
+}) {
+  return (
+    <div className="nexus-menu-panel">
+      {actions.map((action) => (
+        <button
+          key={action.label}
+          onClick={action.onSelect}
+          disabled={action.disabled}
+          className="nexus-menu-item"
+        >
+          <div>
+            <div className="text-[12px] font-medium text-[var(--text)]">{action.label}</div>
+            <div className="mt-0.5 text-[10px] text-[var(--muted)]">{action.hint}</div>
+          </div>
+          {action.shortcut && <span className="nexus-menu-shortcut">{action.shortcut}</span>}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function LauncherCard({
+  title,
+  subtitle,
+  onClick,
+  badge,
+}: {
+  title: string;
+  subtitle: string;
+  onClick: () => void;
+  badge?: string;
+}) {
+  return (
+    <button onClick={onClick} className="nexus-launcher-card">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-[13px] font-semibold text-[var(--text)]">{title}</div>
+          <div className="mt-1 text-[11px] leading-5 text-[var(--muted)]">{subtitle}</div>
+        </div>
+        {badge && <span className="nexus-launcher-badge">{badge}</span>}
+      </div>
+    </button>
+  );
+}
+
+function SectionCard({
+  title,
+  subtitle,
+  children,
+  action,
+}: {
+  title: string;
+  subtitle: string;
+  children: ReactNode;
+  action?: ReactNode;
+}) {
+  return (
+    <section className="overflow-hidden rounded-sm border border-[var(--border)] bg-[var(--panel-alt)]">
+      <div className="flex items-start justify-between gap-3 border-b border-[var(--border)] bg-[#2a2c31] px-3 py-2">
+        <div>
+          <h3 className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--text)]">{title}</h3>
+          <p className="mt-0.5 text-[11px] text-[var(--muted)]">{subtitle}</p>
+        </div>
+        {action}
+      </div>
+      <div className="p-3">{children}</div>
+    </section>
+  );
+}
+
+function LabeledField({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <label className="block space-y-1.5">
+      <span className="text-[10px] uppercase tracking-[0.18em] text-[var(--muted)]">{label}</span>
+      {children}
+    </label>
+  );
+}
+
+function NumberField({
+  label,
+  value,
+  onChange,
+  step = 1,
+}: {
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+  step?: number;
+}) {
+  return (
+    <LabeledField label={label}>
+      <input
+        type="number"
+        value={Number.isFinite(value) ? value : 0}
+        step={step}
+        onChange={(event) => onChange(Number(event.target.value))}
+        className="nexus-input"
+      />
+    </LabeledField>
+  );
+}
+
+function ColorField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <LabeledField label={label}>
+      <div className="flex items-center gap-2 rounded-sm border border-[var(--border)] bg-[#1c1d21] px-2 py-1.5">
+        <input type="color" value={value} onChange={(event) => onChange(event.target.value)} className="h-7 w-7 rounded border-0 bg-transparent p-0" />
+        <input value={value} onChange={(event) => onChange(event.target.value)} className="nexus-input border-0 bg-transparent px-0 py-0" />
+      </div>
+    </LabeledField>
+  );
+}
+
+function ToggleRow({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <button
+      onClick={() => onChange(!checked)}
+      className="flex h-8 w-full items-center justify-between rounded-sm border border-[var(--border)] bg-[#26282c] px-2.5 text-[12px] text-[var(--text)]"
+    >
+      <span>{label}</span>
+      <span className={`rounded-sm px-2 py-0.5 text-[10px] font-semibold ${checked ? 'bg-[var(--accent-soft)] text-[var(--accent)]' : 'bg-[#34373d] text-[var(--muted)]'}`}>
+        {checked ? 'ON' : 'OFF'}
+      </span>
+    </button>
+  );
+}
+
+function RuntimeBadge({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="rounded-sm border border-[var(--border)] bg-[#26282c] px-2 py-1 text-[11px] text-[var(--muted)]">
+      <span className="mr-2 uppercase tracking-[0.14em] text-[var(--muted)]">{label}</span>
+      <span className="font-semibold text-[var(--text)]">{children}</span>
+    </div>
+  );
+}
+
+function StagePill({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number;
+}) {
+  return (
+    <div className="rounded-sm border border-[var(--border)] bg-[#232529]/95 px-2 py-1 text-[11px]">
+      <span className="mr-2 uppercase tracking-[0.14em] text-[var(--muted)]">{label}</span>
+      <span className="font-semibold text-[var(--text)]">{value}</span>
+    </div>
+  );
+}
+
+function IconButton({
+  children,
+  onClick,
+  title,
+  disabled,
+}: {
+  children: ReactNode;
+  onClick: () => void;
+  title: string;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      disabled={disabled}
+      className="inline-flex h-7 w-7 items-center justify-center rounded-sm border border-[var(--border)] bg-[#26282c] text-[var(--muted)] disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      {children}
+    </button>
+  );
+}
+
+function ModeButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`inline-flex h-6 min-w-6 items-center justify-center rounded-sm border px-2 ${
+        active
+          ? 'border-[#5b6068] bg-[#3a3d44] text-[var(--text)]'
+          : 'border-transparent bg-transparent text-[var(--muted)] hover:border-[var(--border)] hover:bg-[#2b2d32] hover:text-[var(--text)]'
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function PillButton({
+  onClick,
+  children,
+}: {
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="h-7 rounded-sm border border-[var(--border)] bg-[#26282c] px-2.5 text-[11px] text-[var(--muted)]"
+    >
+      {children}
+    </button>
+  );
+}
+
+function TouchButton({
+  children,
+  onPress,
+}: {
+  children: ReactNode;
+  onPress: (pressed: boolean) => void;
+}) {
+  return (
+    <button
+      onMouseDown={() => onPress(true)}
+      onMouseUp={() => onPress(false)}
+      onMouseLeave={() => onPress(false)}
+      onTouchStart={() => onPress(true)}
+      onTouchEnd={() => onPress(false)}
+      className="h-10 w-10 rounded-sm border border-[var(--border)] bg-[#2f3238] text-sm font-semibold text-white"
+    >
+      {children}
+    </button>
+  );
+}
+
+function ActionTouchButton({
+  children,
+  onPress,
+}: {
+  children: ReactNode;
+  onPress: (pressed: boolean) => void;
+}) {
+  return (
+    <button
+      onMouseDown={() => onPress(true)}
+      onMouseUp={() => onPress(false)}
+      onMouseLeave={() => onPress(false)}
+      onTouchStart={() => onPress(true)}
+      onTouchEnd={() => onPress(false)}
+      className="rounded-sm border border-[#5b6068] bg-[#3a3d44] px-4 py-3 text-[11px] font-semibold tracking-[0.12em] text-[var(--text)]"
+    >
+      {children}
+    </button>
+  );
+}
+
+function AiPanel({
+  aiHealth,
+  aiMode,
+  setAiMode,
+  aiPrompt,
+  setAiPrompt,
+  aiIdeas,
+  aiStatus,
+  aiError,
+  aiSummary,
+  aiNotes,
+  onRun,
+}: {
+  aiHealth: AiHealth | null;
+  aiMode: 'create' | 'extend';
+  setAiMode: (mode: 'create' | 'extend') => void;
+  aiPrompt: string;
+  setAiPrompt: (value: string) => void;
+  aiIdeas: string[];
+  aiStatus: 'idle' | 'loading' | 'error';
+  aiError: string;
+  aiSummary: string;
+  aiNotes: string[];
+  onRun: () => void;
+}) {
+  return (
+    <div className="space-y-2">
+      <SectionCard title="Engine Assistant" subtitle="Aware of scenes, behaviors and scripts">
+        <div className="rounded-sm border border-[var(--border)] bg-[#202226] p-2.5 text-[12px] text-[var(--muted)]">
+          <div className="font-semibold text-[var(--text)]">
+            {aiHealth?.vertexAiConfigured ? 'Vertex AI configured' : 'Vertex AI not fully configured'}
+          </div>
+          <div className="mt-1 text-xs">
+            Project: {aiHealth?.project || 'missing'} • Location: {aiHealth?.location || 'missing'}
+          </div>
+        </div>
+      </SectionCard>
+
+      <SectionCard title="Mode" subtitle="Create a full game or edit the current one in place">
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={() => setAiMode('create')}
+            className={`rounded-sm border px-2.5 py-2.5 text-left ${
+              aiMode === 'create' ? 'border-[#5b6068] bg-[#3a3d44]' : 'border-[var(--border)] bg-[#26282c]'
+            }`}
+          >
+            <div className="text-[12px] font-semibold text-[var(--text)]">Create Full Game</div>
+            <div className="mt-1 text-[11px] text-[var(--muted)]">Build a complete fresh project.</div>
+          </button>
+          <button
+            onClick={() => setAiMode('extend')}
+            className={`rounded-sm border px-2.5 py-2.5 text-left ${
+              aiMode === 'extend' ? 'border-[#5b6068] bg-[#3a3d44]' : 'border-[var(--border)] bg-[#26282c]'
+            }`}
+          >
+            <div className="text-[12px] font-semibold text-[var(--text)]">Edit Existing Game</div>
+            <div className="mt-1 text-[11px] text-[var(--muted)]">Add, fix or refactor using the current project context.</div>
+          </button>
+        </div>
+      </SectionCard>
+
+      <SectionCard title="Request" subtitle="Describe gameplay, fixes, systems or scripts">
+        <textarea
+          value={aiPrompt}
+          onChange={(event) => setAiPrompt(event.target.value)}
+          className="nexus-textarea h-40"
+          placeholder="למשל: תקן את הפיזיקה של השחקן, הוסף moving platforms וכתוב script ל-door שנפתח אחרי איסוף 3 collectibles"
+        />
+        <div className="mt-3 flex flex-wrap gap-2">
+          {aiIdeas.map((idea) => (
+            <button
+              key={idea}
+              onClick={() => setAiPrompt(idea)}
+              className="rounded-sm border border-[var(--border)] bg-[#26282c] px-2 py-1.5 text-[11px] text-[var(--muted)]"
+            >
+              {idea}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={onRun}
+          disabled={aiStatus === 'loading'}
+          className="mt-3 flex h-8 w-full items-center justify-center gap-2 rounded-sm border border-[#5b6068] bg-[#3a3d44] px-3 text-[12px] font-semibold text-[var(--text)] disabled:cursor-wait disabled:opacity-70"
+        >
+          {aiStatus === 'loading' ? <Sparkles size={16} className="animate-pulse" /> : <Wand2 size={16} />}
+          {aiStatus === 'loading' ? 'Applying changes…' : 'Run Smart Edit'}
+        </button>
+        {aiError && <div className="mt-3 rounded-sm border border-[#5a4148] bg-[#34262a] px-3 py-2 text-[12px] text-[#e2c4cb]">{aiError}</div>}
+      </SectionCard>
+
+      <SectionCard title="Last Change Summary" subtitle="What the assistant changed inside the project">
+        <div className="rounded-sm border border-[var(--border)] bg-[#202226] p-2.5 text-[12px] text-[var(--muted)]">
+          {aiSummary || 'No AI edit has been applied yet.'}
+        </div>
+        {aiNotes.length > 0 && (
+          <div className="mt-3 space-y-2">
+            {aiNotes.map((note) => (
+              <div key={note} className="rounded-sm border border-[var(--border)] bg-[#202226] px-2.5 py-2 text-[11px] text-[var(--muted)]">
+                {note}
+              </div>
+            ))}
+          </div>
+        )}
+      </SectionCard>
+    </div>
+  );
+}
+
+function SceneInspector({
+  activeScene,
+  project,
+  aiSummary,
+  filterText,
+  editorCameraStart,
+  captureCameraStart,
+  mutateActiveScene,
+  mutateProject,
+}: {
+  activeScene: Scene;
+  project: Project;
+  aiSummary: string;
+  filterText: string;
+  editorCameraStart: Vector2 | null;
+  captureCameraStart: () => void;
+  mutateActiveScene: (mutator: (scene: Scene) => void, options?: {replace?: boolean}) => void;
+  mutateProject: (mutator: (draft: Project) => void, options?: {replace?: boolean}) => void;
+}) {
+  const showSceneSettings = matchesFilterQuery(
+    filterText,
+    'scene settings',
+    activeScene.name,
+    'world gravity grid camera background',
+  );
+  const showControls = matchesFilterQuery(filterText, 'controls', Object.keys(project.controls).join(' '), Object.values(project.controls).join(' '));
+  const showAssistant = matchesFilterQuery(filterText, 'assistant ai status summary', aiSummary);
+
+  const hasVisibleSections = showSceneSettings || showControls || showAssistant;
+
+  return (
+    <div className="space-y-2">
+      {showSceneSettings && (
+        <SectionCard title="Scene Settings" subtitle="World, camera, gravity and grid">
+          <div className="grid grid-cols-2 gap-3">
+            <NumberField
+              label="World Width"
+              value={activeScene.settings.worldSize.x}
+              onChange={(value) =>
+                mutateActiveScene((scene) => {
+                  scene.settings.worldSize.x = value;
+                })
+              }
+            />
+            <NumberField
+              label="World Height"
+              value={activeScene.settings.worldSize.y}
+              onChange={(value) =>
+                mutateActiveScene((scene) => {
+                  scene.settings.worldSize.y = value;
+                })
+              }
+            />
+            <NumberField
+              label="Gravity X"
+              value={activeScene.settings.gravity.x}
+              onChange={(value) =>
+                mutateActiveScene((scene) => {
+                  scene.settings.gravity.x = value;
+                })
+              }
+            />
+            <NumberField
+              label="Gravity Y"
+              value={activeScene.settings.gravity.y}
+              onChange={(value) =>
+                mutateActiveScene((scene) => {
+                  scene.settings.gravity.y = value;
+                })
+              }
+            />
+            <NumberField
+              label="Grid Size"
+              value={activeScene.settings.gridSize}
+              onChange={(value) =>
+                mutateActiveScene((scene) => {
+                  scene.settings.gridSize = value;
+                })
+              }
+            />
+            <LabeledField label="Scene Name">
+              <input
+                value={activeScene.name}
+                onChange={(event) =>
+                  mutateActiveScene((scene) => {
+                    scene.name = event.target.value;
+                  })
+                }
+                className="nexus-input"
+              />
+            </LabeledField>
+            <NumberField
+              label="Camera Start X"
+              value={activeScene.settings.cameraStart.x}
+              onChange={(value) =>
+                mutateActiveScene((scene) => {
+                  scene.settings.cameraStart.x = value;
+                })
+              }
+            />
+            <NumberField
+              label="Camera Start Y"
+              value={activeScene.settings.cameraStart.y}
+              onChange={(value) =>
+                mutateActiveScene((scene) => {
+                  scene.settings.cameraStart.y = value;
+                })
+              }
+            />
+          </div>
+          <div className="mt-3 flex items-center justify-between gap-3">
+            <div className="text-[11px] text-[var(--muted)]">
+              {editorCameraStart
+                ? `Current view: ${Math.round(editorCameraStart.x)}, ${Math.round(editorCameraStart.y)}`
+                : 'Current view is not available yet.'}
+            </div>
+            <button type="button" onClick={captureCameraStart} className="nexus-ghost-button">
+              Use Current View
+            </button>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <ColorField
+              label="Background Top"
+              value={activeScene.settings.backgroundTop}
+              onChange={(value) =>
+                mutateActiveScene((scene) => {
+                  scene.settings.backgroundTop = value;
+                })
+              }
+            />
+            <ColorField
+              label="Background Bottom"
+              value={activeScene.settings.backgroundBottom}
+              onChange={(value) =>
+                mutateActiveScene((scene) => {
+                  scene.settings.backgroundBottom = value;
+                })
+              }
+            />
+          </div>
+          <div className="mt-3 space-y-2">
+            <ToggleRow
+              label="Show Grid"
+              checked={activeScene.settings.showGrid}
+              onChange={(checked) =>
+                mutateActiveScene((scene) => {
+                  scene.settings.showGrid = checked;
+                })
+              }
+            />
+            <ToggleRow
+              label="Snap To Grid"
+              checked={activeScene.settings.snapToGrid}
+              onChange={(checked) =>
+                mutateActiveScene((scene) => {
+                  scene.settings.snapToGrid = checked;
+                })
+              }
+            />
+            <ToggleRow
+              label="Camera Follow Player"
+              checked={activeScene.settings.cameraFollowPlayer}
+              onChange={(checked) =>
+                mutateActiveScene((scene) => {
+                  scene.settings.cameraFollowPlayer = checked;
+                })
+              }
+            />
+          </div>
+        </SectionCard>
+      )}
+
+      {showControls && (
+        <SectionCard title="Controls" subtitle="Bindings passed into the engine input layer">
+          <div className="grid grid-cols-2 gap-3">
+            {(Object.entries(project.controls) as Array<[keyof Project['controls'], string]>).map(([key, value]) => (
+              <LabeledField key={key} label={key}>
+                <input
+                  value={value}
+                  onChange={(event) =>
+                    mutateProject((draft) => {
+                      draft.controls[key] = event.target.value;
+                    })
+                  }
+                  className="nexus-input"
+                />
+              </LabeledField>
+            ))}
+          </div>
+        </SectionCard>
+      )}
+
+      {showAssistant && (
+        <SectionCard title="Smart Assistant Status" subtitle="Latest AI activity inside the engine">
+          <div className="rounded-sm border border-[var(--border)] bg-[#202226] px-2.5 py-2 text-[12px] text-[var(--muted)]">
+            {aiSummary || 'Open the AI tab to generate, fix or extend the current game with engine-aware changes.'}
+          </div>
+        </SectionCard>
+      )}
+
+      {!hasVisibleSections && <div className="nexus-section-empty">No scene detail groups match the current filter.</div>}
+    </div>
+  );
+}
+
+function ComponentInspector({
+  selectedEntity,
+  project,
+  filterText,
+  updateEntity,
+  replaceTransform,
+  replaceSprite,
+  replaceRigidBody,
+  replaceCollider,
+  replaceBehavior,
+  updateScript,
+  addComponent,
+  removeComponent,
+}: {
+  selectedEntity: Entity;
+  project: Project;
+  filterText: string;
+  updateEntity: (updater: (entity: Entity) => void) => void;
+  replaceTransform: (updater: (component: TransformComponent) => TransformComponent, options?: {replace?: boolean}) => void;
+  replaceSprite: (updater: (component: SpriteComponent) => SpriteComponent, options?: {replace?: boolean}) => void;
+  replaceRigidBody: (updater: (component: RigidBodyComponent) => RigidBodyComponent, options?: {replace?: boolean}) => void;
+  replaceCollider: (updater: (component: ColliderComponent) => ColliderComponent, options?: {replace?: boolean}) => void;
+  replaceBehavior: (updater: (component: BehaviorComponent) => BehaviorComponent, options?: {replace?: boolean}) => void;
+  updateScript: (code: string) => void;
+  addComponent: (type: ComponentType) => void;
+  removeComponent: (type: ComponentType) => void;
+}) {
+  const transform = getComponent<TransformComponent>(selectedEntity, ComponentType.Transform);
+  const sprite = getComponent<SpriteComponent>(selectedEntity, ComponentType.Sprite);
+  const rigidBody = getComponent<RigidBodyComponent>(selectedEntity, ComponentType.RigidBody);
+  const collider = getComponent<ColliderComponent>(selectedEntity, ComponentType.Collider);
+  const behavior = getComponent<BehaviorComponent>(selectedEntity, ComponentType.Behavior);
+  const script = selectedEntity.components.find((component) => component.type === ComponentType.Script) as {code: string} | undefined;
+  const showEntitySection = matchesFilterQuery(filterText, 'entity', selectedEntity.name, selectedEntity.prefab, selectedEntity.tags.join(' '), selectedEntity.layer);
+  const showTransformSection = transform && matchesFilterQuery(filterText, 'transform', 'position rotation scale');
+  const showSpriteSection = sprite && matchesFilterQuery(filterText, 'sprite', sprite.shape, sprite.assetId, sprite.color);
+  const showRigidBodySection = rigidBody && matchesFilterQuery(filterText, 'rigidbody physics', 'mass gravity drag velocity static');
+  const showColliderSection = collider && matchesFilterQuery(filterText, 'collider collision trigger', collider.shape);
+  const showBehaviorSection = behavior && matchesFilterQuery(filterText, 'behavior gameplay', behavior.kind, behavior.patrolAxis);
+  const showScriptSection = script && matchesFilterQuery(filterText, 'script code', script.code);
+  const showMissingRigidBody = !rigidBody && matchesFilterQuery(filterText, 'rigidbody physics add');
+  const showMissingCollider = !collider && matchesFilterQuery(filterText, 'collider collision add');
+  const showMissingBehavior = !behavior && matchesFilterQuery(filterText, 'behavior gameplay add');
+  const showMissingScript = !script && matchesFilterQuery(filterText, 'script code add');
+  const hasVisibleSections =
+    showEntitySection ||
+    Boolean(showTransformSection) ||
+    Boolean(showSpriteSection) ||
+    Boolean(showRigidBodySection) ||
+    Boolean(showColliderSection) ||
+    Boolean(showBehaviorSection) ||
+    Boolean(showScriptSection) ||
+    showMissingRigidBody ||
+    showMissingCollider ||
+    showMissingBehavior ||
+    showMissingScript;
+
+  return (
+    <div className="space-y-2">
+      {showEntitySection && (
+        <SectionCard title="Entity" subtitle="Identity and editor flags">
+          <div className="space-y-3">
+            <LabeledField label="Name">
+              <input
+                value={selectedEntity.name}
+                onChange={(event) =>
+                  updateEntity((entity) => {
+                    entity.name = event.target.value;
+                  })
+                }
+                className="nexus-input"
+              />
+            </LabeledField>
+            <div className="grid grid-cols-2 gap-3">
+              <LabeledField label="Prefab">
+                <input value={selectedEntity.prefab} className="nexus-input" readOnly />
+              </LabeledField>
+              <NumberField
+                label="Layer"
+                value={selectedEntity.layer}
+                onChange={(value) =>
+                  updateEntity((entity) => {
+                    entity.layer = value;
+                  })
+                }
+              />
+            </div>
+            <LabeledField label="Tags">
+              <input
+                value={selectedEntity.tags.join(', ')}
+                onChange={(event) =>
+                  updateEntity((entity) => {
+                    entity.tags = event.target.value
+                      .split(',')
+                      .map((value) => value.trim())
+                      .filter(Boolean);
+                  })
+                }
+                className="nexus-input"
+              />
+            </LabeledField>
+            <div className="space-y-2">
+              <ToggleRow
+                label="Hidden"
+                checked={selectedEntity.hidden}
+                onChange={(checked) =>
+                  updateEntity((entity) => {
+                    entity.hidden = checked;
+                  })
+                }
+              />
+              <ToggleRow
+                label="Locked"
+                checked={selectedEntity.locked}
+                onChange={(checked) =>
+                  updateEntity((entity) => {
+                    entity.locked = checked;
+                  })
+                }
+              />
+            </div>
+            <div className="rounded-sm border border-[var(--border)] bg-[#202226] px-2.5 py-2 text-[11px] text-[var(--muted)]">
+              Use the prefab palette, scene templates and AI tab to iterate on this entity. Components below control engine behavior directly.
+            </div>
+          </div>
+        </SectionCard>
+      )}
+
+      {showTransformSection && (
+        <SectionCard title="Transform" subtitle="Position, rotation and scale">
+          <div className="grid grid-cols-2 gap-3">
+            <NumberField label="Position X" value={transform.position.x} onChange={(value) => replaceTransform((component) => ({...component, position: {...component.position, x: value}}))} />
+            <NumberField label="Position Y" value={transform.position.y} onChange={(value) => replaceTransform((component) => ({...component, position: {...component.position, y: value}}))} />
+            <NumberField label="Rotation" value={transform.rotation} onChange={(value) => replaceTransform((component) => ({...component, rotation: value}))} />
+            <NumberField label="Scale X" value={transform.scale.x} step={0.1} onChange={(value) => replaceTransform((component) => ({...component, scale: {...component.scale, x: value}}))} />
+            <NumberField label="Scale Y" value={transform.scale.y} step={0.1} onChange={(value) => replaceTransform((component) => ({...component, scale: {...component.scale, y: value}}))} />
+          </div>
+        </SectionCard>
+      )}
+
+      {showSpriteSection && (
+        <SectionCard title="Sprite" subtitle="Visual configuration">
+          <div className="grid grid-cols-2 gap-3">
+            <LabeledField label="Shape">
+              <select value={sprite.shape} onChange={(event) => replaceSprite((component) => ({...component, shape: event.target.value as SpriteComponent['shape']}))} className="nexus-select">
+                <option value="rectangle">Rectangle</option>
+                <option value="ellipse">Ellipse</option>
+                <option value="diamond">Diamond</option>
+              </select>
+            </LabeledField>
+            <LabeledField label="Asset">
+              <select value={sprite.assetId} onChange={(event) => replaceSprite((component) => ({...component, assetId: event.target.value}))} className="nexus-select">
+                <option value="">Generated shape</option>
+                {project.assets.map((asset) => (
+                  <option key={asset.id} value={asset.id}>
+                    {asset.name}
+                  </option>
+                ))}
+              </select>
+            </LabeledField>
+            <NumberField label="Width" value={sprite.width} onChange={(value) => replaceSprite((component) => ({...component, width: value}))} />
+            <NumberField label="Height" value={sprite.height} onChange={(value) => replaceSprite((component) => ({...component, height: value}))} />
+            <NumberField label="Opacity" value={sprite.opacity} step={0.1} onChange={(value) => replaceSprite((component) => ({...component, opacity: value}))} />
+            <ColorField label="Tint" value={sprite.color} onChange={(value) => replaceSprite((component) => ({...component, color: value}))} />
+          </div>
+          <div className="mt-3 space-y-2">
+            <ToggleRow label="Flip X" checked={sprite.flipX} onChange={(checked) => replaceSprite((component) => ({...component, flipX: checked}))} />
+            <ToggleRow label="Flip Y" checked={sprite.flipY} onChange={(checked) => replaceSprite((component) => ({...component, flipY: checked}))} />
+          </div>
+        </SectionCard>
+      )}
+
+      {showRigidBodySection ? (
+        <SectionCard title="RigidBody" subtitle="Physics movement and constraints" action={<DangerTextButton onClick={() => removeComponent(ComponentType.RigidBody)}>Remove</DangerTextButton>}>
+          <div className="grid grid-cols-2 gap-3">
+            <NumberField label="Mass" value={rigidBody.mass} onChange={(value) => replaceRigidBody((component) => ({...component, mass: value}))} />
+            <NumberField label="Gravity Scale" value={rigidBody.gravityScale} onChange={(value) => replaceRigidBody((component) => ({...component, gravityScale: value}))} />
+            <NumberField label="Drag X" value={rigidBody.drag.x} onChange={(value) => replaceRigidBody((component) => ({...component, drag: {...component.drag, x: value}}))} />
+            <NumberField label="Drag Y" value={rigidBody.drag.y} onChange={(value) => replaceRigidBody((component) => ({...component, drag: {...component.drag, y: value}}))} />
+            <NumberField label="Max Vel X" value={rigidBody.maxVelocity.x} onChange={(value) => replaceRigidBody((component) => ({...component, maxVelocity: {...component.maxVelocity, x: value}}))} />
+            <NumberField label="Max Vel Y" value={rigidBody.maxVelocity.y} onChange={(value) => replaceRigidBody((component) => ({...component, maxVelocity: {...component.maxVelocity, y: value}}))} />
+          </div>
+          <div className="mt-3">
+            <ToggleRow label="Static Body" checked={rigidBody.isStatic} onChange={(checked) => replaceRigidBody((component) => ({...component, isStatic: checked}))} />
+          </div>
+        </SectionCard>
+      ) : showMissingRigidBody ? (
+        <AddComponentCard title="RigidBody" onClick={() => addComponent(ComponentType.RigidBody)} />
+      ) : null}
+
+      {showColliderSection ? (
+        <SectionCard title="Collider" subtitle="Collision shape and trigger settings" action={<DangerTextButton onClick={() => removeComponent(ComponentType.Collider)}>Remove</DangerTextButton>}>
+          <div className="grid grid-cols-2 gap-3">
+            <LabeledField label="Shape">
+              <select value={collider.shape} onChange={(event) => replaceCollider((component) => ({...component, shape: event.target.value as ColliderComponent['shape']}))} className="nexus-select">
+                <option value="box">Box</option>
+                <option value="circle">Circle</option>
+              </select>
+            </LabeledField>
+            <NumberField label="Radius" value={collider.radius} onChange={(value) => replaceCollider((component) => ({...component, radius: value}))} />
+            <NumberField label="Width" value={collider.width} onChange={(value) => replaceCollider((component) => ({...component, width: value}))} />
+            <NumberField label="Height" value={collider.height} onChange={(value) => replaceCollider((component) => ({...component, height: value}))} />
+            <NumberField label="Offset X" value={collider.offsetX} onChange={(value) => replaceCollider((component) => ({...component, offsetX: value}))} />
+            <NumberField label="Offset Y" value={collider.offsetY} onChange={(value) => replaceCollider((component) => ({...component, offsetY: value}))} />
+          </div>
+          <div className="mt-3 space-y-2">
+            <ToggleRow label="Trigger" checked={collider.isTrigger} onChange={(checked) => replaceCollider((component) => ({...component, isTrigger: checked}))} />
+            <ToggleRow label="Pass Through" checked={collider.isPassThrough} onChange={(checked) => replaceCollider((component) => ({...component, isPassThrough: checked}))} />
+          </div>
+        </SectionCard>
+      ) : showMissingCollider ? (
+        <AddComponentCard title="Collider" onClick={() => addComponent(ComponentType.Collider)} />
+      ) : null}
+
+      {showBehaviorSection ? (
+        <SectionCard title="Behavior" subtitle="Built-in gameplay logic" action={<DangerTextButton onClick={() => removeComponent(ComponentType.Behavior)}>Remove</DangerTextButton>}>
+          <div className="grid grid-cols-2 gap-3">
+            <LabeledField label="Kind">
+              <select value={behavior.kind} onChange={(event) => replaceBehavior((component) => ({...component, kind: event.target.value as BehaviorComponent['kind']}))} className="nexus-select">
+                <option value="none">none</option>
+                <option value="player-platformer">player-platformer</option>
+                <option value="player-topdown">player-topdown</option>
+                <option value="enemy-patrol">enemy-patrol</option>
+                <option value="moving-platform">moving-platform</option>
+                <option value="collectible">collectible</option>
+                <option value="goal">goal</option>
+                <option value="hazard">hazard</option>
+              </select>
+            </LabeledField>
+            <NumberField label="Move Speed" value={behavior.moveSpeed} onChange={(value) => replaceBehavior((component) => ({...component, moveSpeed: value}))} />
+            <NumberField label="Jump Force" value={behavior.jumpForce} onChange={(value) => replaceBehavior((component) => ({...component, jumpForce: value}))} />
+            <NumberField label="Patrol Distance" value={behavior.patrolDistance} onChange={(value) => replaceBehavior((component) => ({...component, patrolDistance: value}))} />
+            <NumberField label="Patrol Speed" value={behavior.patrolSpeed} onChange={(value) => replaceBehavior((component) => ({...component, patrolSpeed: value}))} />
+            <NumberField label="Collectible Value" value={behavior.collectibleValue} onChange={(value) => replaceBehavior((component) => ({...component, collectibleValue: value}))} />
+            <LabeledField label="Patrol Axis">
+              <select value={behavior.patrolAxis} onChange={(event) => replaceBehavior((component) => ({...component, patrolAxis: event.target.value as BehaviorComponent['patrolAxis']}))} className="nexus-select">
+                <option value="x">X</option>
+                <option value="y">Y</option>
+              </select>
+            </LabeledField>
+          </div>
+        </SectionCard>
+      ) : showMissingBehavior ? (
+        <AddComponentCard title="Behavior" onClick={() => addComponent(ComponentType.Behavior)} />
+      ) : null}
+
+      {showScriptSection ? (
+        <SectionCard title="Script" subtitle="Inline engine-aware behavior" action={<DangerTextButton onClick={() => removeComponent(ComponentType.Script)}>Remove</DangerTextButton>}>
+          <textarea value={script.code} onChange={(event) => updateScript(event.target.value)} className="nexus-textarea h-40 font-mono text-xs" />
+        </SectionCard>
+      ) : showMissingScript ? (
+        <AddComponentCard title="Script" onClick={() => addComponent(ComponentType.Script)} />
+      ) : null}
+
+      {!hasVisibleSections && <div className="nexus-section-empty">No component groups match the current filter.</div>}
+    </div>
+  );
+}
+
+function DangerTextButton({
+  onClick,
+  children,
+}: {
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button onClick={onClick} className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#d7a8b2]">
+      {children}
+    </button>
+  );
+}
+
+function AddComponentCard({
+  title,
+  onClick,
+}: {
+  title: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex w-full items-center justify-between rounded-sm border border-dashed border-[var(--border-strong)] bg-[#26282c] px-3 py-3 text-left"
+    >
+      <div>
+        <div className="text-[12px] font-semibold text-[var(--text)]">Add {title}</div>
+        <div className="mt-1 text-[11px] text-[var(--muted)]">Inject another engine capability into this entity.</div>
+      </div>
+      <Plus size={14} className="text-[var(--accent)]" />
+    </button>
+  );
+}
+
+function ProjectLauncher({
+  hasSavedProject,
+  onClose,
+  onCreateBlank,
+  onResumeSaved,
+  onLoadPlatformer,
+  onLoadTopDown,
+  onImportProject,
+}: {
+  hasSavedProject: boolean;
+  onClose?: () => void;
+  onCreateBlank: () => void;
+  onResumeSaved: () => void;
+  onLoadPlatformer: () => void;
+  onLoadTopDown: () => void;
+  onImportProject: () => void;
+}) {
+  return (
+    <div className={onClose ? 'nexus-launcher-overlay' : 'nexus-launcher-shell'}>
+      <div className="nexus-launcher">
+        <div className="nexus-launcher-side">
+          <div className="nexus-brand">
+            <div className="nexus-brand-icon">
+              <Gamepad2 size={14} />
+            </div>
+            <div className="leading-tight">
+              <p className="text-[10px] uppercase tracking-[0.24em] text-[var(--muted)]">Nexus 2D</p>
+              <p className="text-xs font-semibold text-[var(--text)]">Project Launcher</p>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <div>
+              <h1 className="text-[22px] font-semibold tracking-tight text-[var(--text)]">Start from an empty workspace.</h1>
+              <p className="mt-2 max-w-[38ch] text-[12px] leading-6 text-[var(--muted)]">
+                Open an existing project, load a sample, or begin with a blank world so the editor behaves like a real engine instead of dropping you into a demo scene.
+              </p>
+            </div>
+            <div className="space-y-2 text-[11px] text-[var(--muted)]">
+              <div className="nexus-launcher-fact">Blank projects open with an empty scene and neutral grey defaults.</div>
+              <div className="nexus-launcher-fact">Sample projects are optional and load into the same editor workflow.</div>
+              <div className="nexus-launcher-fact">You can reopen this launcher later from the top bar.</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="nexus-launcher-main">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-[11px] uppercase tracking-[0.18em] text-[var(--muted)]">Create Or Open</div>
+              <div className="mt-1 text-[15px] font-semibold text-[var(--text)]">Choose how to enter the editor</div>
+            </div>
+            {onClose && (
+              <IconButton onClick={onClose} title="Close launcher">
+                <X size={15} />
+              </IconButton>
+            )}
+          </div>
+
+          <div className="nexus-launcher-grid">
+            <LauncherCard
+              title="New Blank Project"
+              subtitle="Start with an empty scene, neutral grey viewport defaults and no demo objects."
+              badge="Recommended"
+              onClick={onCreateBlank}
+            />
+            <LauncherCard
+              title="Import Project JSON"
+              subtitle="Open an existing `.nexus2d.json` project exported from the editor."
+              onClick={onImportProject}
+            />
+            <LauncherCard
+              title="Load Platformer Sample"
+              subtitle="Example side-scroller with camera follow, hazards, collectibles and goal flow."
+              onClick={onLoadPlatformer}
+            />
+            <LauncherCard
+              title="Load Top-Down Sample"
+              subtitle="Example arena project with large world layout and top-down movement."
+              onClick={onLoadTopDown}
+            />
+          </div>
+
+          {hasSavedProject && (
+            <div className="rounded-sm border border-[var(--border)] bg-[#26292e] p-3">
+              <div className="text-[11px] uppercase tracking-[0.16em] text-[var(--muted)]">Saved Session</div>
+              <div className="mt-1 flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-[13px] font-semibold text-[var(--text)]">Resume last autosaved project</div>
+                  <div className="mt-1 text-[11px] text-[var(--muted)]">Continue from the last project saved into local storage.</div>
+                </div>
+                <button onClick={onResumeSaved} className="nexus-ghost-button">
+                  <FolderOpen size={14} />
+                  Resume
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
-  const [project, setProject] = useState<Project>(INITIAL_PROJECT);
-  const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
-  const [transformMode, setTransformMode] = useState<'move' | 'rotate' | 'scale'>('move');
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStartPos, setDragStartPos] = useState<Vector2>({ x: 0, y: 0 });
-  const [initialTransform, setInitialTransform] = useState<{pos: Vector2, rot: number, scale: Vector2} | null>(null);
+  const history = useProjectHistory(loadInitialProject());
+  const project = history.project;
+  const activeScene = getActiveScene(project);
+  const stats = projectStats(project);
+
+  const [sessionStarted, setSessionStarted] = useState(false);
+  const [launcherOpen, setLauncherOpen] = useState(true);
+  const [activeMenu, setActiveMenu] = useState<TopMenuKey | null>(null);
+  const [storedProject, setStoredProject] = useState<Project | null>(() => readStoredProject());
+  const [selectedEntityId, setSelectedEntityId] = useState<string | null>(activeScene.entities[0]?.id ?? null);
+  const [transformMode, setTransformMode] = useState<TransformMode>('move');
+  const [viewportMode, setViewportMode] = useState<ViewportMode>('desktop');
+  const [stageViewportMode, setStageViewportMode] = useState<StageViewportMode>('world');
   const [isPlaying, setIsPlaying] = useState(false);
-  const [showControls, setShowControls] = useState(false);
-  const [viewportMode, setViewportMode] = useState<'desktop' | 'mobile'>('desktop');
+  const [rightTab, setRightTab] = useState<'inspector' | 'ai'>('inspector');
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
-  
+  const [isCompact, setIsCompact] = useState(window.innerWidth < 1280);
+  const [runtimeSnapshot, setRuntimeSnapshot] = useState<RuntimeSnapshot | null>(null);
+  const [dragState, setDragState] = useState<DragState>(null);
+  const [panState, setPanState] = useState<PanState>(null);
+  const [aiMode, setAiMode] = useState<'create' | 'extend'>('extend');
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiSummary, setAiSummary] = useState('');
+  const [aiNotes, setAiNotes] = useState<string[]>([]);
+  const [aiStatus, setAiStatus] = useState<'idle' | 'loading' | 'error'>('idle');
+  const [aiError, setAiError] = useState('');
+  const [aiHealth, setAiHealth] = useState<AiHealth | null>(null);
+  const [stageCanvasSize, setStageCanvasSize] = useState<{width: number; height: number} | null>(null);
+  const [contentDrawerOpen, setContentDrawerOpen] = useState(false);
+  const [outlinerFilter, setOutlinerFilter] = useState('');
+  const [detailsFilter, setDetailsFilter] = useState('');
+  const [assetFilter, setAssetFilter] = useState('');
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const stageShellRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<GameEngine | null>(null);
+  const importProjectInputRef = useRef<HTMLInputElement>(null);
+  const assetInputRef = useRef<HTMLInputElement>(null);
+  const runtimeDigestRef = useRef('');
+  const menuBarRef = useRef<HTMLDivElement>(null);
 
-  const activeScene = project.scenes.find(s => s.id === project.activeSceneId)!;
-  const selectedEntity = activeScene.entities.find(e => e.id === selectedEntityId);
+  const selectedEntity = activeScene.entities.find((entity) => entity.id === selectedEntityId) ?? null;
+  const filteredScenes = project.scenes.filter((scene) => matchesFilterQuery(outlinerFilter, scene.name, scene.notes));
+  const filteredEntities = activeScene.entities
+    .slice()
+    .sort((left, right) => right.layer - left.layer)
+    .filter((entity) => matchesFilterQuery(outlinerFilter, entity.name, entity.prefab, entity.tags.join(' '), entity.layer));
+  const filteredAssets = project.assets.filter((asset) => matchesFilterQuery(assetFilter, asset.name, asset.type));
+  const detailsPlaceholder =
+    rightTab === 'ai'
+      ? 'Assistant prompt and summary live here'
+      : selectedEntity
+        ? `Filter ${selectedEntity.name} details`
+        : `Filter ${activeScene.name} settings`;
 
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+  const launchProject = (nextProject: Project) => {
+    history.reset(touchProject(nextProject));
+    setSelectedEntityId(getActiveScene(nextProject).entities[0]?.id ?? null);
+    setIsPlaying(false);
+    setLauncherOpen(false);
+    setSessionStarted(true);
+    setStageViewportMode('world');
+    setStoredProject(nextProject);
+    setContentDrawerOpen(false);
+    setOutlinerFilter('');
+    setDetailsFilter('');
+    setAssetFilter('');
+    setRightTab('inspector');
+  };
 
-  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!canvasRef.current) return;
-    const rect = canvasRef.current.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * canvasRef.current.width;
-    const y = ((e.clientY - rect.top) / rect.height) * canvasRef.current.height;
+  const touchProject = (nextProject: Project) => ({
+    ...nextProject,
+    updatedAt: new Date().toISOString(),
+  });
 
-    // Simple hit detection
-    const hit = activeScene.entities.find(entity => {
-      const transform = entity.components.find(c => c.type === ComponentType.Transform) as TransformComponent;
-      if (!transform) return false;
-      const dist = Math.sqrt(Math.pow(transform.position.x - x, 2) + Math.pow(transform.position.y - y, 2));
-      return dist < 30; // 30px radius hit area
+  const saveLocalSnapshot = () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(project));
+    setStoredProject(project);
+  };
+
+  const mutateProject = (mutator: (draft: Project) => void, options?: {replace?: boolean}) => {
+    history.updateProject((current) => {
+      const draft = cloneProject(current);
+      mutator(draft);
+      return touchProject(draft);
+    }, {replace: options?.replace});
+  };
+
+  const mutateActiveScene = (mutator: (scene: Scene) => void, options?: {replace?: boolean}) => {
+    mutateProject((draft) => {
+      mutator(getActiveScene(draft));
+    }, options);
+  };
+
+  const mutateSelectedEntity = (mutator: (entity: Entity) => void, options?: {replace?: boolean}) => {
+    if (!selectedEntityId) {
+      return;
+    }
+
+    mutateActiveScene((scene) => {
+      const entity = scene.entities.find((entry) => entry.id === selectedEntityId);
+      if (entity) {
+        mutator(entity);
+      }
+    }, options);
+  };
+
+  const replaceComponent = <T extends TransformComponent | SpriteComponent | RigidBodyComponent | ColliderComponent | BehaviorComponent>(
+    type: T['type'],
+    updater: (component: T) => T,
+    options?: {replace?: boolean},
+  ) => {
+    mutateSelectedEntity((entity) => {
+      entity.components = entity.components.map((component) =>
+        component.type === type ? updater(component as T) : component,
+      );
+    }, options);
+  };
+
+  const addComponentToSelection = (type: ComponentType) => {
+    mutateSelectedEntity((entity) => {
+      if (entity.components.some((component) => component.type === type)) {
+        return;
+      }
+
+      switch (type) {
+        case ComponentType.RigidBody:
+          entity.components.push(createRigidBody());
+          break;
+        case ComponentType.Collider:
+          entity.components.push(createCollider());
+          break;
+        case ComponentType.Behavior:
+          entity.components.push(createBehavior('none'));
+          break;
+        case ComponentType.Script:
+          entity.components.push(createScript('// deltaSeconds available here\n'));
+          break;
+        default:
+          break;
+      }
     });
+  };
 
+  const removeComponentFromSelection = (type: ComponentType) => {
+    mutateSelectedEntity((entity) => {
+      entity.components = entity.components.filter((component) => component.type !== type);
+    });
+  };
+
+  const getCanvasScreenPointFromClient = (clientX: number, clientY: number): Vector2 | null => {
+    const canvas = canvasRef.current;
+    if (!canvas) {
+      return null;
+    }
+
+    const bounds = canvas.getBoundingClientRect();
+    const screenX = ((clientX - bounds.left) / bounds.width) * canvas.width;
+    const screenY = ((clientY - bounds.top) / bounds.height) * canvas.height;
+
+    return {
+      x: screenX,
+      y: screenY,
+    };
+  };
+
+  const getCanvasScreenPoint = (event: React.MouseEvent<HTMLCanvasElement>): Vector2 | null =>
+    getCanvasScreenPointFromClient(event.clientX, event.clientY);
+
+  const getWorldPoint = (event: React.MouseEvent<HTMLCanvasElement>): Vector2 | null => {
+    const screenPoint = getCanvasScreenPoint(event);
+    if (!screenPoint) {
+      return null;
+    }
+
+    const worldPoint = engineRef.current?.screenToWorld(screenPoint.x, screenPoint.y);
+    if (worldPoint) {
+      return worldPoint;
+    }
+
+    return screenPoint;
+  };
+
+  const findEntityAtPoint = (point: Vector2) =>
+    [...activeScene.entities]
+      .sort((left, right) => right.layer - left.layer)
+      .find((entity) => {
+        const transform = getComponent<TransformComponent>(entity, ComponentType.Transform);
+        const sprite = getComponent<SpriteComponent>(entity, ComponentType.Sprite);
+        if (!transform || !sprite || entity.hidden) {
+          return false;
+        }
+
+        const width = Math.abs(sprite.width * transform.scale.x);
+        const height = Math.abs(sprite.height * transform.scale.y);
+        return (
+          point.x >= transform.position.x - width / 2 &&
+          point.x <= transform.position.x + width / 2 &&
+          point.y >= transform.position.y - height / 2 &&
+          point.y <= transform.position.y + height / 2
+        );
+      });
+
+  const handleCanvasMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    if (isPlaying) {
+      return;
+    }
+
+    if (event.button === 1) {
+      event.preventDefault();
+      const screenPoint = getCanvasScreenPoint(event);
+      if (screenPoint) {
+        setPanState({screenStart: screenPoint});
+      }
+      return;
+    }
+
+    if (event.button !== 0) {
+      return;
+    }
+
+    const point = getWorldPoint(event);
+    if (!point) {
+      return;
+    }
+
+    const hit = findEntityAtPoint(point);
+    setSelectedEntityId(hit?.id ?? null);
     if (hit) {
-      setSelectedEntityId(hit.id);
-      if (isMobile) setRightSidebarOpen(true);
-    } else {
-      setSelectedEntityId(null);
-    }
-  };
-
-  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (isPlaying || !selectedEntity || !canvasRef.current) return;
-    
-    const rect = canvasRef.current.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * canvasRef.current.width;
-    const y = ((e.clientY - rect.top) / rect.height) * canvasRef.current.height;
-
-    const transform = selectedEntity.components.find(c => c.type === ComponentType.Transform) as TransformComponent;
-    if (!transform) return;
-
-    // Check if clicking near the entity or its handles
-    const dist = Math.sqrt(Math.pow(transform.position.x - x, 2) + Math.pow(transform.position.y - y, 2));
-    
-    if (dist < 50) { // Simple "near enough" check for now
-      setIsDragging(true);
-      setDragStartPos({ x, y });
-      setInitialTransform({
-        pos: { ...transform.position },
-        rot: transform.rotation,
-        scale: { ...transform.scale }
-      });
-    }
-  };
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDragging || !selectedEntity || !initialTransform || !canvasRef.current) return;
-
-    const rect = canvasRef.current.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * canvasRef.current.width;
-    const y = ((e.clientY - rect.top) / rect.height) * canvasRef.current.height;
-
-    const dx = x - dragStartPos.x;
-    const dy = y - dragStartPos.y;
-
-    const transformComp = selectedEntity.components.find(c => c.type === ComponentType.Transform) as TransformComponent;
-    if (!transformComp) return;
-
-    if (transformMode === 'move') {
-      updateEntityComponent(selectedEntity.id, transformComp.id, {
-        position: { x: initialTransform.pos.x + dx, y: initialTransform.pos.y + dy }
-      });
-    } else if (transformMode === 'rotate') {
-      const angle = Math.atan2(y - initialTransform.pos.y, x - initialTransform.pos.x) * (180 / Math.PI);
-      updateEntityComponent(selectedEntity.id, transformComp.id, { rotation: angle });
-    } else if (transformMode === 'scale') {
-      const scaleX = initialTransform.scale.x + (dx / 100);
-      const scaleY = initialTransform.scale.y - (dy / 100);
-      updateEntityComponent(selectedEntity.id, transformComp.id, {
-        scale: { x: Math.max(0.1, scaleX), y: Math.max(0.1, scaleY) }
-      });
-    }
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-    setInitialTransform(null);
-  };
-
-  const handleMobileInput = (input: string, value: boolean) => {
-    if (engineRef.current) {
-      engineRef.current.setInput(input, value);
-    }
-  };
-
-  useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth < 1024;
-      setIsMobile(mobile);
-      if (mobile) {
-        setLeftSidebarOpen(false);
-        setRightSidebarOpen(false);
-      } else {
-        setLeftSidebarOpen(true);
+      setRightTab('inspector');
+      if (isCompact) {
         setRightSidebarOpen(true);
       }
-    };
-    
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement) return;
-      
-      switch(e.key.toLowerCase()) {
-        case 'w': setTransformMode('move'); break;
-        case 'e': setTransformMode('rotate'); break;
-        case 'r': setTransformMode('scale'); break;
+    }
+
+    if (!hit || hit.locked) {
+      return;
+    }
+
+    const transform = getComponent<TransformComponent>(hit, ComponentType.Transform);
+    if (!transform) {
+      return;
+    }
+
+    setDragState({
+      entityId: hit.id,
+      pointerStart: point,
+      transformStart: structuredClone(transform),
+    });
+  };
+
+  const handleCanvasPointerMove = useEffectEvent((clientX: number, clientY: number) => {
+    if (panState) {
+      const screenPoint = getCanvasScreenPointFromClient(clientX, clientY);
+      if (!screenPoint) {
+        return;
       }
+
+      engineRef.current?.panEditor(screenPoint.x - panState.screenStart.x, screenPoint.y - panState.screenStart.y);
+      setPanState({screenStart: screenPoint});
+      return;
+    }
+
+    if (!dragState || !selectedEntity || dragState.entityId !== selectedEntity.id) {
+      return;
+    }
+
+    const screenPoint = getCanvasScreenPointFromClient(clientX, clientY);
+    if (!screenPoint) {
+      return;
+    }
+
+    const point = engineRef.current?.screenToWorld(screenPoint.x, screenPoint.y) ?? screenPoint;
+    if (!point) {
+      return;
+    }
+
+    const dx = point.x - dragState.pointerStart.x;
+    const dy = point.y - dragState.pointerStart.y;
+
+    replaceComponent<TransformComponent>(
+      ComponentType.Transform,
+      (component) => {
+        if (transformMode === 'move') {
+          let position = {
+            x: dragState.transformStart.position.x + dx,
+            y: dragState.transformStart.position.y + dy,
+          };
+
+          if (activeScene.settings.snapToGrid) {
+            position = snapPoint(position, activeScene.settings.gridSize);
+          }
+
+          return {...component, position};
+        }
+
+        if (transformMode === 'rotate') {
+          const rotation =
+            (Math.atan2(
+              point.y - dragState.transformStart.position.y,
+              point.x - dragState.transformStart.position.x,
+            ) *
+              180) /
+            Math.PI;
+          return {...component, rotation};
+        }
+
+        return {
+          ...component,
+          scale: {
+            x: Math.max(0.2, dragState.transformStart.scale.x + dx / 160),
+            y: Math.max(0.2, dragState.transformStart.scale.y - dy / 160),
+          },
+        };
+      },
+      {replace: true},
+    );
+  });
+
+  const handleCanvasMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    handleCanvasPointerMove(event.clientX, event.clientY);
+  };
+
+  const handleCanvasMouseUp = () => {
+    setDragState(null);
+    setPanState(null);
+  };
+
+  const handleCanvasWheel = useEffectEvent((event: WheelEvent) => {
+    if (!event.ctrlKey || isPlaying) {
+      return;
+    }
+
+    event.preventDefault();
+    const screenPoint = getCanvasScreenPointFromClient(event.clientX, event.clientY);
+    if (!screenPoint) {
+      return;
+    }
+    engineRef.current?.adjustEditorZoom(event.deltaY, screenPoint.x, screenPoint.y);
+  });
+
+  const addPrefab = (prefab: EntityPrefab) => {
+    const selectedAnchor = selectedEntity
+      ? getComponent<TransformComponent>(selectedEntity, ComponentType.Transform)?.position
+      : null;
+    const anchor = selectedAnchor ?? {
+      x: viewportMode === 'mobile' ? 180 : 420,
+      y: viewportMode === 'mobile' ? 320 : 300,
     };
-    window.addEventListener('keydown', handleKeyDown);
+
+    let position = {x: anchor.x + 64, y: anchor.y - 32};
+    if (activeScene.settings.snapToGrid) {
+      position = snapPoint(position, activeScene.settings.gridSize);
+    }
+
+    const entity = createEntityFromPrefab(prefab, position);
+    mutateActiveScene((scene) => {
+      scene.entities.push(entity);
+    });
+    setSelectedEntityId(entity.id);
+    setRightTab('inspector');
+  };
+
+  const duplicateSelection = () => {
+    if (!selectedEntity) {
+      return;
+    }
+
+    const copy = duplicateEntity(selectedEntity);
+    mutateActiveScene((scene) => {
+      scene.entities.push(copy);
+    });
+    setSelectedEntityId(copy.id);
+  };
+
+  const deleteSelection = () => {
+    if (!selectedEntity) {
+      return;
+    }
+
+    mutateActiveScene((scene) => {
+      scene.entities = scene.entities.filter((entity) => entity.id !== selectedEntity.id);
+    });
+    setSelectedEntityId(null);
+  };
+
+  const createSceneFromTemplate = (template: 'blank' | 'platformer' | 'topdown') => {
+    let scene: Scene;
+
+    switch (template) {
+      case 'platformer':
+        scene = createPlatformerTemplate();
+        break;
+      case 'topdown':
+        scene = createTopDownTemplate();
+        break;
+      default:
+        scene = createBlankScene(`Scene ${project.scenes.length + 1}`);
+        break;
+    }
+
+    mutateProject((draft) => {
+      draft.scenes.push(scene);
+      draft.activeSceneId = scene.id;
+    });
+    setSelectedEntityId(scene.entities[0]?.id ?? null);
+    setIsPlaying(false);
+  };
+
+  const openAssistant = (mode?: 'create' | 'extend') => {
+    if (mode) {
+      setAiMode(mode);
+    }
+    setRightTab('ai');
+    setRightSidebarOpen(true);
+  };
+
+  const switchScene = (sceneId: string) => {
+    mutateProject((draft) => {
+      draft.activeSceneId = sceneId;
+    });
+    const nextScene = project.scenes.find((scene) => scene.id === sceneId);
+    setSelectedEntityId(nextScene?.entities[0]?.id ?? null);
+    setIsPlaying(false);
+  };
+
+  const deleteActiveScene = () => {
+    const currentIndex = project.scenes.findIndex((scene) => scene.id === activeScene.id);
+    const replacementScene = createBlankScene('Scene 1');
+    const nextScene =
+      project.scenes.length <= 1
+        ? replacementScene
+        : project.scenes[currentIndex === project.scenes.length - 1 ? currentIndex - 1 : currentIndex + 1] ?? project.scenes[0];
+
+    mutateProject((draft) => {
+      if (draft.scenes.length <= 1) {
+        draft.scenes = [replacementScene];
+        draft.activeSceneId = replacementScene.id;
+        return;
+      }
+
+      draft.scenes = draft.scenes.filter((scene) => scene.id !== activeScene.id);
+      draft.activeSceneId = nextScene.id;
+    });
+
+    setSelectedEntityId(nextScene.entities[0]?.id ?? null);
+    setIsPlaying(false);
+  };
+
+  const captureCameraStart = () => {
+    const viewFrame = engineRef.current?.getEditorCameraFrame();
+    if (!viewFrame) {
+      return;
+    }
+
+    mutateActiveScene((scene) => {
+      scene.settings.cameraStart = {
+        x: Math.round(viewFrame.x),
+        y: Math.round(viewFrame.y),
+      };
+    });
+  };
+
+  const exportProject = () => {
+    const blob = new Blob([JSON.stringify(project, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${project.name.replace(/\s+/g, '-').toLowerCase()}.nexus2d.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importProjectFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    const text = await file.text();
+    const nextProject = normalizeProject(JSON.parse(text), createDefaultProject());
+    launchProject(nextProject);
+    event.target.value = '';
+  };
+
+  const importAssetFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const url = String(reader.result ?? '');
+      mutateProject((draft) => {
+        draft.assets.push({
+          id: `asset-${Date.now()}`,
+          name: file.name,
+          type: 'image',
+          url,
+        });
+      });
+    };
+    reader.readAsDataURL(file);
+    event.target.value = '';
+  };
+
+  const runAiGeneration = async () => {
+    if (!aiPrompt.trim()) {
+      setAiStatus('error');
+      setAiError('צריך לכתוב בקשה ל־AI לפני השליחה.');
+      return;
+    }
+
+    setAiStatus('loading');
+    setAiError('');
+
+    try {
+      const response = await fetch('/api/ai/generate-project', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          mode: aiMode,
+          prompt: aiPrompt.trim(),
+          project,
+        }),
+      });
+
+      const payload = (await response.json()) as AIResponsePayload & {error?: string};
+      if (!response.ok) {
+        throw new Error(payload.error || 'Vertex AI request failed.');
+      }
+
+      const normalized = normalizeAiResponse(payload, project);
+      setAiSummary(normalized.summary);
+      setAiNotes(normalized.notes);
+
+      startTransition(() => {
+        history.setProject(touchProject(normalized.project));
+        setSelectedEntityId(getActiveScene(normalized.project).entities[0]?.id ?? null);
+        setIsPlaying(false);
+      });
+
+      setAiStatus('idle');
+      setRightTab('inspector');
+    } catch (error) {
+      setAiStatus('error');
+      setAiError(error instanceof Error ? error.message : 'Unknown AI error.');
+      setRightTab('ai');
+    }
+  };
+
+  const handleRuntimeControls = (input: string, value: boolean) => {
+    engineRef.current?.setInput(input, value);
+  };
+
+  const handleResize = useEffectEvent(() => {
+    const compact = window.innerWidth < 1280;
+    setIsCompact(compact);
+    setLeftSidebarOpen(!compact);
+    setRightSidebarOpen(!compact);
+  });
+
+  const fitStageCanvas = useEffectEvent(() => {
+    const shell = stageShellRef.current;
+    if (!shell) {
+      return;
+    }
+
+    const styles = window.getComputedStyle(shell);
+    const availableWidth = Math.max(
+      1,
+      shell.clientWidth - parseFloat(styles.paddingLeft) - parseFloat(styles.paddingRight),
+    );
+    const availableHeight = Math.max(
+      1,
+      shell.clientHeight - parseFloat(styles.paddingTop) - parseFloat(styles.paddingBottom),
+    );
+    if (viewportMode === 'mobile') {
+      const baseWidth = 390;
+      const baseHeight = 844;
+      const scale = Math.min(availableWidth / baseWidth, availableHeight / baseHeight);
+
+      setStageCanvasSize({
+        width: Math.max(1, Math.floor(baseWidth * scale)),
+        height: Math.max(1, Math.floor(baseHeight * scale)),
+      });
+      return;
+    }
+
+    setStageCanvasSize({
+      width: availableWidth,
+      height: availableHeight,
+    });
+  });
+
+  const handleHotkeys = useEffectEvent((event: KeyboardEvent) => {
+    if (!sessionStarted || launcherOpen) {
+      return;
+    }
+
+    if (
+      event.target instanceof HTMLInputElement ||
+      event.target instanceof HTMLTextAreaElement ||
+      event.target instanceof HTMLSelectElement
+    ) {
+      return;
+    }
+
+    const primary = event.ctrlKey || event.metaKey;
+    const key = event.key.toLowerCase();
+
+    if (primary && key === 'z') {
+      event.preventDefault();
+      if (event.shiftKey) {
+        history.redo();
+      } else {
+        history.undo();
+      }
+      return;
+    }
+
+    if (primary && key === 'y') {
+      event.preventDefault();
+      history.redo();
+      return;
+    }
+
+    if (primary && key === 's') {
+      event.preventDefault();
+      exportProject();
+      return;
+    }
+
+    if (key === 'delete' || key === 'backspace') {
+      if (selectedEntity) {
+        deleteSelection();
+      } else {
+        deleteActiveScene();
+      }
+      return;
+    }
+
+    if (key === 'w') {
+      setTransformMode('move');
+    } else if (key === 'e') {
+      setTransformMode('rotate');
+    } else if (key === 'r') {
+      setTransformMode('scale');
+    } else if (key === ' ') {
+      event.preventDefault();
+      setIsPlaying((playing) => !playing);
+    }
+  });
+
+  useEffect(() => {
+    if (!sessionStarted || !canvasRef.current) {
+      return;
+    }
+
+    engineRef.current = new GameEngine(canvasRef.current);
+    return () => {
+      engineRef.current?.destroy();
+      engineRef.current = null;
+    };
+  }, [sessionStarted]);
+
+  useEffect(() => {
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, [handleResize]);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleHotkeys);
+    return () => window.removeEventListener('keydown', handleHotkeys);
+  }, [handleHotkeys]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!sessionStarted || !canvas) {
+      return;
+    }
+
+    const wheelListener = (event: WheelEvent) => handleCanvasWheel(event);
+    canvas.addEventListener('wheel', wheelListener, {passive: false});
 
     return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('keydown', handleKeyDown);
+      canvas.removeEventListener('wheel', wheelListener);
+    };
+  }, [sessionStarted]);
+
+  useEffect(() => {
+    if (!dragState && !panState) {
+      return;
+    }
+
+    const handleWindowMouseMove = (event: MouseEvent) => {
+      handleCanvasPointerMove(event.clientX, event.clientY);
+    };
+    const handleWindowMouseUp = () => {
+      setDragState(null);
+      setPanState(null);
+    };
+
+    window.addEventListener('mousemove', handleWindowMouseMove);
+    window.addEventListener('mouseup', handleWindowMouseUp);
+    window.addEventListener('blur', handleWindowMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleWindowMouseMove);
+      window.removeEventListener('mouseup', handleWindowMouseUp);
+      window.removeEventListener('blur', handleWindowMouseUp);
+    };
+  }, [dragState, panState]);
+
+  useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!menuBarRef.current?.contains(event.target as Node)) {
+        setActiveMenu(null);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setActiveMenu(null);
+      }
+    };
+
+    window.addEventListener('pointerdown', handlePointerDown);
+    window.addEventListener('keydown', handleEscape);
+    return () => {
+      window.removeEventListener('pointerdown', handlePointerDown);
+      window.removeEventListener('keydown', handleEscape);
     };
   }, []);
 
   useEffect(() => {
-    if (canvasRef.current && !engineRef.current) {
-      engineRef.current = new GameEngine(canvasRef.current);
+    if (!sessionStarted) {
+      return;
     }
-    
-    if (engineRef.current) {
-      if (isPlaying) {
-        engineRef.current.start();
-      } else {
-        engineRef.current.stop();
-      }
-      engineRef.current.setProject(project);
-      engineRef.current.setSelectedEntity(selectedEntityId, transformMode);
-    }
-  }, [project, isPlaying, selectedEntityId, transformMode]);
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(project));
+    setStoredProject(project);
+  }, [project, sessionStarted]);
 
   useEffect(() => {
-    if (engineRef.current && canvasRef.current) {
-      const width = viewportMode === 'mobile' ? 360 : 1200;
-      const height = viewportMode === 'mobile' ? 720 : 800;
-      engineRef.current.resize(width, height);
+    if (!sessionStarted) {
+      return;
     }
-  }, [viewportMode]);
 
-  const updateEntityComponent = (entityId: string, componentId: string, updates: Partial<any>) => {
-    setProject(prev => ({
-      ...prev,
-      scenes: prev.scenes.map(s => s.id === prev.activeSceneId ? {
-        ...s,
-        entities: s.entities.map(e => e.id === entityId ? {
-          ...e,
-          components: e.components.map(c => c.id === componentId ? { ...c, ...updates } : c)
-        } : e)
-      } : s)
-    }));
-  };
+    const engine = engineRef.current;
+    if (!engine) {
+      return;
+    }
 
-  const removeComponent = (entityId: string, componentId: string) => {
-    setProject(prev => ({
-      ...prev,
-      scenes: prev.scenes.map(s => s.id === prev.activeSceneId ? {
-        ...s,
-        entities: s.entities.map(e => e.id === entityId ? {
-          ...e,
-          components: e.components.filter(c => c.id !== componentId)
-        } : e)
-      } : s)
-    }));
-  };
+    engine.setProject(project);
+  }, [project, sessionStarted]);
 
-  const [componentAccordionStates, setComponentAccordionStates] = useState<Record<string, boolean>>({});
+  useEffect(() => {
+    if (!sessionStarted) {
+      return;
+    }
 
-  const toggleComponentAccordion = (componentId: string) => {
-    setComponentAccordionStates(prev => ({
-      ...prev,
-      [componentId]: prev[componentId] === undefined ? false : !prev[componentId]
-    }));
-  };
+    const engine = engineRef.current;
+    if (!engine) {
+      return;
+    }
 
-  const ComponentAccordion = ({ entityId, component, updateEntityComponent, removeComponent }: { key?: any, entityId: string, component: Component, updateEntityComponent: (entityId: string, componentId: string, updates: Partial<any>) => void, removeComponent: (entityId: string, componentId: string) => void }) => {
-    const isOpen = componentAccordionStates[component.id] !== false;
+    engine.setSelectedEntity(selectedEntityId, transformMode);
+  }, [selectedEntityId, transformMode, sessionStarted]);
+
+  useEffect(() => {
+    if (!sessionStarted) {
+      return;
+    }
+
+    const engine = engineRef.current;
+    if (!engine) {
+      return;
+    }
+
+    engine.setEditorViewportMode(stageViewportMode);
+  }, [stageViewportMode, sessionStarted]);
+
+  useEffect(() => {
+    if (!sessionStarted) {
+      return;
+    }
+
+    const engine = engineRef.current;
+    if (!engine) {
+      return;
+    }
+
+    if (isPlaying) {
+      engine.start();
+    } else {
+      engine.stop();
+    }
+  }, [isPlaying, sessionStarted]);
+
+  useEffect(() => {
+    if (!sessionStarted) {
+      return;
+    }
+
+    const engine = engineRef.current;
+    if (!engine) {
+      return;
+    }
+
+    const width = viewportMode === 'mobile' ? 390 : Math.max(1, Math.round(stageCanvasSize?.width ?? 1280));
+    const height = viewportMode === 'mobile' ? 844 : Math.max(1, Math.round(stageCanvasSize?.height ?? 820));
+    engine.resize(width, height);
+  }, [viewportMode, stageCanvasSize, sessionStarted]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      const snapshot = engineRef.current?.getRuntimeSnapshot();
+      const digest = snapshot ? JSON.stringify(snapshot) : '';
+      if (digest !== runtimeDigestRef.current) {
+        runtimeDigestRef.current = digest;
+        setRuntimeSnapshot(snapshot ?? null);
+      }
+    }, 160);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!sessionStarted) {
+      return;
+    }
+
+    fitStageCanvas();
+    const shell = stageShellRef.current;
+    if (!shell || typeof ResizeObserver === 'undefined') {
+      return;
+    }
+
+    const observer = new ResizeObserver(() => {
+      fitStageCanvas();
+    });
+
+    observer.observe(shell);
+    return () => observer.disconnect();
+  }, [sessionStarted, viewportMode, fitStageCanvas]);
+
+  useEffect(() => {
+    if (selectedEntityId && !activeScene.entities.some((entity) => entity.id === selectedEntityId)) {
+      setSelectedEntityId(activeScene.entities[0]?.id ?? null);
+    }
+  }, [activeScene, selectedEntityId]);
+
+  useEffect(() => {
+    const readHealth = async () => {
+      try {
+        const response = await fetch('/api/health');
+        const payload = (await response.json()) as AiHealth;
+        setAiHealth(payload);
+      } catch {
+        setAiHealth({ok: false});
+      }
+    };
+
+    void readHealth();
+  }, []);
+
+  if (!sessionStarted) {
     return (
-      <div className="bg-white/5 rounded-lg border border-white/5 overflow-hidden">
-        <div className="px-3 py-2 bg-white/5 flex items-center justify-between">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => toggleComponentAccordion(component.id)}>
-            {isOpen ? <ChevronDown size={14} className="text-gray-500" /> : <ChevronRight size={14} className="text-gray-500" />}
-            <span className="text-xs font-bold uppercase tracking-tight">{component.type}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <input 
-              type="checkbox" 
-              checked={component.enabled}
-              onChange={(e) => updateEntityComponent(entityId, component.id, { enabled: e.target.checked })}
-              className="accent-emerald-500"
-            />
-            <button onClick={() => removeComponent(entityId, component.id)} className="text-gray-500 hover:text-red-500">
-              <Trash2 size={14} />
-            </button>
-          </div>
-        </div>
-        {isOpen && (
-          <div className="p-4 space-y-4">
-            {component.type === ComponentType.Script && (
-              <div className="space-y-1">
-                <label className="text-[10px] text-gray-500 uppercase">Script Code</label>
-                <textarea 
-                  value={(component as ScriptComponent).code}
-                  onChange={(e) => updateEntityComponent(entityId, component.id, { code: e.target.value })}
-                  className="w-full h-32 bg-[#111] border border-white/5 rounded px-2 py-1 text-xs font-mono"
-                  placeholder="// Write your script here..."
-                />
-              </div>
-            )}
-            {component.type === ComponentType.Transform && (
-              <>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] text-gray-500 uppercase">Position X</label>
-                    <input 
-                      type="number" 
-                      value={(component as TransformComponent).position.x}
-                      onChange={(e) => updateEntityComponent(entityId, component.id, { position: { ...(component as TransformComponent).position, x: Number(e.target.value) } })}
-                      className="w-full bg-[#111] border border-white/5 rounded px-2 py-1 text-xs"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] text-gray-500 uppercase">Position Y</label>
-                    <input 
-                      type="number" 
-                      value={(component as TransformComponent).position.y}
-                      onChange={(e) => updateEntityComponent(entityId, component.id, { position: { ...(component as TransformComponent).position, y: Number(e.target.value) } })}
-                      className="w-full bg-[#111] border border-white/5 rounded px-2 py-1 text-xs"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase">Rotation</label>
-                  <input 
-                    type="range" 
-                    min="0" max="360"
-                    value={(component as TransformComponent).rotation}
-                    onChange={(e) => updateEntityComponent(entityId, component.id, { rotation: Number(e.target.value) })}
-                    className="w-full accent-emerald-500"
-                  />
-                </div>
-              </>
-            )}
-            {component.type === ComponentType.Sprite && (
-              <>
-                <div className="space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase">Image Asset</label>
-                  <select 
-                    value={(component as SpriteComponent).assetId}
-                    onChange={(e) => updateEntityComponent(entityId, component.id, { assetId: e.target.value })}
-                    className="w-full bg-[#111] border border-white/5 rounded px-2 py-1 text-xs"
-                  >
-                    <option value="">None (Color Block)</option>
-                    {project.assets.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase">Color / Tint</label>
-                  <div className="flex gap-2">
-                    <input 
-                      type="color" 
-                      value={(component as SpriteComponent).color}
-                      onChange={(e) => updateEntityComponent(entityId, component.id, { color: e.target.value })}
-                      className="w-10 h-8 bg-transparent border-none cursor-pointer"
-                    />
-                    <input 
-                      type="text" 
-                      value={(component as SpriteComponent).color}
-                      onChange={(e) => updateEntityComponent(entityId, component.id, { color: e.target.value })}
-                      className="flex-1 bg-[#111] border border-white/5 rounded px-2 py-1 text-xs"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] text-gray-500 uppercase">Opacity</label>
-                  <input 
-                    type="range" 
-                    min="0" max="1" step="0.1"
-                    value={(component as SpriteComponent).opacity}
-                    onChange={(e) => updateEntityComponent(entityId, component.id, { opacity: Number(e.target.value) })}
-                    className="w-full accent-emerald-500"
-                  />
-                </div>
-              </>
-            )}
-            {component.type === ComponentType.RigidBody && (
-              <>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] text-gray-500 uppercase">Mass</label>
-                    <input 
-                      type="number" 
-                      value={(component as RigidBodyComponent).mass}
-                      onChange={(e) => updateEntityComponent(entityId, component.id, { mass: Number(e.target.value) })}
-                      className="w-full bg-[#111] border border-white/5 rounded px-2 py-1 text-xs"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] text-gray-500 uppercase">Gravity Scale</label>
-                    <input 
-                      type="number" 
-                      value={(component as RigidBodyComponent).gravityScale}
-                      onChange={(e) => updateEntityComponent(entityId, component.id, { gravityScale: Number(e.target.value) })}
-                      className="w-full bg-[#111] border border-white/5 rounded px-2 py-1 text-xs"
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <input 
-                    type="checkbox" 
-                    checked={(component as RigidBodyComponent).isStatic}
-                    onChange={(e) => updateEntityComponent(entityId, component.id, { isStatic: e.target.checked })}
-                    className="accent-emerald-500"
-                  />
-                  <label className="text-[10px] text-gray-500 uppercase">Is Static</label>
-                </div>
-              </>
-            )}
-            {component.type === ComponentType.Collider && (
-              <>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] text-gray-500 uppercase">Shape</label>
-                    <select 
-                      value={(component as any).shape}
-                      onChange={(e) => updateEntityComponent(entityId, component.id, { shape: e.target.value })}
-                      className="w-full bg-[#111] border border-white/5 rounded px-2 py-1 text-xs"
-                    >
-                      <option value="box">Box</option>
-                      <option value="circle">Circle</option>
-                    </select>
-                  </div>
-                  <div className="space-y-1 mt-4">
-                    <div className="flex items-center gap-2">
-                      <input 
-                        type="checkbox" 
-                        checked={(component as any).isTrigger}
-                        onChange={(e) => updateEntityComponent(entityId, component.id, { isTrigger: e.target.checked })}
-                        className="accent-emerald-500"
-                      />
-                      <label className="text-[10px] text-gray-500 uppercase">Is Trigger</label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <input 
-                        type="checkbox" 
-                        checked={(component as any).isPassThrough}
-                        onChange={(e) => updateEntityComponent(entityId, component.id, { isPassThrough: e.target.checked })}
-                        className="accent-emerald-500"
-                      />
-                      <label className="text-[10px] text-gray-500 uppercase">Is Pass-Through</label>
-                    </div>
-                  </div>
-                </div>
-                {(component as any).shape === 'box' ? (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] text-gray-500 uppercase">Width</label>
-                      <input 
-                        type="number" 
-                        value={(component as any).width}
-                        onChange={(e) => updateEntityComponent(entityId, component.id, { width: Number(e.target.value) })}
-                        className="w-full bg-[#111] border border-white/5 rounded px-2 py-1 text-xs"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] text-gray-500 uppercase">Height</label>
-                      <input 
-                        type="number" 
-                        value={(component as any).height}
-                        onChange={(e) => updateEntityComponent(entityId, component.id, { height: Number(e.target.value) })}
-                        className="w-full bg-[#111] border border-white/5 rounded px-2 py-1 text-xs"
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-1">
-                    <label className="text-[10px] text-gray-500 uppercase">Radius</label>
-                    <input 
-                      type="number" 
-                      value={(component as any).radius}
-                      onChange={(e) => updateEntityComponent(entityId, component.id, { radius: Number(e.target.value) })}
-                      className="w-full bg-[#111] border border-white/5 rounded px-2 py-1 text-xs"
-                    />
-                  </div>
-                )}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] text-gray-500 uppercase">Offset X</label>
-                    <input 
-                      type="number" 
-                      value={(component as any).offsetX}
-                      onChange={(e) => updateEntityComponent(entityId, component.id, { offsetX: Number(e.target.value) })}
-                      className="w-full bg-[#111] border border-white/5 rounded px-2 py-1 text-xs"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] text-gray-500 uppercase">Offset Y</label>
-                    <input 
-                      type="number" 
-                      value={(component as any).offsetY}
-                      onChange={(e) => updateEntityComponent(entityId, component.id, { offsetY: Number(e.target.value) })}
-                      className="w-full bg-[#111] border border-white/5 rounded px-2 py-1 text-xs"
-                    />
-                  </div>
-                </div>
-                <button 
-                  className="w-full py-1.5 mt-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded text-xs text-gray-300 transition-colors"
-                  onClick={() => {
-                    const transform = selectedEntity.components.find(c => c.type === ComponentType.Transform) as TransformComponent;
-                    if (transform) {
-                      updateEntityComponent(entityId, component.id, {
-                        width: transform.scale.x * 100,
-                        height: transform.scale.y * 100,
-                        radius: Math.max(transform.scale.x, transform.scale.y) * 50,
-                        offsetX: 0,
-                        offsetY: 0
-                      });
-                    }
-                  }}
-                >
-                  Auto-Fit to Sprite
-                </button>
-              </>
-            )}
-          </div>
-        )}
-      </div>
+      <>
+        <input
+          ref={importProjectInputRef}
+          type="file"
+          accept="application/json"
+          className="hidden"
+          onChange={importProjectFile}
+        />
+        <ProjectLauncher
+          hasSavedProject={Boolean(storedProject)}
+          onCreateBlank={() => launchProject(createBlankProject())}
+          onResumeSaved={() => {
+            if (storedProject) {
+              launchProject(storedProject);
+            }
+          }}
+          onLoadPlatformer={() => launchProject(createSampleProject('platformer'))}
+          onLoadTopDown={() => launchProject(createSampleProject('topdown'))}
+          onImportProject={() => importProjectInputRef.current?.click()}
+        />
+      </>
     );
-  };
+  }
 
-  const addEntity = () => {
-    const newEntity: Entity = {
-      id: `entity-${Date.now()}`,
-      name: "New Entity",
-      parent: null,
-      children: [],
-      components: [
-        {
-          id: `t-${Date.now()}`,
-          type: ComponentType.Transform,
-          enabled: true,
-          position: { x: 400, y: 300 },
-          rotation: 0,
-          scale: { x: 1, y: 1 }
+  const closeMenu = () => setActiveMenu(null);
+  const deleteActionLabel = selectedEntity ? 'Delete Actor' : project.scenes.length > 1 ? 'Delete Scene' : 'Reset Scene';
+  const menuActions: Record<TopMenuKey, MenuAction[]> = {
+    file: [
+      {
+        label: 'New Blank Project',
+        hint: 'Reset to a clean empty project.',
+        onSelect: () => {
+          closeMenu();
+          launchProject(createBlankProject());
         },
-        {
-          id: `s-${Date.now()}`,
-          type: ComponentType.Sprite,
-          enabled: true,
-          assetId: "",
-          color: "#ef4444",
-          opacity: 1,
-          flipX: false,
-          flipY: false
+      },
+      {
+        label: 'Projects Launcher',
+        hint: 'Open launcher to load, import or resume projects.',
+        onSelect: () => {
+          closeMenu();
+          setLauncherOpen(true);
         },
-        {
-          id: `c-${Date.now()}`,
-          type: ComponentType.Collider,
-          enabled: true,
-          shape: 'box',
-          width: 100,
-          height: 100,
-          radius: 50,
-          offsetX: 0,
-          offsetY: 0,
-          isTrigger: false,
-          isPassThrough: false
-        }
-      ]
-    };
-
-    setProject(prev => ({
-      ...prev,
-      scenes: prev.scenes.map(s => s.id === prev.activeSceneId ? {
-        ...s,
-        entities: [...s.entities, newEntity]
-      } : s)
-    }));
-    setSelectedEntityId(newEntity.id);
-  };
-
-  const deleteEntity = (id: string) => {
-    setProject(prev => ({
-      ...prev,
-      scenes: prev.scenes.map(s => s.id === prev.activeSceneId ? {
-        ...s,
-        entities: s.entities.filter(e => e.id !== id)
-      } : s)
-    }));
-    if (selectedEntityId === id) setSelectedEntityId(null);
-  };
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      const newAsset = {
-        id: `asset-${Date.now()}`,
-        name: file.name,
-        type: 'image' as const,
-        url: dataUrl
-      };
-      
-      setProject(prev => ({
-        ...prev,
-        assets: [...prev.assets, newAsset]
-      }));
-    };
-    reader.readAsDataURL(file);
+      },
+      {
+        label: 'Import Project',
+        hint: 'Load an existing .nexus2d.json file.',
+        shortcut: 'Ctrl+O',
+        onSelect: () => {
+          closeMenu();
+          importProjectInputRef.current?.click();
+        },
+      },
+      {
+        label: 'Export Project',
+        hint: 'Write the current project to JSON.',
+        shortcut: 'Ctrl+S',
+        onSelect: () => {
+          closeMenu();
+          exportProject();
+        },
+      },
+      {
+        label: 'Save Local Snapshot',
+        hint: 'Persist the current state to local storage.',
+        onSelect: () => {
+          closeMenu();
+          saveLocalSnapshot();
+        },
+      },
+    ],
+    edit: [
+      {
+        label: 'Undo',
+        hint: 'Step back one editor action.',
+        shortcut: 'Ctrl+Z',
+        disabled: !history.canUndo,
+        onSelect: () => {
+          closeMenu();
+          history.undo();
+        },
+      },
+      {
+        label: 'Redo',
+        hint: 'Restore the last undone action.',
+        shortcut: 'Ctrl+Y',
+        disabled: !history.canRedo,
+        onSelect: () => {
+          closeMenu();
+          history.redo();
+        },
+      },
+      {
+        label: 'Duplicate Selection',
+        hint: 'Create a copy of the selected entity.',
+        disabled: !selectedEntity,
+        onSelect: () => {
+          closeMenu();
+          duplicateSelection();
+        },
+      },
+      {
+        label: 'Delete Selection',
+        hint: 'Remove the selected entity from the active scene.',
+        disabled: !selectedEntity,
+        onSelect: () => {
+          closeMenu();
+          deleteSelection();
+        },
+      },
+    ],
+    scene: [
+      {
+        label: 'New Blank Scene',
+        hint: 'Add a new empty scene to the project.',
+        onSelect: () => {
+          closeMenu();
+          createSceneFromTemplate('blank');
+        },
+      },
+      {
+        label: 'Add Platformer Scene',
+        hint: 'Append a sample platformer scene to the project.',
+        onSelect: () => {
+          closeMenu();
+          createSceneFromTemplate('platformer');
+        },
+      },
+      {
+        label: 'Add Top-Down Scene',
+        hint: 'Append a sample top-down scene to the project.',
+        onSelect: () => {
+          closeMenu();
+          createSceneFromTemplate('topdown');
+        },
+      },
+      {
+        label: project.scenes.length > 1 ? 'Delete Active Scene' : 'Reset Active Scene',
+        hint:
+          project.scenes.length > 1
+            ? 'Remove the current scene and switch to the next available scene.'
+            : 'Replace the current scene with a fresh blank scene so the project stays valid.',
+        onSelect: () => {
+          closeMenu();
+          deleteActiveScene();
+        },
+      },
+    ],
+    window: [
+      {
+        label: leftSidebarOpen ? 'Hide Outliner' : 'Show Outliner',
+        hint: 'Toggle the left editor panel.',
+        onSelect: () => {
+          closeMenu();
+          setLeftSidebarOpen((open) => !open);
+        },
+      },
+      {
+        label: rightSidebarOpen ? 'Hide Details' : 'Show Details',
+        hint: 'Toggle the right editor panel.',
+        onSelect: () => {
+          closeMenu();
+          setRightSidebarOpen((open) => !open);
+        },
+      },
+      {
+        label: contentDrawerOpen ? 'Hide Content Drawer' : 'Show Content Drawer',
+        hint: 'Toggle the bottom asset browser.',
+        onSelect: () => {
+          closeMenu();
+          setContentDrawerOpen((open) => !open);
+        },
+      },
+      {
+        label: stageViewportMode === 'world' ? 'Switch To Camera View' : 'Switch To World View',
+        hint: 'Change between full world edit view and in-game camera preview.',
+        onSelect: () => {
+          closeMenu();
+          setStageViewportMode((mode) => (mode === 'world' ? 'camera' : 'world'));
+        },
+      },
+    ],
+    assistant: [
+      {
+        label: 'Open Assistant',
+        hint: 'Show the AI panel in the right sidebar.',
+        onSelect: () => {
+          closeMenu();
+          openAssistant();
+        },
+      },
+      {
+        label: 'Create Full Game',
+        hint: 'Prepare the assistant to generate a project from scratch.',
+        onSelect: () => {
+          closeMenu();
+          openAssistant('create');
+        },
+      },
+      {
+        label: 'Edit Current Game',
+        hint: 'Prepare the assistant to modify the current project.',
+        onSelect: () => {
+          closeMenu();
+          openAssistant('extend');
+        },
+      },
+    ],
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#1a1a1a] text-gray-300 font-sans overflow-hidden">
-      {/* Top Toolbar */}
-      <header className={`border-b border-white/10 flex items-center justify-between px-4 bg-[#252525] z-50 transition-all ${isMobile ? 'h-10 px-2' : 'h-12'}`}>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-emerald-500 font-bold tracking-tighter text-xl">
-            <Box size={isMobile ? 18 : 24} />
-            {!isMobile && <span>NEXUS 2D</span>}
-          </div>
-          {!isMobile && <div className="h-4 w-px bg-white/10 mx-2" />}
-          <div className="flex items-center gap-1">
-            <button className="p-1.5 hover:bg-white/5 rounded transition-colors" title="Save Project">
-              <Save size={isMobile ? 14 : 18} />
-            </button>
-            <button className="p-1.5 hover:bg-white/5 rounded transition-colors" title="Open Project">
-              <FolderOpen size={isMobile ? 14 : 18} />
-            </button>
-          </div>
-        </div>
+    <div className="nexus-shell">
+      <input
+        ref={importProjectInputRef}
+        type="file"
+        accept="application/json"
+        className="hidden"
+        onChange={importProjectFile}
+      />
+      <input
+        ref={assetInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={importAssetFile}
+      />
 
-        <div className={`flex items-center gap-2 bg-[#1a1a1a] rounded-full border border-white/5 shadow-inner transition-all ${isMobile ? 'px-2 py-0.5' : 'px-4 py-1'}`}>
-          <button 
-            onClick={() => setIsPlaying(!isPlaying)}
-            className={`p-1 rounded-full transition-all ${isPlaying ? 'text-amber-500 bg-amber-500/10' : 'text-emerald-500 hover:bg-emerald-500/10'}`}
-          >
-            {isPlaying ? <Pause size={isMobile ? 16 : 20} fill="currentColor" /> : <Play size={isMobile ? 16 : 20} fill="currentColor" />}
-          </button>
-          <button 
-            onClick={() => setIsPlaying(false)}
-            className="p-1 text-red-500 hover:bg-red-500/10 rounded-full transition-all"
-          >
-            <Square size={isMobile ? 16 : 20} fill="currentColor" />
-          </button>
+      <header className="nexus-topbar">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="nexus-brand">
+            <div className="nexus-brand-icon">
+              <Gamepad2 size={14} />
+            </div>
+            <div className="leading-tight">
+              <p className="text-[10px] uppercase tracking-[0.24em] text-[var(--muted)]">Nexus 2D</p>
+              <p className="text-xs font-semibold text-[var(--text)]">{project.name}</p>
+            </div>
+          </div>
+          {!isCompact && (
+            <div ref={menuBarRef} className="nexus-menu-strip">
+              {(Object.keys(menuActions) as TopMenuKey[]).map((menuKey) => (
+                <div key={menuKey} className="nexus-menu-group">
+                  <TopMenuTrigger
+                    label={menuKey[0].toUpperCase() + menuKey.slice(1)}
+                    active={activeMenu === menuKey}
+                    onClick={() => setActiveMenu((current) => (current === menuKey ? null : menuKey))}
+                  />
+                  {activeMenu === menuKey && <TopMenuPanel actions={menuActions[menuKey]} />}
+                </div>
+              ))}
+            </div>
+          )}
+          {!isCompact && (
+            <div className="nexus-project-stats">
+              <RuntimeBadge label="Scn">{stats.sceneCount}</RuntimeBadge>
+              <RuntimeBadge label="Ent">{stats.entityCount}</RuntimeBadge>
+              <RuntimeBadge label="Beh">{stats.behaviorCount}</RuntimeBadge>
+              <RuntimeBadge label="Ast">{stats.assetCount}</RuntimeBadge>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex bg-[#1a1a1a] rounded-lg p-1 border border-white/5">
-            <button 
-              onClick={() => setLeftSidebarOpen(!leftSidebarOpen)}
-              className={`p-1 rounded transition-colors ${leftSidebarOpen ? 'text-emerald-500 bg-emerald-500/10' : 'text-gray-500 hover:bg-white/5'}`}
-              title="Toggle Hierarchy"
-            >
-              <Layers size={isMobile ? 14 : 16} />
-            </button>
-            <button 
-              onClick={() => setRightSidebarOpen(!rightSidebarOpen)}
-              className={`p-1 rounded transition-colors ${rightSidebarOpen ? 'text-emerald-500 bg-emerald-500/10' : 'text-gray-500 hover:bg-white/5'}`}
-              title="Toggle Inspector"
-            >
-              <Settings size={isMobile ? 14 : 16} />
-            </button>
-          </div>
-          
-          <div className="flex bg-[#1a1a1a] rounded-lg p-1 border border-white/5">
-            <button 
-              onClick={() => setViewportMode('desktop')}
-              className={`p-1 rounded transition-colors ${viewportMode === 'desktop' ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-white'}`}
-              title="Desktop View"
-            >
-              <Monitor size={isMobile ? 14 : 16} />
-            </button>
-            <button 
-              onClick={() => setViewportMode('mobile')}
-              className={`p-1 rounded transition-colors ${viewportMode === 'mobile' ? 'bg-white/10 text-white' : 'text-gray-500 hover:text-white'}`}
-              title="Mobile View"
-            >
-              <Smartphone size={isMobile ? 14 : 16} />
-            </button>
-          </div>
-
-          <button className={`hover:bg-white/5 rounded-lg transition-colors ${isMobile ? 'p-1' : 'p-2'}`} onClick={() => setShowControls(true)}>
-            <Settings size={isMobile ? 16 : 20} />
+          <button onClick={() => setLauncherOpen(true)} className="nexus-ghost-button">
+            <FolderOpen size={14} />
+            Projects
           </button>
-
-          {showControls && (
-            <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-              <div className="bg-[#252525] p-6 rounded-xl border border-white/10 w-96 space-y-4">
-                <h2 className="text-lg font-bold">Controls Settings</h2>
-                {Object.entries(project.controls).map(([action, key]) => (
-                  <div key={action} className="flex items-center justify-between">
-                    <label className="text-sm capitalize">{action}</label>
-                    <select 
-                      value={key}
-                      onChange={(e) => setProject(prev => ({ ...prev, controls: { ...prev.controls, [action]: e.target.value } }))}
-                      className="bg-[#111] border border-white/5 rounded px-2 py-1 text-xs w-32"
-                    >
-                      <option value="ArrowLeft">Arrow Left</option>
-                      <option value="ArrowRight">Arrow Right</option>
-                      <option value="ArrowUp">Arrow Up</option>
-                      <option value="ArrowDown">Arrow Down</option>
-                      <option value=" ">Space</option>
-                      <option value="w">W</option>
-                      <option value="a">A</option>
-                      <option value="s">S</option>
-                      <option value="d">D</option>
-                    </select>
-                  </div>
-                ))}
-                <button onClick={() => setShowControls(false)} className="w-full py-2 bg-emerald-500 hover:bg-emerald-600 rounded text-sm font-bold">Close</button>
-              </div>
-            </div>
+          {isCompact && (
+            <>
+              <IconButton onClick={() => setLeftSidebarOpen((open) => !open)} title="Toggle left panel">
+                <Layers3 size={16} />
+              </IconButton>
+              <IconButton onClick={() => setRightSidebarOpen((open) => !open)} title="Toggle right panel">
+                <Settings2 size={16} />
+              </IconButton>
+            </>
           )}
-
-          {!isMobile && (
-            <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center text-black font-bold text-xs">
-              EA
-            </div>
-          )}
+          <IconButton onClick={history.undo} title="Undo" disabled={!history.canUndo}>
+            <Undo2 size={16} />
+          </IconButton>
+          <IconButton onClick={history.redo} title="Redo" disabled={!history.canRedo}>
+            <Redo2 size={16} />
+          </IconButton>
+          <IconButton onClick={() => importProjectInputRef.current?.click()} title="Import project">
+            <FolderOpen size={16} />
+          </IconButton>
+          <IconButton onClick={exportProject} title="Export project">
+            <Download size={16} />
+          </IconButton>
+          <IconButton onClick={() => localStorage.setItem(STORAGE_KEY, JSON.stringify(project))} title="Save local snapshot">
+            <Save size={16} />
+          </IconButton>
+          <div className="flex items-center gap-1 rounded-sm border border-[var(--border)] bg-[var(--chrome-panel)] p-0.5">
+            <ModeButton active={viewportMode === 'desktop'} onClick={() => setViewportMode('desktop')}>
+              <Monitor size={15} />
+            </ModeButton>
+            <ModeButton active={viewportMode === 'mobile'} onClick={() => setViewportMode('mobile')}>
+              <Smartphone size={15} />
+            </ModeButton>
+          </div>
+          <button
+            onClick={() => setIsPlaying((playing) => !playing)}
+            className={`nexus-play-button ${
+              isPlaying ? 'nexus-play-button-active' : ''
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+              {isPlaying ? 'Stop' : 'Simulate'}
+            </span>
+          </button>
         </div>
       </header>
 
-      <main className="flex flex-1 overflow-hidden relative">
-        {/* Mobile Backdrop */}
-        <AnimatePresence>
-          {isMobile && (leftSidebarOpen || rightSidebarOpen) && (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => {
-                setLeftSidebarOpen(false);
-                setRightSidebarOpen(false);
-              }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm z-30"
-            />
-          )}
-        </AnimatePresence>
-
-        {/* Left Sidebar: Hierarchy & Assets */}
-        <AnimatePresence initial={false}>
-          {leftSidebarOpen && (
-            <motion.aside 
-              initial={{ x: -256, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -256, opacity: 0 }}
-              className={`border-r border-white/10 bg-[#252525] flex flex-col overflow-hidden z-40 ${isMobile ? 'absolute inset-y-0 left-0 w-64 shadow-2xl' : 'relative w-64'}`}
-            >
-              <div className="w-64 flex flex-col h-full">
-          <div className="flex-1 flex flex-col min-h-0">
-            <div className="p-3 flex items-center justify-between border-b border-white/5">
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                <Layers size={14} />
-                <span>Hierarchy</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <button 
-                  onClick={addEntity}
-                  className="p-1 hover:bg-emerald-500/20 text-emerald-500 rounded transition-colors"
-                >
-                  <Plus size={16} />
-                </button>
-                {isMobile && (
-                  <button 
-                    onClick={() => setLeftSidebarOpen(false)}
-                    className="p-1 hover:bg-white/10 text-gray-400 rounded transition-colors"
-                  >
-                    <X size={16} />
-                  </button>
-                )}
-              </div>
-            </div>
-            <div className="flex-1 overflow-y-auto p-2">
-              {activeScene.entities.map(entity => (
-                <div 
-                  key={entity.id}
-                  onClick={() => setSelectedEntityId(entity.id)}
-                  className={`group flex items-center justify-between px-3 py-1.5 rounded cursor-pointer transition-all ${selectedEntityId === entity.id ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'hover:bg-white/5 text-gray-400'}`}
-                >
-                  <div className="flex items-center gap-2">
-                    <ChevronRight size={14} className={selectedEntityId === entity.id ? 'text-emerald-500' : 'text-gray-600'} />
-                    <Box size={14} />
-                    <span className="text-sm truncate max-w-[120px]">{entity.name}</span>
-                  </div>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); deleteEntity(entity.id); }}
-                    className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-500 transition-all"
-                  >
-                    <Trash2 size={12} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="h-1/3 border-t border-white/10 flex flex-col min-h-0">
-            <div className="p-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-500 border-b border-white/5">
-              <FolderOpen size={14} />
-              <span>Assets</span>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 grid grid-cols-2 gap-3">
-              <div className="aspect-square rounded-lg border-2 border-dashed border-white/5 flex flex-col items-center justify-center gap-2 hover:border-emerald-500/30 hover:bg-emerald-500/5 cursor-pointer transition-all group relative">
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  className="absolute inset-0 opacity-0 cursor-pointer" 
-                  onChange={handleFileUpload} 
-                  title="Import Image"
-                />
-                <Plus size={20} className="text-gray-600 group-hover:text-emerald-500" />
-                <span className="text-[10px] text-gray-600 group-hover:text-emerald-500 uppercase font-bold">Import</span>
-              </div>
-              {project.assets.map(asset => (
-                <div key={asset.id} className="aspect-square rounded-lg bg-white/5 border border-white/10 p-2 flex flex-col items-center justify-center gap-1 hover:border-emerald-500/30 cursor-pointer">
-                  {asset.type === 'image' ? (
-                    <img src={asset.url} alt={asset.name} className="w-8 h-8 object-contain" />
-                  ) : (
-                    <ImageIcon size={20} className="text-gray-500" />
-                  )}
-                  <span className="text-[10px] truncate w-full text-center">{asset.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          </div>
-            </motion.aside>
-          )}
-        </AnimatePresence>
-
-        {/* Viewport */}
-        <section className="flex-1 bg-[#111] relative flex flex-col overflow-hidden">
-          {/* Scene Tabs */}
-          <div className="h-9 bg-[#1a1a1a] border-b border-white/5 flex items-center px-2 gap-1">
-            {project.scenes.map(scene => (
-              <div 
-                key={scene.id}
-                className={`h-full px-4 flex items-center gap-2 text-[11px] font-medium cursor-pointer transition-all border-r border-white/5 ${project.activeSceneId === scene.id ? 'bg-[#252525] text-emerald-500 border-t-2 border-t-emerald-500' : 'text-gray-500 hover:bg-white/5'}`}
-              >
-                <Box size={12} />
-                <span>{scene.name}.scene</span>
-              </div>
-            ))}
-            <button className="p-1.5 text-gray-600 hover:text-emerald-500 transition-colors">
-              <Plus size={14} />
-            </button>
-          </div>
-
-          <div className="flex-1 relative flex items-center justify-center p-8">
-            <div className="absolute top-4 left-4 flex gap-2 z-10">
-            <div className="px-3 py-1 bg-black/50 backdrop-blur-md rounded-full border border-white/10 text-[10px] font-mono text-emerald-500">
-              FPS: 60
-            </div>
-            <div className="px-3 py-1 bg-black/50 backdrop-blur-md rounded-full border border-white/10 text-[10px] font-mono text-gray-400 uppercase">
-              {viewportMode} Mode
-            </div>
-          </div>
-
-          <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
-            <button 
-              onClick={() => setTransformMode('move')}
-              className={`p-2 backdrop-blur-md rounded-lg border transition-all ${transformMode === 'move' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-500' : 'bg-black/50 border-white/10 text-gray-400 hover:bg-white/10'}`}
-              title="Move Tool (W)"
-            >
-              <Move size={18} />
-            </button>
-            <button 
-              onClick={() => setTransformMode('rotate')}
-              className={`p-2 backdrop-blur-md rounded-lg border transition-all ${transformMode === 'rotate' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-500' : 'bg-black/50 border-white/10 text-gray-400 hover:bg-white/10'}`}
-              title="Rotate Tool (E)"
-            >
-              <RotateCcw size={18} />
-            </button>
-            <button 
-              onClick={() => setTransformMode('scale')}
-              className={`p-2 backdrop-blur-md rounded-lg border transition-all ${transformMode === 'scale' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-500' : 'bg-black/50 border-white/10 text-gray-400 hover:bg-white/10'}`}
-              title="Scale Tool (R)"
-            >
-              <Maximize size={18} />
-            </button>
-          </div>
-
-          <motion.div 
-            layout
-            className={`bg-black shadow-2xl border border-white/10 overflow-hidden relative transition-all duration-500 flex items-center justify-center ${viewportMode === 'mobile' ? 'w-[280px] h-[560px] aspect-[9/18] rounded-[40px] border-[12px] border-[#222] ring-4 ring-white/5' : 'w-full h-full rounded-lg'}`}
+      <main className="nexus-workspace">
+        {leftSidebarOpen && (
+          <motion.aside
+            initial={{x: -24, opacity: 0}}
+            animate={{x: 0, opacity: 1}}
+            className={`nexus-panel ${isCompact ? 'nexus-panel-floating-left' : 'nexus-panel-left'}`}
           >
-            <canvas 
-              ref={canvasRef}
-              onClick={handleCanvasClick}
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-              width={viewportMode === 'mobile' ? 360 : 1200}
-              height={viewportMode === 'mobile' ? 720 : 800}
-              className="max-w-full max-h-full object-contain cursor-crosshair"
+            <PanelHeader
+              icon={<Layers3 size={16} />}
+              title="Outliner"
+              actions={
+                isCompact ? (
+                  <IconButton onClick={() => setLeftSidebarOpen(false)} title="Close">
+                    <X size={16} />
+                  </IconButton>
+                ) : undefined
+              }
             />
-            {viewportMode === 'mobile' && (
-              <>
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-[#222] rounded-b-2xl z-20 flex items-center justify-center">
-                  <div className="w-8 h-1 bg-white/10 rounded-full" />
+
+            <div className="nexus-panel-search">
+              <input
+                value={outlinerFilter}
+                onChange={(event) => setOutlinerFilter(event.target.value)}
+                placeholder="Filter scenes / actors"
+                className="nexus-input"
+              />
+            </div>
+
+            <div className="nexus-panel-body">
+              <SectionCard title="Levels" subtitle="Templates and stage switching">
+                <div className="flex flex-wrap gap-2">
+                  <PillButton onClick={() => createSceneFromTemplate('blank')}>Blank</PillButton>
+                  <PillButton onClick={() => createSceneFromTemplate('platformer')}>Platformer</PillButton>
+                  <PillButton onClick={() => createSceneFromTemplate('topdown')}>Top-Down</PillButton>
                 </div>
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-20 h-1 bg-white/20 rounded-full z-20" />
-              </>
-            )}
-            
-            {/* Mobile Controls Overlay */}
-            {viewportMode === 'mobile' && isPlaying && (
-              <div className="absolute inset-0 pointer-events-none flex flex-col justify-end p-6 pb-12">
-                <div className="flex justify-between items-end">
-                  <div className="w-20 h-20 rounded-full bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center pointer-events-auto relative">
-                    <button 
-                      onMouseDown={() => handleMobileInput('left', true)}
-                      onMouseUp={() => handleMobileInput('left', false)}
-                      onTouchStart={() => handleMobileInput('left', true)}
-                      onTouchEnd={() => handleMobileInput('left', false)}
-                      className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-white/30"
+                <div className="mt-3 space-y-2">
+                  {filteredScenes.map((scene) => (
+                    <div
+                      key={scene.id}
+                      onClick={() => switchScene(scene.id)}
+                      className={`flex w-full items-start justify-between gap-2 rounded-sm border px-2.5 py-2 text-left ${
+                        scene.id === project.activeSceneId
+                          ? 'border-[#5b6068] bg-[#393d44] text-[var(--text)]'
+                          : 'border-[var(--border)] bg-[#26282c] text-[var(--muted)]'
+                      }`}
                     >
-                      <ChevronRight className="rotate-180" size={20} />
-                    </button>
-                    <button 
-                      onMouseDown={() => handleMobileInput('right', true)}
-                      onMouseUp={() => handleMobileInput('right', false)}
-                      onTouchStart={() => handleMobileInput('right', true)}
-                      onTouchEnd={() => handleMobileInput('right', false)}
-                      className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-white/30"
-                    >
-                      <ChevronRight size={20} />
-                    </button>
-                    <button 
-                      onMouseDown={() => handleMobileInput('up', true)}
-                      onMouseUp={() => handleMobileInput('up', false)}
-                      onTouchStart={() => handleMobileInput('up', true)}
-                      onTouchEnd={() => handleMobileInput('up', false)}
-                      className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-8 flex items-center justify-center text-white/30"
-                    >
-                      <ChevronRight className="-rotate-90" size={20} />
-                    </button>
-                    <button 
-                      onMouseDown={() => handleMobileInput('down', true)}
-                      onMouseUp={() => handleMobileInput('down', false)}
-                      onTouchStart={() => handleMobileInput('down', true)}
-                      onTouchEnd={() => handleMobileInput('down', false)}
-                      className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-8 flex items-center justify-center text-white/30"
-                    >
-                      <ChevronRight className="rotate-90" size={20} />
-                    </button>
-                    <div className="w-8 h-8 rounded-full bg-emerald-500/50 border border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]" />
-                  </div>
-                  <div className="flex flex-col gap-3">
-                    <button 
-                      onMouseDown={() => handleMobileInput('action', true)}
-                      onMouseUp={() => handleMobileInput('action', false)}
-                      onTouchStart={() => handleMobileInput('action', true)}
-                      onTouchEnd={() => handleMobileInput('action', false)}
-                      className="w-12 h-12 rounded-full bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center pointer-events-auto active:bg-emerald-500/20 transition-colors"
-                    >
-                      <div className="w-6 h-6 rounded-full border-2 border-white/30" />
-                    </button>
-                    <button 
-                      className="w-12 h-12 rounded-full bg-emerald-500/80 backdrop-blur-md border border-white/10 flex items-center justify-center pointer-events-auto active:scale-95 transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)]"
-                    >
-                      <Plus size={20} className="text-black" />
-                    </button>
-                  </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <div className="text-[12px] font-semibold">{scene.name}</div>
+                            <div className="text-[11px] opacity-80">{scene.notes || 'No scene notes yet.'}</div>
+                          </div>
+                          <Map size={16} className="shrink-0" />
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          if (scene.id === activeScene.id) {
+                            deleteActiveScene();
+                            return;
+                          }
+
+                          const replacementScene = createBlankScene('Scene 1');
+                          const nextScene = project.scenes.find((entry) => entry.id !== scene.id) ?? replacementScene;
+
+                          mutateProject((draft) => {
+                            if (draft.scenes.length <= 1) {
+                              draft.scenes = [replacementScene];
+                              draft.activeSceneId = replacementScene.id;
+                              return;
+                            }
+
+                            draft.scenes = draft.scenes.filter((entry) => entry.id !== scene.id);
+                            if (draft.activeSceneId === scene.id) {
+                              draft.activeSceneId = nextScene.id;
+                            }
+                          });
+
+                          if (project.activeSceneId === scene.id) {
+                            setSelectedEntityId(nextScene.entities[0]?.id ?? null);
+                            setIsPlaying(false);
+                          }
+                        }}
+                        className="rounded-sm p-1.5 text-[var(--muted)] hover:bg-[#2e3137] hover:text-[var(--text)]"
+                        title={`Delete ${scene.name}`}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+                  {filteredScenes.length === 0 && <div className="nexus-section-empty">No scenes match the current filter.</div>}
                 </div>
+              </SectionCard>
+
+              <SectionCard title="Place Actors" subtitle="Engine-ready entities">
+                <div className="grid grid-cols-2 gap-2">
+                  {PREFABS.map((entry) => (
+                    <button
+                      key={entry.prefab}
+                      onClick={() => addPrefab(entry.prefab)}
+                      className="rounded-sm border border-[var(--border)] bg-[#26282c] px-2.5 py-2 text-left"
+                    >
+                      <div className="text-[12px] font-semibold text-[var(--text)]">{entry.label}</div>
+                      <div className="mt-1 text-[11px] text-[var(--muted)]">{entry.hint}</div>
+                    </button>
+                  ))}
+                </div>
+              </SectionCard>
+
+              <SectionCard title="World Outliner" subtitle="Active scene objects">
+                <div className="space-y-2">
+                  {filteredEntities.map((entity) => (
+                      <div
+                        key={entity.id}
+                        onClick={() => {
+                          setSelectedEntityId(entity.id);
+                          setRightTab('inspector');
+                          if (isCompact) setRightSidebarOpen(true);
+                        }}
+                        className={`flex w-full items-center justify-between rounded-sm border px-2.5 py-2 text-left ${
+                          entity.id === selectedEntityId
+                            ? 'border-[#5b6068] bg-[#393d44] text-[var(--text)]'
+                            : 'border-[var(--border)] bg-[#26282c] text-[var(--muted)]'
+                        }`}
+                      >
+                        <div>
+                          <div className="text-[12px] font-semibold">{entity.name}</div>
+                          <div className="text-[10px] uppercase tracking-[0.12em] opacity-70">
+                            {entity.prefab} • layer {entity.layer}
+                          </div>
+                        </div>
+                        <button
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            mutateActiveScene((scene) => {
+                              scene.entities = scene.entities.filter((entry) => entry.id !== entity.id);
+                            });
+                            if (selectedEntityId === entity.id) {
+                              setSelectedEntityId(null);
+                            }
+                          }}
+                          className="rounded-sm p-1.5 text-[var(--muted)]"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  {filteredEntities.length === 0 && <div className="nexus-section-empty">No actors match the current filter.</div>}
+                </div>
+              </SectionCard>
+            </div>
+          </motion.aside>
+        )}
+
+        <section className="nexus-center">
+          <div className="nexus-stage-toolbar">
+            <div className="flex items-center gap-2">
+              <ModeButton active={transformMode === 'move'} onClick={() => setTransformMode('move')}>
+                <Move size={15} />
+              </ModeButton>
+              <ModeButton active={transformMode === 'rotate'} onClick={() => setTransformMode('rotate')}>
+                <RotateCcw size={15} />
+              </ModeButton>
+              <ModeButton active={transformMode === 'scale'} onClick={() => setTransformMode('scale')}>
+                <Maximize2 size={15} />
+              </ModeButton>
+              <div className="flex items-center gap-1 rounded-sm border border-[var(--border)] bg-[var(--chrome-panel)] p-0.5">
+                <ModeButton active={stageViewportMode === 'world'} onClick={() => setStageViewportMode('world')}>
+                  <span className="px-0.5 text-[10px] uppercase tracking-[0.12em]">World</span>
+                </ModeButton>
+                <ModeButton active={stageViewportMode === 'camera'} onClick={() => setStageViewportMode('camera')}>
+                  <span className="px-0.5 text-[10px] uppercase tracking-[0.12em]">Camera</span>
+                </ModeButton>
               </div>
-            )}
-          </motion.div>
+              <div className="nexus-toolbar-label">
+                Scene: <span className="font-semibold text-[var(--text)]">{activeScene.name}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button onClick={duplicateSelection} className="nexus-ghost-button">
+                <Copy size={15} />
+                Duplicate
+              </button>
+              <button
+                onClick={() => {
+                  if (selectedEntity) {
+                    deleteSelection();
+                  } else {
+                    deleteActiveScene();
+                  }
+                }}
+                className="nexus-ghost-button danger"
+              >
+                <Trash2 size={15} />
+                {deleteActionLabel}
+              </button>
+            </div>
+          </div>
+
+          <div className="nexus-stage-meta">
+            <div className="flex flex-wrap items-center gap-2">
+              <StagePill label="Mode" value={runtimeSnapshot?.mode ?? (isPlaying ? 'play' : 'editor')} />
+              <StagePill label="Stage View" value={stageViewportMode} />
+              <StagePill label="Device" value={viewportMode} />
+              <StagePill label="World" value={`${activeScene.settings.worldSize.x} x ${activeScene.settings.worldSize.y}`} />
+              <StagePill label="Camera" value={`${runtimeSnapshot?.camera.width ?? 0} x ${runtimeSnapshot?.camera.height ?? 0}`} />
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <StagePill label="Grid" value={activeScene.settings.gridSize} />
+              <StagePill label="Snap" value={activeScene.settings.snapToGrid ? 'on' : 'off'} />
+              <StagePill label="Follow" value={activeScene.settings.cameraFollowPlayer ? 'on' : 'off'} />
+              <StagePill label="Gravity" value={`${activeScene.settings.gravity.x}, ${activeScene.settings.gravity.y}`} />
+              <StagePill label="Entities" value={activeScene.entities.length} />
+            </div>
+          </div>
+
+          <div ref={stageShellRef} className="nexus-stage-shell">
+            <motion.div
+              layout
+              className={`nexus-canvas-frame ${panState ? 'is-panning' : ''} ${viewportMode === 'mobile' ? 'nexus-canvas-mobile' : 'nexus-canvas-desktop'}`}
+              style={
+                stageCanvasSize
+                  ? {
+                      width: `${stageCanvasSize.width}px`,
+                      height: `${stageCanvasSize.height}px`,
+                    }
+                  : undefined
+              }
+            >
+              <canvas
+                ref={canvasRef}
+                width={viewportMode === 'mobile' ? 390 : Math.max(1, Math.round(stageCanvasSize?.width ?? 1280))}
+                height={viewportMode === 'mobile' ? 844 : Math.max(1, Math.round(stageCanvasSize?.height ?? 820))}
+                className={`h-full w-full rounded-[inherit] ${panState ? 'cursor-grabbing' : 'cursor-crosshair'}`}
+                onMouseDown={handleCanvasMouseDown}
+                onMouseMove={handleCanvasMouseMove}
+                onMouseUp={handleCanvasMouseUp}
+              />
+
+              {!isPlaying && activeScene.entities.length === 0 && (
+                <div className="nexus-stage-empty">
+                  <div className="text-[12px] font-semibold text-[var(--text)]">Empty scene</div>
+                  <div className="mt-1 text-[11px] text-[var(--muted)]">Add actors from the left panel, or reopen Projects to load a sample.</div>
+                </div>
+              )}
+
+              {viewportMode === 'mobile' && isPlaying && (
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between p-5">
+                  <div className="pointer-events-auto rounded-sm border border-[var(--border)] bg-[#232529] p-2">
+                    <div className="grid grid-cols-3 gap-1">
+                      <TouchButton onPress={(value) => handleRuntimeControls('up', value)}>▲</TouchButton>
+                      <span />
+                      <span />
+                      <TouchButton onPress={(value) => handleRuntimeControls('left', value)}>◀</TouchButton>
+                      <TouchButton onPress={() => undefined}>●</TouchButton>
+                      <TouchButton onPress={(value) => handleRuntimeControls('right', value)}>▶</TouchButton>
+                      <span />
+                      <TouchButton onPress={(value) => handleRuntimeControls('down', value)}>▼</TouchButton>
+                      <span />
+                    </div>
+                  </div>
+
+                  <div className="pointer-events-auto flex flex-col gap-3">
+                    <ActionTouchButton onPress={(value) => handleRuntimeControls('jump', value)}>JUMP</ActionTouchButton>
+                    <ActionTouchButton onPress={(value) => handleRuntimeControls('action', value)}>ACT</ActionTouchButton>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </div>
+
+          <div className="nexus-runtime-bar">
+            <div className="flex flex-wrap items-center gap-2">
+              <RuntimeBadge label="Camera">
+                {runtimeSnapshot ? `${runtimeSnapshot.camera.x}, ${runtimeSnapshot.camera.y}` : '0, 0'}
+              </RuntimeBadge>
+              <RuntimeBadge label="Zoom">{runtimeSnapshot?.camera.zoom ?? 1}</RuntimeBadge>
+              <RuntimeBadge label="Selection">{selectedEntity?.name ?? 'none'}</RuntimeBadge>
+              <RuntimeBadge label="Sim">{isPlaying ? 'running' : 'stopped'}</RuntimeBadge>
+            </div>
+            <div className="text-xs text-[var(--muted)]">
+              {stageViewportMode === 'world'
+                ? 'World view active. The frame inside the scene marks the in-game camera coverage.'
+                : 'Camera view active. This viewport previews what the player sees in game.'}
+            </div>
           </div>
         </section>
 
-        {/* Right Sidebar: Inspector */}
-        <AnimatePresence initial={false}>
-          {rightSidebarOpen && (
-            <motion.aside 
-              initial={{ x: 320, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 320, opacity: 0 }}
-              className={`border-l border-white/10 bg-[#252525] flex flex-col overflow-hidden z-40 ${isMobile ? 'absolute inset-y-0 right-0 w-80 shadow-2xl' : 'relative w-80'}`}
-            >
-              <div className="w-80 flex flex-col h-full">
-          <div className="p-3 flex items-center justify-between border-b border-white/5">
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
-              <Settings size={14} />
-              <span>Inspector</span>
-            </div>
-            {isMobile && (
-              <button 
-                onClick={() => setRightSidebarOpen(false)}
-                className="p-1 hover:bg-white/10 text-gray-400 rounded transition-colors"
-              >
-                <X size={16} />
-              </button>
-            )}
-          </div>
-          
-          <div className="flex-1 overflow-y-auto">
-            {selectedEntity ? (
-              <div className="p-4 space-y-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] uppercase font-bold text-gray-500">Entity Name</label>
-                  <input 
-                    type="text" 
-                    value={selectedEntity.name}
-                    onChange={(e) => {
-                      setProject(prev => ({
-                        ...prev,
-                        scenes: prev.scenes.map(s => s.id === prev.activeSceneId ? {
-                          ...s,
-                          entities: s.entities.map(ent => ent.id === selectedEntity.id ? { ...ent, name: e.target.value } : ent)
-                        } : s)
-                      }));
-                    }}
-                    className="w-full bg-[#1a1a1a] border border-white/5 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500/50 transition-colors"
-                  />
-                </div>
-
-                {selectedEntity.components.map(component => (
-                  <ComponentAccordion key={component.id} entityId={selectedEntity.id} component={component} updateEntityComponent={updateEntityComponent} removeComponent={removeComponent} />
-                ))}
-
-                <div className="relative group">
-                  <button className="w-full py-3 border-2 border-dashed border-white/5 rounded-lg text-xs font-bold uppercase text-gray-500 hover:border-emerald-500/30 hover:text-emerald-500 transition-all flex items-center justify-center gap-2">
-                    <Plus size={14} />
-                    Add Component
-                  </button>
-                  <div className="absolute top-full left-0 w-full mt-2 bg-[#2a2a2a] border border-white/10 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 p-1">
-                    {[ComponentType.RigidBody, ComponentType.Collider, ComponentType.Script].map(type => (
-                      <button 
-                        key={type}
-                        onClick={() => {
-                          let newComp: any;
-                          if (type === ComponentType.RigidBody) {
-                            newComp = {
-                              id: `rb-${Date.now()}`,
-                              type: ComponentType.RigidBody,
-                              enabled: true,
-                              mass: 1,
-                              isStatic: false,
-                              gravityScale: 1,
-                              velocity: { x: 0, y: 0 }
-                            };
-                          } else if (type === ComponentType.Collider) {
-                            newComp = {
-                              id: `c-${Date.now()}`,
-                              type: ComponentType.Collider,
-                              enabled: true,
-                              shape: 'box',
-                              width: 100,
-                              height: 100,
-                              radius: 50,
-                              offsetX: 0,
-                              offsetY: 0,
-                              isTrigger: false,
-                              isPassThrough: false
-                            };
-                          } else {
-                            newComp = {
-                              id: `sc-${Date.now()}`,
-                              type: ComponentType.Script,
-                              enabled: true,
-                              code: "// Write your script here"
-                            };
-                          }
-                          
-                          setProject(prev => ({
-                            ...prev,
-                            scenes: prev.scenes.map(s => s.id === prev.activeSceneId ? {
-                              ...s,
-                              entities: s.entities.map(e => e.id === selectedEntity.id ? {
-                                ...e,
-                                components: [...e.components, newComp]
-                              } : e)
-                            } : s)
-                          }));
-                        }}
-                        className="w-full text-left px-3 py-2 text-xs hover:bg-emerald-500/10 hover:text-emerald-500 rounded transition-colors"
-                      >
-                        {type} Component
-                      </button>
-                    ))}
+        {rightSidebarOpen && (
+          <motion.aside
+            initial={{x: 24, opacity: 0}}
+            animate={{x: 0, opacity: 1}}
+            className={`nexus-panel ${isCompact ? 'nexus-panel-floating-right' : 'nexus-panel-right'}`}
+          >
+            <PanelHeader
+              icon={rightTab === 'inspector' ? <Settings2 size={16} /> : <Bot size={16} />}
+              title={rightTab === 'inspector' ? 'Details' : 'Assistant'}
+              actions={
+                <div className="flex items-center gap-2">
+                  <div className="flex rounded-sm border border-[var(--border)] bg-[#202226] p-0.5">
+                    <ModeButton active={rightTab === 'inspector'} onClick={() => setRightTab('inspector')}>
+                      <Settings2 size={15} />
+                    </ModeButton>
+                    <ModeButton active={rightTab === 'ai'} onClick={() => setRightTab('ai')}>
+                      <Bot size={15} />
+                    </ModeButton>
                   </div>
+                  {isCompact && (
+                    <IconButton onClick={() => setRightSidebarOpen(false)} title="Close">
+                      <X size={16} />
+                    </IconButton>
+                  )}
                 </div>
-              </div>
-            ) : (
-              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4 opacity-30">
-                <Box size={48} />
-                <p className="text-sm">Select an entity to inspect its properties</p>
+              }
+            />
+            {rightTab === 'inspector' && (
+              <div className="nexus-panel-search">
+                <input
+                  value={detailsFilter}
+                  onChange={(event) => setDetailsFilter(event.target.value)}
+                  placeholder={detailsPlaceholder}
+                  className="nexus-input"
+                />
               </div>
             )}
-          </div>
-          </div>
-            </motion.aside>
-          )}
-        </AnimatePresence>
+            <div className="nexus-panel-body">
+              {rightTab === 'ai' ? (
+                <AiPanel
+                  aiHealth={aiHealth}
+                  aiMode={aiMode}
+                  setAiMode={setAiMode}
+                  aiPrompt={aiPrompt}
+                  setAiPrompt={setAiPrompt}
+                  aiIdeas={AI_IDEAS}
+                  aiStatus={aiStatus}
+                  aiError={aiError}
+                  aiSummary={aiSummary}
+                  aiNotes={aiNotes}
+                  onRun={() => void runAiGeneration()}
+                />
+              ) : selectedEntity ? (
+                <ComponentInspector
+                  selectedEntity={selectedEntity}
+                  project={project}
+                  filterText={detailsFilter}
+                  updateEntity={(updater) => mutateSelectedEntity(updater)}
+                  replaceTransform={(updater, options) => replaceComponent<TransformComponent>(ComponentType.Transform, updater, options)}
+                  replaceSprite={(updater, options) => replaceComponent<SpriteComponent>(ComponentType.Sprite, updater, options)}
+                  replaceRigidBody={(updater, options) => replaceComponent<RigidBodyComponent>(ComponentType.RigidBody, updater, options)}
+                  replaceCollider={(updater, options) => replaceComponent<ColliderComponent>(ComponentType.Collider, updater, options)}
+                  replaceBehavior={(updater, options) => replaceComponent<BehaviorComponent>(ComponentType.Behavior, updater, options)}
+                  updateScript={(code) =>
+                    mutateSelectedEntity((entity) => {
+                      entity.components = entity.components.map((component) =>
+                        component.type === ComponentType.Script ? {...component, code} : component,
+                      );
+                    })
+                  }
+                  addComponent={addComponentToSelection}
+                  removeComponent={removeComponentFromSelection}
+                />
+              ) : (
+                <SceneInspector
+                  activeScene={activeScene}
+                  project={project}
+                  aiSummary={aiSummary}
+                  filterText={detailsFilter}
+                  editorCameraStart={engineRef.current?.getEditorCameraFrame() ?? null}
+                  captureCameraStart={captureCameraStart}
+                  mutateActiveScene={mutateActiveScene}
+                  mutateProject={mutateProject}
+                />
+              )}
+            </div>
+          </motion.aside>
+        )}
       </main>
 
-      {/* Footer Status Bar */}
-      <footer className={`border-t border-white/10 bg-[#252525] flex items-center justify-between px-4 text-[10px] font-medium text-gray-500 transition-all ${isMobile ? 'h-5 px-2' : 'h-6'}`}>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span>{isMobile ? 'Ready' : 'Engine Ready'}</span>
+      <section className="nexus-drawer" data-open={contentDrawerOpen}>
+        <div className="nexus-drawer-header">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setContentDrawerOpen((open) => !open)}
+              className={`nexus-status-button ${contentDrawerOpen ? 'is-active' : ''}`}
+            >
+              <FolderOpen size={14} />
+              Content Drawer
+            </button>
+            <span className="text-[11px] text-[var(--muted)]">{project.assets.length} imported assets</span>
           </div>
-          {!isMobile && <span>Project: {project.name}</span>}
+          <div className="flex items-center gap-2">
+            {contentDrawerOpen && (
+              <div className="w-[220px] max-w-[35vw]">
+                <input
+                  value={assetFilter}
+                  onChange={(event) => setAssetFilter(event.target.value)}
+                  placeholder="Filter assets"
+                  className="nexus-input"
+                />
+              </div>
+            )}
+            <button
+              onClick={() => assetInputRef.current?.click()}
+              className="nexus-ghost-button"
+            >
+              <ImagePlus size={14} />
+              Import Sprite
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-4">
-          <span>{isMobile ? 'Objs:' : 'Objects:'} {activeScene.entities.length}</span>
-          {!isMobile && <span>Memory: 12.4 MB</span>}
+
+        {contentDrawerOpen && (
+          <div className="nexus-drawer-body">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(112px,1fr))] gap-2">
+              {filteredAssets.map((asset) => (
+                <div key={asset.id} className="rounded-sm border border-[var(--border)] bg-[#26282c] p-2">
+                  <div className="aspect-square overflow-hidden rounded-sm border border-[#1a1b1f] bg-[#18191c]">
+                    <img src={asset.url} alt={asset.name} className="h-full w-full object-contain" />
+                  </div>
+                  <div className="mt-2 truncate text-[11px] text-[var(--muted)]">{asset.name}</div>
+                </div>
+              ))}
+              {filteredAssets.length === 0 && (
+                <div className="nexus-section-empty col-span-full">
+                  {project.assets.length === 0 ? 'No assets imported yet. Use Import Sprite to populate the content drawer.' : 'No assets match the current filter.'}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </section>
+
+      <footer className="nexus-footer">
+        <div className="flex min-w-0 items-center gap-2">
+          <button
+            onClick={() => setContentDrawerOpen((open) => !open)}
+            className={`nexus-status-button ${contentDrawerOpen ? 'is-active' : ''}`}
+          >
+            <FolderOpen size={14} />
+            Content
+          </button>
+          <div className="nexus-divider" />
+          <RuntimeBadge label="Scene">{activeScene.name}</RuntimeBadge>
+          <RuntimeBadge label="Selection">{selectedEntity?.name ?? 'none'}</RuntimeBadge>
+          <RuntimeBadge label="AI">{aiHealth?.vertexAiConfigured ? 'ready' : 'check config'}</RuntimeBadge>
+        </div>
+        <div className="nexus-status-line">
+          {isPlaying
+            ? 'Runtime active. Use Arrow keys / Space by default, or mobile controls in phone view.'
+            : 'Editor ready. Shortcuts: W/E/R, Delete, Ctrl/Cmd+Wheel zoom, Middle Mouse pan, Ctrl/Cmd+S, Ctrl/Cmd+Z.'}
         </div>
       </footer>
+
+      {launcherOpen && (
+        <ProjectLauncher
+          hasSavedProject={Boolean(storedProject)}
+          onClose={() => setLauncherOpen(false)}
+          onCreateBlank={() => launchProject(createBlankProject())}
+          onResumeSaved={() => {
+            if (storedProject) {
+              launchProject(storedProject);
+            }
+          }}
+          onLoadPlatformer={() => launchProject(createSampleProject('platformer'))}
+          onLoadTopDown={() => launchProject(createSampleProject('topdown'))}
+          onImportProject={() => importProjectInputRef.current?.click()}
+        />
+      )}
     </div>
   );
 }

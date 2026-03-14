@@ -1,24 +1,42 @@
+import path from 'node:path';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
-import path from 'path';
-import {defineConfig, loadEnv} from 'vite';
+import {defineConfig, loadEnv, type Plugin} from 'vite';
+import {attachVertexAiMiddleware} from './server/vertex-ai-middleware';
+
+function vertexAiApiPlugin(): Plugin {
+  return {
+    name: 'vertex-ai-api',
+    configureServer(server) {
+      attachVertexAiMiddleware(server.middlewares);
+    },
+    configurePreviewServer(server) {
+      attachVertexAiMiddleware(server.middlewares);
+    },
+  };
+}
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
+
+  for (const [key, value] of Object.entries(env)) {
+    if (key.startsWith('GOOGLE_') || key.startsWith('GCP_') || key === 'APP_URL') {
+      process.env[key] = value;
+    }
+  }
+
   return {
-    plugins: [react(), tailwindcss()],
-    define: {
-      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-    },
+    plugins: [react(), tailwindcss(), vertexAiApiPlugin()],
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, '.'),
+        '@': path.resolve(__dirname, 'src'),
       },
     },
     server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
+    },
+    preview: {
+      port: 3000,
     },
   };
 });

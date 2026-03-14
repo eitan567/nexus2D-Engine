@@ -1,0 +1,57 @@
+Original prompt: אני רוצה שתעבור על הפרוייקט שלי ותשפר אותו משמעותית מכול בחינה אפשרית גם UI וגם לוגיקה וכמובן הוספת כל מה שצריך מנוע 2D למשחקים. אני רוצה שתוסיף חיבור לבינה מלאכותית של GOOGLE באמצאות VERTEX AI - פרטי החיבור נמצאים בקובץ .env.local. המשתמש יוכל לבקש מהבינה ליצור עבורו משחקים במנוע או להוסיף לו אלמנטים חדשים למשחק קיים שנמצא בשלב פיתוח של המשתמש.
+
+2026-03-14
+- מיפוי ראשוני הושלם: הפרויקט הוא עורך React + Phaser עם רוב הלוגיקה מרוכזת ב-App.tsx ומנוע בסיסי ב-Core.ts.
+- זוהו פערים מרכזיים: אין שכבת שרת בטוחה ל-AI, אין render_game_to_text או advanceTime, אין מודל עשיר למנוע 2D, ואין history/undo/export/import/scene tooling מסודרים.
+- .env.local כולל project/location עבור Vertex AI, אך לא כולל credential file; יש לבנות אינטגרציה שמסתמכת על ADC/שרת ריצה ולא חושפת סודות לקליינט.
+- תכנון נוכחי: להוסיף מודל נתונים עשיר יותר, utilities/editor state, API שרתית ל-Vertex AI, ופאנל AI עם יצירת משחק חדש/הרחבת משחק קיים.
+- הושלמו שכבות בסיס חדשות:
+  - `src/types.ts` הורחב לסכמת מנוע עשירה יותר עם `Behavior`, הגדרות scene ו-runtime snapshot.
+  - `src/lib/project-utils.ts` מוסיף יצירת פרויקט/scene/prefabs, שכפול, נרמול JSON ו-context ל-AI.
+  - `server/vertex-ai-middleware.ts` ו-`vite.config.ts` מחברים Vertex AI דרך middleware צד-שרת.
+  - `src/engine/Core.ts` שוכתב עם behaviors, runtime state, `render_game_to_text`, `advanceTime`, fullscreen וטעינת assets.
+  - `src/App.tsx`, `src/index.css`, `index.html`, `README.md` משוכתבים לכיוון של editor אמיתי עם AI assistant פנימי למנוע.
+- הבהרת משתמש שולבה: ה-AI צריך להיות "מפתח חכם" בתוך המנוע עצמו, עם היכרות לסכמה, behaviors ויכולת לכתוב Script components בעת הצורך.
+- בדיקות/Build/Playwright לא הורצו לפי בקשת המשתמש. בסיום יש לספק לו הוראות ידניות להרצה ואימות.
+- תוקנו תקלות אתחול לוקאליות של Phaser:
+  - renderer עבר לזיהוי מפורש במקום `AUTO` עם canvas חיצוני.
+  - בוטל `StrictMode` ב-React כדי למנוע mount/unmount כפול של מנוע Phaser ב-dev.
+  - readiness של scene הוקשח כדי לא לגעת ב-camera/input/physics לפני שהם זמינים.
+  - keyboard binding עבר ל-`addKey(..., false)` כדי למנוע crash ב-`addCapture` בזמן boot.
+- בוצע סבב UI נוסף בכיוון של editor מקצועי כהה:
+  - הוחלפה פלטת הכחולים/הכפתורים הגדולים ב-chrome אפור צפוף עם accent חלש בלבד.
+  - `src/App.tsx` קיבל חיפוש ל-`Outliner` ול-`Details`, בחירות active אפורות, ו-card chrome קשיח יותר.
+  - `Content Browser` הועבר מה-sidebar ל-`Content Drawer` תחתון בסגנון מנוע מקצועי כדי לשחרר שטח ל-viewport.
+  - `src/index.css` עודכן ל-layout קטן יותר, רדיוסים חדים יותר, status bar תחתון ו-drawer assets.
+- לא הורצו build/lint/tests גם בסבב הזה, בהתאם לבקשת המשתמש. בבדיקה ידנית צריך לרענן את dev server/page ולוודא:
+  - שאין גלילה של כל העמוד ב-desktop.
+  - שה-viewport נשאר האלמנט המרכזי וה-sidebars גולשים פנימית בלבד.
+  - ש-`Content Drawer` נפתח/נסגר ומציג assets מיובאים.
+  - שחיפוש ב-`Outliner` וב-`Details` מסנן כמו שצריך.
+- בוצע סבב נוסף לפי פידבק המשתמש על workflow מקצועי יותר:
+  - `createDefaultProject()` עבר ל-blank project במקום demo project, עם scene ריק וברירת מחדל אפורה.
+  - נוסף `Project Launcher` מלא שמופיע בכניסה למנוע ומאפשר:
+    - פרויקט ריק חדש.
+    - Resume ל-session האחרון מה-local storage.
+    - טעינת sample project של platformer או top-down.
+    - import של פרויקט JSON קיים.
+  - ה-editor קיבל `World` / `Camera` stage modes:
+    - `World` מציג את כל ה-world ומשרטט camera frame של מה שהשחקן יראה בפועל.
+    - `Camera` מציג preview קרוב יותר לתצוגת המשחק עצמה.
+  - overlays של metrics הוצאו מאזור ה-canvas ל-bars של chrome, כדי שה-viewport יישאר נקי יותר.
+  - grid ורקע ב-`Core.ts` הוחלפו למראה אפור יותר עם major/minor lines ו-world bounds גלויים.
+  - `nexus-panel-body` קיבל `height: 0` ו-`flex: 1 1 0%` כדי לכפות גלילה פנימית בפאנלים.
+- עדיין לא הורצו build/lint/tests. בבדיקה ידנית הבאה צריך לוודא:
+  - שבכניסה רואים launcher ולא editor פתוח על demo scene.
+  - ש-`New Blank Project` פותח scene ריק בלי entities מוכנים מראש.
+  - ש-`World` mode מציג את כל המפה וה-frame של המצלמה.
+  - ש-`Camera` mode חוזר ל-preview הדומה יותר למשחק.
+  - שה-click/drag/select על entities עובדים גם אחרי המעבר ל-world-fit camera.
+- בהתאם לפידבק נוסף של המשתמש:
+  - הוסר מה-chrome הקבוע של המנוע HUD משחקי קשיח כמו `Score`, `Deaths` ו-`Collectibles`.
+  - שורת ה-status וה-stage meta מציגות עכשיו מידע engine-level בלבד: camera, zoom, selection, simulation state, snap/follow/world settings.
+- סבב editor interaction נוסף:
+  - נוסף `cameraStart` ל-`SceneSettings`, עם עריכה מתוך ה-inspector וכפתור `Use Current View` כדי לקבע את תחילת המצלמה מתוך ה-viewport.
+  - נוספה תנועת `pan` ל-editor עם `Middle Mouse`, בנוסף ל-`Ctrl/Cmd + Wheel` עבור zoom.
+  - כפתור ה-`Delete` הראשי עבר לפעול לפי context: actor נבחר ימחק actor, ואם אין selection הוא ימחק או יאפס את ה-scene הפעיל.
+  - נוספה מחיקת scene מפורשת גם מתוך רשימת ה-`Levels` וגם מתוך תפריט `Scene`.

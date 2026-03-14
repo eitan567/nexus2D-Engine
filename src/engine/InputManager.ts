@@ -1,40 +1,81 @@
 import Phaser from 'phaser';
-import { Controls } from '../types';
+import {Controls} from '../types';
+
+type InputAction = keyof Controls;
+
+const KEY_ALIASES: Record<string, number> = {
+  ArrowLeft: Phaser.Input.Keyboard.KeyCodes.LEFT,
+  ArrowRight: Phaser.Input.Keyboard.KeyCodes.RIGHT,
+  ArrowUp: Phaser.Input.Keyboard.KeyCodes.UP,
+  ArrowDown: Phaser.Input.Keyboard.KeyCodes.DOWN,
+  Space: Phaser.Input.Keyboard.KeyCodes.SPACE,
+  ShiftLeft: Phaser.Input.Keyboard.KeyCodes.SHIFT,
+  ShiftRight: Phaser.Input.Keyboard.KeyCodes.SHIFT,
+  KeyW: Phaser.Input.Keyboard.KeyCodes.W,
+  KeyA: Phaser.Input.Keyboard.KeyCodes.A,
+  KeyS: Phaser.Input.Keyboard.KeyCodes.S,
+  KeyD: Phaser.Input.Keyboard.KeyCodes.D,
+  KeyE: Phaser.Input.Keyboard.KeyCodes.E,
+  KeyQ: Phaser.Input.Keyboard.KeyCodes.Q,
+  KeyF: Phaser.Input.Keyboard.KeyCodes.F,
+};
 
 export class InputManager {
-  private keys: { [key: string]: Phaser.Input.Keyboard.Key } = {};
+  private keys: Partial<Record<InputAction, Phaser.Input.Keyboard.Key>> = {};
 
   constructor(scene: Phaser.Scene, controls: Controls) {
-    this.keys['left'] = scene.input.keyboard!.addKey(this.getKeyCode(controls.left));
-    this.keys['right'] = scene.input.keyboard!.addKey(this.getKeyCode(controls.right));
-    this.keys['up'] = scene.input.keyboard!.addKey(this.getKeyCode(controls.up));
-    this.keys['down'] = scene.input.keyboard!.addKey(this.getKeyCode(controls.down));
-    this.keys['jump'] = scene.input.keyboard!.addKey(this.getKeyCode(controls.jump));
+    const keyboard = scene.input.keyboard;
+    if (!keyboard) {
+      return;
+    }
+
+    (Object.entries(controls) as Array<[InputAction, string]>).forEach(([action, key]) => {
+      this.keys[action] = keyboard.addKey(this.getKeyCode(key), false);
+    });
   }
 
-  private getKeyCode(key: string): number {
-    const keyMap: { [key: string]: number } = {
-      'ArrowLeft': Phaser.Input.Keyboard.KeyCodes.LEFT,
-      'ArrowRight': Phaser.Input.Keyboard.KeyCodes.RIGHT,
-      'ArrowUp': Phaser.Input.Keyboard.KeyCodes.UP,
-      'ArrowDown': Phaser.Input.Keyboard.KeyCodes.DOWN,
-      ' ': Phaser.Input.Keyboard.KeyCodes.SPACE,
-      'LEFT': Phaser.Input.Keyboard.KeyCodes.LEFT,
-      'RIGHT': Phaser.Input.Keyboard.KeyCodes.RIGHT,
-      'UP': Phaser.Input.Keyboard.KeyCodes.UP,
-      'DOWN': Phaser.Input.Keyboard.KeyCodes.DOWN,
-      'SPACE': Phaser.Input.Keyboard.KeyCodes.SPACE,
-      'w': Phaser.Input.Keyboard.KeyCodes.W,
-      'a': Phaser.Input.Keyboard.KeyCodes.A,
-      's': Phaser.Input.Keyboard.KeyCodes.S,
-      'd': Phaser.Input.Keyboard.KeyCodes.D,
-    };
-    return keyMap[key] || Phaser.Input.Keyboard.KeyCodes[key as keyof typeof Phaser.Input.Keyboard.KeyCodes] || Phaser.Input.Keyboard.KeyCodes.SPACE;
+  private getKeyCode(key: string) {
+    if (KEY_ALIASES[key]) {
+      return KEY_ALIASES[key];
+    }
+
+    const normalized = key.toUpperCase();
+    return (
+      KEY_ALIASES[normalized] ??
+      Phaser.Input.Keyboard.KeyCodes[normalized as keyof typeof Phaser.Input.Keyboard.KeyCodes] ??
+      Phaser.Input.Keyboard.KeyCodes.SPACE
+    );
   }
 
-  isLeftDown(): boolean { return this.keys['left'].isDown; }
-  isRightDown(): boolean { return this.keys['right'].isDown; }
-  isUpDown(): boolean { return this.keys['up'].isDown; }
-  isDownDown(): boolean { return this.keys['down'].isDown; }
-  isJumpDown(): boolean { return this.keys['jump'].isDown; }
+  isDown(action: InputAction) {
+    return this.keys[action]?.isDown ?? false;
+  }
+
+  isLeftDown() {
+    return this.isDown('left');
+  }
+
+  isRightDown() {
+    return this.isDown('right');
+  }
+
+  isUpDown() {
+    return this.isDown('up');
+  }
+
+  isDownDown() {
+    return this.isDown('down');
+  }
+
+  isJumpDown() {
+    return this.isDown('jump');
+  }
+
+  isActionDown() {
+    return this.isDown('action');
+  }
+
+  isAltActionDown() {
+    return this.isDown('altAction');
+  }
 }
