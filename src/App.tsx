@@ -1221,6 +1221,8 @@ export default function App() {
   const assetInputRef = useRef<HTMLInputElement>(null);
   const runtimeDigestRef = useRef('');
   const menuBarRef = useRef<HTMLDivElement>(null);
+  const dragPointerRef = useRef<Vector2 | null>(null);
+  const dragFrameRef = useRef<number | null>(null);
 
   const selectedEntity = activeScene.entities.find((entity) => entity.id === selectedEntityId) ?? null;
   const filteredScenes = project.scenes.filter((scene) => matchesFilterQuery(outlinerFilter, scene.name, scene.notes));
@@ -1331,15 +1333,23 @@ export default function App() {
     });
   };
 
-  const getCanvasScreenPointFromClient = (clientX: number, clientY: number): Vector2 | null => {
+  const clampScalar = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+  const getCanvasScreenPointFromClient = (
+    clientX: number,
+    clientY: number,
+    options?: {clampToCanvas?: boolean},
+  ): Vector2 | null => {
     const canvas = canvasRef.current;
     if (!canvas) {
       return null;
     }
 
     const bounds = canvas.getBoundingClientRect();
-    const screenX = ((clientX - bounds.left) / bounds.width) * canvas.width;
-    const screenY = ((clientY - bounds.top) / bounds.height) * canvas.height;
+    const safeClientX = options?.clampToCanvas ? clampScalar(clientX, bounds.left, bounds.right) : clientX;
+    const safeClientY = options?.clampToCanvas ? clampScalar(clientY, bounds.top, bounds.bottom) : clientY;
+    const screenX = ((safeClientX - bounds.left) / bounds.width) * canvas.width;
+    const screenY = ((safeClientY - bounds.top) / bounds.height) * canvas.height;
 
     return {
       x: screenX,
@@ -1362,6 +1372,14 @@ export default function App() {
     }
 
     return screenPoint;
+  };
+
+  const clearPendingDragFrame = () => {
+    dragPointerRef.current = null;
+    if (dragFrameRef.current !== null) {
+      window.cancelAnimationFrame(dragFrameRef.current);
+      dragFrameRef.current = null;
+    }
   };
 
   const findEntityAtPoint = (point: Vector2) =>
@@ -1449,56 +1467,92 @@ export default function App() {
       return;
     }
 
-    const screenPoint = getCanvasScreenPointFromClient(clientX, clientY);
-    if (!screenPoint) {
+    dragPointerRef.current = {x: clientX, y: clientY};
+    if (dragFrameRef.current !== null) {
       return;
     }
 
-    const point = engineRef.current?.screenToWorld(screenPoint.x, screenPoint.y) ?? screenPoint;
-    if (!point) {
-      return;
-    }
+    dragFrameRef.current = window.requestAnimationFrame(() => {
+      dragFrameRef.current = null;
+      const pending = dragPointerRef.current;
+      dragPointerRef.current = null;
 
-    const dx = point.x - dragState.pointerStart.x;
-    const dy = point.y - dragState.pointerStart.y;
+      if (!pending || !dragState || !selectedEntity || dragState.entityId !== selectedEntity.id) {
+        return;
+      }
 
-    replaceComponent<TransformComponent>(
-      ComponentType.Transform,
-      (component) => {
-        if (transformMode === 'move') {
-          let position = {
-            x: dragState.transformStart.position.x + dx,
-            y: dragState.transformStart.position.y + dy,
-          };
+      const screenPoint = getCanvasScreenPointFromClient(pending.x, pending.y, {clampToCanvas: true});
+      if (!screenPoint) {
+        return;
+      }
 
-          if (activeScene.settings.snapToGrid) {
-            position = snapPoint(position, activeScene.settings.gridSize);
-          }
+      const point = engineRef.current?.screenToWorld(screenPoint.x, screenPoint.y) ?? screenPoint;
+      const selectedTransform = getComponent<TransformComponent>(selectedEntity, ComponentType.Transform);
+      if (!point || !selectedTransform) {
+        return;
+      }
 
-          return {...component, position};
-        }
+      const dx = point.x - dragState.pointerStart.x;
+      const dy = point.y - dragState.pointerStart.y;
 
-        if (transformMode === 'rotate') {
-          const rotation =
-            (Math.atan2(
-              point.y - dragState.transformStart.position.y,
-              point.x - dragState.transformStart.position.x,
-            ) *
-              180) /
-            Math.PI;
-          return {...component, rotation};
-        }
-
-        return {
-          ...component,
-          scale: {
-            x: Math.max(0.2, dragState.transformStart.scale.x + dx / 160),
-            y: Math.max(0.2, dragState.transformStart.scale.y - dy / 160),
-          },
+      if (transformMode === 'move') {
+        let position = {
+          x: dragState.transformStart.position.x + dx,
+          y: dragState.transformStart.position.y + dy,
         };
-      },
-      {replace: true},
-    );
+
+        if (activeScene.settings.snapToGrid) {
+          position = snapPoint(position, activeScene.settings.gridSize);
+        }
+
+        if (
+          Math.abs(position.x - selectedTransform.position.x) < 0.01 &&
+          Math.abs(position.y - selectedTransform.position.y) < 0.01
+        ) {
+          return;
+        }
+
+        replaceComponent<TransformComponent>(ComponentType.Transform, (component) => ({...component, position}), {replace: true});
+        return;
+      }
+
+      if (transformMode === 'rotate') {
+        const rotation =
+          (Math.atan2(
+            point.y - dragState.transformStart.position.y,
+            point.x - dragState.transformStart.position.x,
+          ) *
+            180) /
+          Math.PI;
+
+        if (Math.abs(rotation - selectedTransform.rotation) < 0.05) {
+          return;
+        }
+
+        replaceComponent<TransformComponent>(ComponentType.Transform, (component) => ({...component, rotation}), {replace: true});
+        return;
+      }
+
+      const scale = {
+        x: Math.max(0.2, dragState.transformStart.scale.x + dx / 160),
+        y: Math.max(0.2, dragState.transformStart.scale.y - dy / 160),
+      };
+      if (
+        Math.abs(scale.x - selectedTransform.scale.x) < 0.005 &&
+        Math.abs(scale.y - selectedTransform.scale.y) < 0.005
+      ) {
+        return;
+      }
+
+      replaceComponent<TransformComponent>(
+        ComponentType.Transform,
+        (component) => ({
+          ...component,
+          scale,
+        }),
+        {replace: true},
+      );
+    });
   });
 
   const handleCanvasMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
@@ -1506,6 +1560,7 @@ export default function App() {
   };
 
   const handleCanvasMouseUp = () => {
+    clearPendingDragFrame();
     setDragState(null);
     setPanState(null);
   };
@@ -1515,7 +1570,7 @@ export default function App() {
   };
 
   const handleCanvasWheel = useEffectEvent((event: WheelEvent) => {
-    if (launcherOpen) {
+    if (launcherOpen || dragState) {
       return;
     }
 
@@ -1891,6 +1946,7 @@ export default function App() {
       handleCanvasPointerMove(event.clientX, event.clientY);
     };
     const handleWindowMouseUp = () => {
+      clearPendingDragFrame();
       setDragState(null);
       setPanState(null);
     };
