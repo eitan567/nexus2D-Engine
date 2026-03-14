@@ -1758,22 +1758,26 @@ export default function App() {
       1,
       shell.clientHeight - parseFloat(styles.paddingTop) - parseFloat(styles.paddingBottom),
     );
+    const setCanvasSizeIfChanged = (width: number, height: number) => {
+      setStageCanvasSize((previous) => {
+        if (previous?.width === width && previous?.height === height) {
+          return previous;
+        }
+
+        return {width, height};
+      });
+    };
+
     if (viewportMode === 'mobile') {
       const baseWidth = 390;
       const baseHeight = 844;
       const scale = Math.min(availableWidth / baseWidth, availableHeight / baseHeight);
 
-      setStageCanvasSize({
-        width: Math.max(1, Math.floor(baseWidth * scale)),
-        height: Math.max(1, Math.floor(baseHeight * scale)),
-      });
+      setCanvasSizeIfChanged(Math.max(1, Math.floor(baseWidth * scale)), Math.max(1, Math.floor(baseHeight * scale)));
       return;
     }
 
-    setStageCanvasSize({
-      width: availableWidth,
-      height: availableHeight,
-    });
+    setCanvasSizeIfChanged(availableWidth, availableHeight);
   });
 
   const handleHotkeys = useEffectEvent((event: KeyboardEvent) => {
@@ -1851,12 +1855,12 @@ export default function App() {
     window.addEventListener('resize', handleResize);
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
-  }, [handleResize]);
+  }, []);
 
   useEffect(() => {
     window.addEventListener('keydown', handleHotkeys);
     return () => window.removeEventListener('keydown', handleHotkeys);
-  }, [handleHotkeys]);
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -2027,7 +2031,7 @@ export default function App() {
 
     observer.observe(shell);
     return () => observer.disconnect();
-  }, [sessionStarted, viewportMode, fitStageCanvas]);
+  }, [sessionStarted, viewportMode]);
 
   useEffect(() => {
     if (selectedEntityId && !activeScene.entities.some((entity) => entity.id === selectedEntityId)) {
