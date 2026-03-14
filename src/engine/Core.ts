@@ -209,6 +209,7 @@ class MainScene extends Phaser.Scene {
   private editorViewportMode: EditorViewportMode = 'world';
   private editorZoomFactor = 1;
   private editorCameraCenter: Vector2 | null = null;
+  private manualCameraControlActive = false;
   private currentSceneId: string | null = null;
   private isPlaying = false;
   private virtualInputs = {...VIRTUAL_INPUTS};
@@ -317,11 +318,16 @@ class MainScene extends Phaser.Scene {
   }
 
   panEditor(screenDeltaX: number, screenDeltaY: number) {
-    if (!this.project || !this.cameras?.main || this.isPlaying) {
+    if (!this.project || !this.cameras?.main) {
       return;
     }
 
     const scene = getActiveScene(this.project);
+    if (this.isPlaying && scene.settings.cameraFollowPlayer) {
+      this.manualCameraControlActive = true;
+      this.cameras.main.stopFollow();
+    }
+
     this.cameras.main.setScroll(
       this.cameras.main.scrollX - screenDeltaX / this.cameras.main.zoom,
       this.cameras.main.scrollY - screenDeltaY / this.cameras.main.zoom,
@@ -340,11 +346,16 @@ class MainScene extends Phaser.Scene {
   }
 
   adjustEditorZoom(deltaY: number, screenX: number, screenY: number) {
-    if (!this.project || !this.cameras?.main || this.isPlaying) {
+    if (!this.project || !this.cameras?.main) {
       return;
     }
 
     const scene = getActiveScene(this.project);
+    if (this.isPlaying && scene.settings.cameraFollowPlayer) {
+      this.manualCameraControlActive = true;
+      this.cameras.main.stopFollow();
+    }
+
     const zoomBefore = this.getEditorZoom(scene);
     const worldBefore = this.cameras.main.getWorldPoint(screenX, screenY);
     const multiplier = deltaY < 0 ? 1.12 : 1 / 1.12;
@@ -391,6 +402,7 @@ class MainScene extends Phaser.Scene {
 
   setRunning(value: boolean) {
     this.isPlaying = value;
+    this.manualCameraControlActive = false;
 
     if (this.project) {
       this.resetRuntime();
@@ -489,7 +501,7 @@ class MainScene extends Phaser.Scene {
     const previewFrame = this.getPreviewCameraFrame(scene);
     const player = this.getPlayerInstance();
 
-    if (scene.settings.cameraFollowPlayer && player && this.isPlaying) {
+    if (scene.settings.cameraFollowPlayer && player && this.isPlaying && !this.manualCameraControlActive) {
       this.cameras.main.stopFollow();
       this.cameras.main.setZoom(1);
       this.cameras.main.setScroll(previewFrame.x, previewFrame.y);
@@ -1197,28 +1209,24 @@ class MainScene extends Phaser.Scene {
     const visibleHeight = this.scale.height / this.cameras.main.zoom;
     const maxScrollX = scene.settings.worldSize.x - visibleWidth;
     const maxScrollY = scene.settings.worldSize.y - visibleHeight;
-    const editorPanPaddingX =
-      !this.isPlaying &&
-      this.editorViewportMode === 'world' &&
-      maxScrollX > 0 &&
-      maxScrollX < scene.settings.gridSize
-        ? scene.settings.gridSize - maxScrollX
-        : 0;
-    const editorPanPaddingY =
-      !this.isPlaying &&
-      this.editorViewportMode === 'world' &&
-      maxScrollY > 0 &&
-      maxScrollY < scene.settings.gridSize
-        ? scene.settings.gridSize - maxScrollY
-        : 0;
-    const nextScrollX =
-      maxScrollX >= 0
-        ? clamp(this.cameras.main.scrollX, 0, maxScrollX + editorPanPaddingX)
-        : maxScrollX / 2;
-    const nextScrollY =
-      maxScrollY >= 0
-        ? clamp(this.cameras.main.scrollY, 0, maxScrollY + editorPanPaddingY)
-        : maxScrollY / 2;
+    const allowFreePan = !this.isPlaying || this.manualCameraControlActive;
+    const baseEditorPanPadding = scene.settings.gridSize * 3;
+    const overflowX = Math.max(0, visibleWidth - scene.settings.worldSize.x);
+    const overflowY = Math.max(0, visibleHeight - scene.settings.worldSize.y);
+    const visualOutsidePaddingX = visibleWidth * 0.24;
+    const visualOutsidePaddingY = visibleHeight * 0.24;
+    const editorPanPaddingX = allowFreePan
+      ? Math.max(baseEditorPanPadding, overflowX / 2 + scene.settings.gridSize * 2, visualOutsidePaddingX)
+      : 0;
+    const editorPanPaddingY = allowFreePan
+      ? Math.max(baseEditorPanPadding, overflowY / 2 + scene.settings.gridSize * 2, visualOutsidePaddingY)
+      : 0;
+    const minScrollX = allowFreePan ? -editorPanPaddingX : maxScrollX >= 0 ? 0 : maxScrollX / 2;
+    const minScrollY = allowFreePan ? -editorPanPaddingY : maxScrollY >= 0 ? 0 : maxScrollY / 2;
+    const maxAllowedScrollX = allowFreePan ? maxScrollX + editorPanPaddingX : maxScrollX >= 0 ? maxScrollX : maxScrollX / 2;
+    const maxAllowedScrollY = allowFreePan ? maxScrollY + editorPanPaddingY : maxScrollY >= 0 ? maxScrollY : maxScrollY / 2;
+    const nextScrollX = clamp(this.cameras.main.scrollX, minScrollX, maxAllowedScrollX);
+    const nextScrollY = clamp(this.cameras.main.scrollY, minScrollY, maxAllowedScrollY);
 
     this.cameras.main.setScroll(nextScrollX, nextScrollY);
   }

@@ -1385,16 +1385,17 @@ export default function App() {
       });
 
   const handleCanvasMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (isPlaying) {
-      return;
-    }
-
-    if (event.button === 1) {
+    const panMouseButton = event.button === 1 || event.button === 2;
+    if (panMouseButton) {
       event.preventDefault();
       const screenPoint = getCanvasScreenPoint(event);
       if (screenPoint) {
         setPanState({screenStart: screenPoint});
       }
+      return;
+    }
+
+    if (isPlaying) {
       return;
     }
 
@@ -1509,8 +1510,12 @@ export default function App() {
     setPanState(null);
   };
 
+  const handleCanvasContextMenu = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    event.preventDefault();
+  };
+
   const handleCanvasWheel = useEffectEvent((event: WheelEvent) => {
-    if (!event.ctrlKey || isPlaying) {
+    if (launcherOpen) {
       return;
     }
 
@@ -2606,6 +2611,7 @@ export default function App() {
                 width={viewportMode === 'mobile' ? 390 : Math.max(1, Math.round(stageCanvasSize?.width ?? 1280))}
                 height={viewportMode === 'mobile' ? 844 : Math.max(1, Math.round(stageCanvasSize?.height ?? 820))}
                 className={`h-full w-full rounded-[inherit] ${panState ? 'cursor-grabbing' : 'cursor-crosshair'}`}
+                onContextMenu={handleCanvasContextMenu}
                 onMouseDown={handleCanvasMouseDown}
                 onMouseMove={handleCanvasMouseMove}
                 onMouseUp={handleCanvasMouseUp}
@@ -2820,8 +2826,8 @@ export default function App() {
         </div>
         <div className="nexus-status-line">
           {isPlaying
-            ? 'Runtime active. Use Arrow keys / Space by default, or mobile controls in phone view.'
-            : 'Editor ready. Shortcuts: W/E/R, Delete, Ctrl/Cmd+Wheel zoom, Middle Mouse pan, Ctrl/Cmd+S, Ctrl/Cmd+Z.'}
+            ? 'Runtime active. Grid controls stay available: Mouse Wheel zoom, Middle/Right Mouse pan.'
+            : 'Editor ready. Shortcuts: W/E/R, Delete, Mouse Wheel zoom, Middle/Right Mouse pan, Ctrl/Cmd+S, Ctrl/Cmd+Z.'}
         </div>
       </footer>
 
