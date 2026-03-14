@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import { Entity, ComponentType, SpriteComponent, TransformComponent, PhysicsComponent, ColliderComponent, Project } from '../types';
+import { Entity, ComponentType, SpriteComponent, TransformComponent, RigidBodyComponent, ColliderComponent, ScriptComponent, Project } from '../types';
 import { InputManager } from './InputManager';
 
 export class GameEngine {
@@ -123,10 +123,11 @@ class MainScene extends Phaser.Scene {
 
     
     // Create a default white box texture for entities without sprites
-    const g = this.make.graphics({x:0,y:0,add:false});
+    const g = this.make.graphics({x:0,y:0});
     g.fillStyle(0xffffff);
     g.fillRect(0,0,100,100);
     g.generateTexture('white_box', 100, 100);
+    g.destroy();
     
     this.physicsGroup = this.physics.add.group();
     this.physics.add.collider(this.physicsGroup, this.physicsGroup);
@@ -163,10 +164,6 @@ class MainScene extends Phaser.Scene {
   public setSelectedEntity(id: string | null, mode: 'move' | 'rotate' | 'scale') {
     this.selectedEntityId = id;
     this.transformMode = mode;
-  }
-
-  public setInput(input: string, value: boolean) {
-    (this.inputs as any)[input] = value;
   }
 
   private runScripts(time: number, delta: number) {
@@ -234,7 +231,7 @@ class MainScene extends Phaser.Scene {
     entities.forEach(entity => {
       const transform = entity.components.find(c => c.type === ComponentType.Transform) as TransformComponent;
       const sprite = entity.components.find(c => c.type === ComponentType.Sprite) as SpriteComponent;
-      const physics = entity.components.find(c => c.type === ComponentType.Physics) as PhysicsComponent;
+      const physics = entity.components.find(c => c.type === ComponentType.RigidBody) as RigidBodyComponent;
       const collider = entity.components.find(c => c.type === ComponentType.Collider) as ColliderComponent;
 
       if (!transform || !sprite || !sprite.enabled) {

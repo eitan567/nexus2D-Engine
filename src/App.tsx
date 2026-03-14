@@ -28,7 +28,10 @@ import {
   Scene, 
   TransformComponent, 
   SpriteComponent,
-  PhysicsComponent,
+  RigidBodyComponent, 
+  ColliderComponent,
+  ScriptComponent,
+  Component,
   Vector2
 } from './types';
 import { GameEngine } from './engine/Core';
@@ -76,7 +79,7 @@ const INITIAL_PROJECT: Project = {
             },
             {
               id: "p1",
-              type: ComponentType.Physics,
+              type: ComponentType.RigidBody,
               enabled: true,
               mass: 1,
               isStatic: false,
@@ -93,7 +96,8 @@ const INITIAL_PROJECT: Project = {
               radius: 25,
               offsetX: 0,
               offsetY: 0,
-              isTrigger: false
+              isTrigger: false,
+              isPassThrough: false
             }
           ]
         },
@@ -131,7 +135,8 @@ const INITIAL_PROJECT: Project = {
               radius: 50,
               offsetX: 0,
               offsetY: 0,
-              isTrigger: false
+              isTrigger: false,
+              isPassThrough: false
             }
           ]
         }
@@ -339,7 +344,7 @@ export default function App() {
     }));
   };
 
-  const ComponentAccordion = ({ entityId, component, updateEntityComponent, removeComponent }: { entityId: string, component: any, updateEntityComponent: any, removeComponent: any }) => {
+  const ComponentAccordion = ({ entityId, component, updateEntityComponent, removeComponent }: { key?: any, entityId: string, component: Component, updateEntityComponent: (entityId: string, componentId: string, updates: Partial<any>) => void, removeComponent: (entityId: string, componentId: string) => void }) => {
     const isOpen = componentAccordionStates[component.id] !== false;
     return (
       <div className="bg-white/5 rounded-lg border border-white/5 overflow-hidden">
@@ -449,14 +454,14 @@ export default function App() {
                 </div>
               </>
             )}
-            {component.type === ComponentType.Physics && (
+            {component.type === ComponentType.RigidBody && (
               <>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-[10px] text-gray-500 uppercase">Mass</label>
                     <input 
                       type="number" 
-                      value={(component as PhysicsComponent).mass}
+                      value={(component as RigidBodyComponent).mass}
                       onChange={(e) => updateEntityComponent(entityId, component.id, { mass: Number(e.target.value) })}
                       className="w-full bg-[#111] border border-white/5 rounded px-2 py-1 text-xs"
                     />
@@ -465,7 +470,7 @@ export default function App() {
                     <label className="text-[10px] text-gray-500 uppercase">Gravity Scale</label>
                     <input 
                       type="number" 
-                      value={(component as PhysicsComponent).gravityScale}
+                      value={(component as RigidBodyComponent).gravityScale}
                       onChange={(e) => updateEntityComponent(entityId, component.id, { gravityScale: Number(e.target.value) })}
                       className="w-full bg-[#111] border border-white/5 rounded px-2 py-1 text-xs"
                     />
@@ -474,7 +479,7 @@ export default function App() {
                 <div className="flex items-center gap-2">
                   <input 
                     type="checkbox" 
-                    checked={(component as PhysicsComponent).isStatic}
+                    checked={(component as RigidBodyComponent).isStatic}
                     onChange={(e) => updateEntityComponent(entityId, component.id, { isStatic: e.target.checked })}
                     className="accent-emerald-500"
                   />
@@ -629,7 +634,8 @@ export default function App() {
           radius: 50,
           offsetX: 0,
           offsetY: 0,
-          isTrigger: false
+          isTrigger: false,
+          isPassThrough: false
         }
       ]
     };
@@ -1093,15 +1099,15 @@ export default function App() {
                     Add Component
                   </button>
                   <div className="absolute top-full left-0 w-full mt-2 bg-[#2a2a2a] border border-white/10 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 p-1">
-                    {[ComponentType.Physics, ComponentType.Collider, ComponentType.Script].map(type => (
+                    {[ComponentType.RigidBody, ComponentType.Collider, ComponentType.Script].map(type => (
                       <button 
                         key={type}
                         onClick={() => {
                           let newComp: any;
-                          if (type === ComponentType.Physics) {
+                          if (type === ComponentType.RigidBody) {
                             newComp = {
-                              id: `p-${Date.now()}`,
-                              type: ComponentType.Physics,
+                              id: `rb-${Date.now()}`,
+                              type: ComponentType.RigidBody,
                               enabled: true,
                               mass: 1,
                               isStatic: false,

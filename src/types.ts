@@ -3,7 +3,7 @@ export type Vector2 = { x: number; y: number };
 export enum ComponentType {
   Transform = 'Transform',
   Sprite = 'Sprite',
-  Physics = 'Physics',
+  RigidBody = 'RigidBody',
   Collider = 'Collider',
   Script = 'Script',
 }
@@ -30,8 +30,8 @@ export interface SpriteComponent extends BaseComponent {
   flipY: boolean;
 }
 
-export interface PhysicsComponent extends BaseComponent {
-  type: ComponentType.Physics;
+export interface RigidBodyComponent extends BaseComponent {
+  type: ComponentType.RigidBody;
   velocity: Vector2;
   mass: number;
   isStatic: boolean;
@@ -55,7 +55,7 @@ export interface ScriptComponent extends BaseComponent {
   code: string;
 }
 
-export type Component = TransformComponent | SpriteComponent | PhysicsComponent | ColliderComponent | ScriptComponent;
+export type Component = TransformComponent | SpriteComponent | RigidBodyComponent | ColliderComponent | ScriptComponent;
 
 export interface Entity {
   id: string;
