@@ -1426,6 +1426,30 @@ export default function App() {
     return screenPoint;
   };
 
+  const focusStageViewport = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) {
+      return;
+    }
+
+    const activeElement = document.activeElement;
+    if (activeElement && activeElement !== document.body && activeElement !== canvas) {
+      const editableElement =
+        activeElement instanceof HTMLInputElement ||
+        activeElement instanceof HTMLTextAreaElement ||
+        activeElement instanceof HTMLSelectElement ||
+        (activeElement instanceof HTMLElement && activeElement.isContentEditable);
+
+      if (editableElement && typeof (activeElement as HTMLElement).blur === 'function') {
+        (activeElement as HTMLElement).blur();
+      }
+    }
+
+    if (document.activeElement !== canvas) {
+      canvas.focus({preventScroll: true});
+    }
+  };
+
   const clearPendingDragFrame = () => {
     dragPointerRef.current = null;
     if (dragFrameRef.current !== null) {
@@ -2702,7 +2726,7 @@ export default function App() {
             </div>
           </div>
 
-          <div ref={stageShellRef} className="nexus-stage-shell">
+          <div ref={stageShellRef} className="nexus-stage-shell" onPointerDownCapture={focusStageViewport}>
             <motion.div
               className={`nexus-canvas-frame ${panState ? 'is-panning' : ''} ${viewportMode === 'mobile' ? 'nexus-canvas-mobile' : 'nexus-canvas-desktop'}`}
               style={
@@ -2716,6 +2740,7 @@ export default function App() {
             >
               <canvas
                 ref={canvasRef}
+                tabIndex={0}
                 width={viewportMode === 'mobile' ? 390 : Math.max(1, Math.round(stageCanvasSize?.width ?? 1280))}
                 height={viewportMode === 'mobile' ? 844 : Math.max(1, Math.round(stageCanvasSize?.height ?? 820))}
                 className={`h-full w-full rounded-[inherit] ${panState ? 'cursor-grabbing' : 'cursor-crosshair'}`}
