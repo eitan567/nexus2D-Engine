@@ -494,10 +494,17 @@ class MainScene extends Phaser.Scene {
           const sx = obj.scaleX;
           const sy = obj.scaleY;
           
+          // Calculate local bounds of the body relative to sprite center (origin)
+          // Phaser Arcade Physics body offset is relative to the top-left of the unscaled sprite
+          const localX = (body.offset.x - (obj.width * obj.originX)) * sx;
+          const localY = (body.offset.y - (obj.height * obj.originY)) * sy;
+          const localW = body.width * sx;
+          const localH = body.height * sy;
+
           if (body.isCircle) {
-            this.editorGraphics.strokeCircle((body.offset.x - obj.width/2) * sx + body.radius, (body.offset.y - obj.height/2) * sy + body.radius, body.radius);
+            this.editorGraphics.strokeCircle(localX + body.radius * sx, localY + body.radius * sy, body.radius * sx);
           } else {
-            this.editorGraphics.strokeRect((body.offset.x - obj.width/2) * sx, (body.offset.y - obj.height/2) * sy, body.width, body.height);
+            this.editorGraphics.strokeRect(localX, localY, localW, localH);
           }
           
           this.editorGraphics.restore();
@@ -511,28 +518,78 @@ class MainScene extends Phaser.Scene {
       if (obj) {
         const width = obj.width * obj.scaleX;
         const height = obj.height * obj.scaleY;
+        const ox = obj.originX;
+        const oy = obj.originY;
 
         this.editorGraphics.save();
         this.editorGraphics.translateCanvas(obj.x, obj.y);
         this.editorGraphics.rotateCanvas(obj.rotation);
 
-        // Selection Box
+        // Selection Box (slightly larger than the sprite)
+        this.editorGraphics.lineStyle(1, 0xffffff, 0.3);
+        this.editorGraphics.strokeRect(-width * ox - 2, -height * oy - 2, width + 4, height + 4);
+        
+        // Main Selection Highlight
         this.editorGraphics.lineStyle(2, 0x10b981, 1);
-        // Phaser doesn't have native dashed lines in Graphics easily, so we'll just use solid for now or skip dash
-        this.editorGraphics.strokeRect(-width / 2 - 5, -height / 2 - 5, width + 10, height + 10);
+        this.editorGraphics.strokeRect(-width * ox - 4, -height * oy - 4, width + 8, height + 8);
 
         if (this.transformMode === 'move') {
+          // X Axis (Red)
+          this.editorGraphics.lineStyle(2, 0xef4444, 1);
+          this.editorGraphics.moveTo(0, 0);
+          this.editorGraphics.lineTo(60, 0);
+          this.editorGraphics.strokePath();
+          // Arrow head X
           this.editorGraphics.fillStyle(0xef4444, 1);
-          this.editorGraphics.fillRect(0, -2, 40, 4);
+          this.editorGraphics.fillTriangle(60, 0, 50, -5, 50, 5);
+          
+          // Y Axis (Blue)
+          this.editorGraphics.lineStyle(2, 0x3b82f6, 1);
+          this.editorGraphics.moveTo(0, 0);
+          this.editorGraphics.lineTo(0, -60);
+          this.editorGraphics.strokePath();
+          // Arrow head Y
           this.editorGraphics.fillStyle(0x3b82f6, 1);
-          this.editorGraphics.fillRect(-2, 0, 4, -40);
+          this.editorGraphics.fillTriangle(0, -60, -5, -50, 5, -50);
+          
+          // Center handle
+          this.editorGraphics.fillStyle(0xffffff, 1);
+          this.editorGraphics.fillCircle(0, 0, 4);
         } else if (this.transformMode === 'rotate') {
+          const radius = Math.max(width, height) * 0.6 + 20;
           this.editorGraphics.lineStyle(2, 0xf59e0b, 1);
-          this.editorGraphics.strokeCircle(0, 0, 60);
+          this.editorGraphics.strokeCircle(0, 0, radius);
+          
+          // Rotation handle
+          this.editorGraphics.fillStyle(0xf59e0b, 1);
+          this.editorGraphics.fillCircle(radius, 0, 6);
+          
+          // Line to handle
+          this.editorGraphics.lineStyle(1, 0xf59e0b, 0.5);
+          this.editorGraphics.moveTo(0, 0);
+          this.editorGraphics.lineTo(radius, 0);
+          this.editorGraphics.strokePath();
         } else if (this.transformMode === 'scale') {
           this.editorGraphics.fillStyle(0x10b981, 1);
-          this.editorGraphics.fillRect(width / 2, -height / 2 - 10, 10, 10);
-          this.editorGraphics.fillRect(-width / 2 - 10, height / 2, 10, 10);
+          const handleSize = 8;
+          const left = -width * ox;
+          const top = -height * oy;
+          const right = width * (1 - ox);
+          const bottom = height * (1 - oy);
+          const centerX = left + width / 2;
+          const centerY = top + height / 2;
+
+          // Corner handles
+          this.editorGraphics.fillRect(left - handleSize/2, top - handleSize/2, handleSize, handleSize);
+          this.editorGraphics.fillRect(right - handleSize/2, top - handleSize/2, handleSize, handleSize);
+          this.editorGraphics.fillRect(left - handleSize/2, bottom - handleSize/2, handleSize, handleSize);
+          this.editorGraphics.fillRect(right - handleSize/2, bottom - handleSize/2, handleSize, handleSize);
+          
+          // Edge handles
+          this.editorGraphics.fillRect(centerX - handleSize/2, top - handleSize/2, handleSize, handleSize);
+          this.editorGraphics.fillRect(centerX - handleSize/2, bottom - handleSize/2, handleSize, handleSize);
+          this.editorGraphics.fillRect(left - handleSize/2, centerY - handleSize/2, handleSize, handleSize);
+          this.editorGraphics.fillRect(right - handleSize/2, centerY - handleSize/2, handleSize, handleSize);
         }
 
         this.editorGraphics.restore();
