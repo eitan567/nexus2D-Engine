@@ -1197,13 +1197,27 @@ class MainScene extends Phaser.Scene {
     const visibleHeight = this.scale.height / this.cameras.main.zoom;
     const maxScrollX = scene.settings.worldSize.x - visibleWidth;
     const maxScrollY = scene.settings.worldSize.y - visibleHeight;
+    const editorPanPaddingX =
+      !this.isPlaying &&
+      this.editorViewportMode === 'world' &&
+      maxScrollX > 0 &&
+      maxScrollX < scene.settings.gridSize
+        ? scene.settings.gridSize - maxScrollX
+        : 0;
+    const editorPanPaddingY =
+      !this.isPlaying &&
+      this.editorViewportMode === 'world' &&
+      maxScrollY > 0 &&
+      maxScrollY < scene.settings.gridSize
+        ? scene.settings.gridSize - maxScrollY
+        : 0;
     const nextScrollX =
       maxScrollX >= 0
-        ? clamp(this.cameras.main.scrollX, 0, maxScrollX)
+        ? clamp(this.cameras.main.scrollX, 0, maxScrollX + editorPanPaddingX)
         : maxScrollX / 2;
     const nextScrollY =
       maxScrollY >= 0
-        ? clamp(this.cameras.main.scrollY, 0, maxScrollY)
+        ? clamp(this.cameras.main.scrollY, 0, maxScrollY + editorPanPaddingY)
         : maxScrollY / 2;
 
     this.cameras.main.setScroll(nextScrollX, nextScrollY);
