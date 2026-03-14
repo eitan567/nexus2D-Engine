@@ -631,7 +631,7 @@ function SceneInspector({
               value={activeScene.settings.worldSize.x}
               onChange={(value) =>
                 mutateActiveScene((scene) => {
-                  scene.settings.worldSize.x = value;
+                  scene.settings.worldSize.x = Math.max(1, Math.round(value));
                 })
               }
             />
@@ -640,7 +640,7 @@ function SceneInspector({
               value={activeScene.settings.worldSize.y}
               onChange={(value) =>
                 mutateActiveScene((scene) => {
-                  scene.settings.worldSize.y = value;
+                  scene.settings.worldSize.y = Math.max(1, Math.round(value));
                 })
               }
             />

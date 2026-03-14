@@ -207,6 +207,7 @@ class MainScene extends Phaser.Scene {
   private selectedEntityId: string | null = null;
   private transformMode: TransformMode = 'move';
   private editorViewportMode: EditorViewportMode = 'world';
+  private worldFillReferenceZoom: number | null = null;
   private editorZoomFactor = 1;
   private editorCameraCenter: Vector2 | null = null;
   private manualCameraControlActive = false;
@@ -275,6 +276,9 @@ class MainScene extends Phaser.Scene {
       return;
     }
     this.cameras.main.setSize(width, height);
+    if (this.editorViewportMode === 'world') {
+      this.worldFillReferenceZoom = null;
+    }
     if (this.project) {
       this.refreshCamera(getActiveScene(this.project));
     }
@@ -298,6 +302,7 @@ class MainScene extends Phaser.Scene {
 
   setEditorViewportMode(mode: EditorViewportMode) {
     this.editorViewportMode = mode;
+    this.worldFillReferenceZoom = null;
     this.editorZoomFactor = 1;
     this.editorCameraCenter = null;
     if (this.project) {
@@ -426,6 +431,7 @@ class MainScene extends Phaser.Scene {
     const nextScene = getActiveScene(project);
     if (this.currentSceneId !== nextScene.id) {
       this.currentSceneId = nextScene.id;
+      this.worldFillReferenceZoom = null;
       this.editorZoomFactor = 1;
       this.editorCameraCenter = null;
     }
@@ -1189,17 +1195,32 @@ class MainScene extends Phaser.Scene {
   }
 
   private getEditorZoom(scene: Scene) {
-    const baseZoom = this.editorViewportMode === 'world' ? this.getWorldFillZoom(scene) : 1;
+    const baseZoom = this.editorViewportMode === 'world' ? this.getWorldBaseZoom(scene) : 1;
 
     return clamp(baseZoom * this.editorZoomFactor, 0.08, 6);
   }
 
   private getMinZoomFactor(scene: Scene) {
-    const baseZoom = this.editorViewportMode === 'world' ? this.getWorldFillZoom(scene) : 1;
+    const baseZoom = this.editorViewportMode === 'world' ? this.getWorldBaseZoom(scene) : 1;
     const minimumZoom = this.editorViewportMode === 'world' ? this.getWorldFitZoom(scene) : 0.08;
     const minimumFactor = minimumZoom / Math.max(baseZoom, 0.0001);
 
     return this.editorViewportMode === 'world' ? Math.max(0.08 / Math.max(baseZoom, 0.0001), minimumFactor) : Math.max(0.08, minimumFactor);
+  }
+
+  private getWorldBaseZoom(scene: Scene) {
+    const fillZoom = this.getWorldFillZoom(scene);
+    if (!Number.isFinite(fillZoom) || fillZoom <= 0) {
+      return 1;
+    }
+
+    if (!Number.isFinite(this.worldFillReferenceZoom ?? Number.NaN)) {
+      this.worldFillReferenceZoom = fillZoom;
+      return fillZoom;
+    }
+    // Keep world-view baseline stable while scene dimensions are being edited.
+    // This prevents transient tiny values during typing from locking zoom behavior.
+    return this.worldFillReferenceZoom;
   }
 
   private clampCameraToScene(scene: Scene) {
@@ -1234,16 +1255,20 @@ class MainScene extends Phaser.Scene {
   }
 
   private getWorldFitZoom(scene: Scene) {
+    const worldWidth = Math.max(1, scene.settings.worldSize.x);
+    const worldHeight = Math.max(1, scene.settings.worldSize.y);
     return Math.min(
-      this.cameras.main.width / scene.settings.worldSize.x,
-      this.cameras.main.height / scene.settings.worldSize.y,
+      this.cameras.main.width / worldWidth,
+      this.cameras.main.height / worldHeight,
     );
   }
 
   private getWorldFillZoom(scene: Scene) {
+    const worldWidth = Math.max(1, scene.settings.worldSize.x);
+    const worldHeight = Math.max(1, scene.settings.worldSize.y);
     return Math.max(
-      this.cameras.main.width / scene.settings.worldSize.x,
-      this.cameras.main.height / scene.settings.worldSize.y,
+      this.cameras.main.width / worldWidth,
+      this.cameras.main.height / worldHeight,
     );
   }
 
