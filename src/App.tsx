@@ -3,6 +3,7 @@ import {
   type ReactNode,
   useEffect,
   useEffectEvent,
+  useLayoutEffect,
   useRef,
   useState,
 } from 'react';
@@ -2014,7 +2015,7 @@ export default function App() {
     return () => window.clearInterval(timer);
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!sessionStarted) {
       return;
     }
@@ -2590,7 +2591,6 @@ export default function App() {
 
           <div ref={stageShellRef} className="nexus-stage-shell">
             <motion.div
-              layout
               className={`nexus-canvas-frame ${panState ? 'is-panning' : ''} ${viewportMode === 'mobile' ? 'nexus-canvas-mobile' : 'nexus-canvas-desktop'}`}
               style={
                 stageCanvasSize
