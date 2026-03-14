@@ -22,7 +22,7 @@ export const PROJECT_VERSION = 2;
 export const STORAGE_KEY = 'nexus2d.editor.project';
 
 const DEFAULT_SCENE_SETTINGS: SceneSettings = {
-  worldSize: { x: 2400, y: 1350 },
+  worldSize: { x: 3000, y: 1350 },
   cameraStart: { x: 0, y: 0 },
   gravity: { x: 0, y: 980 },
   gridSize: 32,
@@ -70,7 +70,7 @@ function booleanOr(value: unknown, fallback: boolean) {
 
 function vectorOr(value: unknown, fallback: Vector2): Vector2 {
   if (!value || typeof value !== 'object') {
-    return {...fallback};
+    return { ...fallback };
   }
 
   const maybeVector = value as Partial<Vector2>;
@@ -80,7 +80,7 @@ function vectorOr(value: unknown, fallback: Vector2): Vector2 {
   };
 }
 
-export function createTransform(position: Vector2, scale: Vector2 = {x: 1, y: 1}): TransformComponent {
+export function createTransform(position: Vector2, scale: Vector2 = { x: 1, y: 1 }): TransformComponent {
   return {
     id: generateId('transform'),
     type: ComponentType.Transform,
@@ -113,13 +113,13 @@ export function createRigidBody(options: Partial<RigidBodyComponent> = {}): Rigi
     id: generateId('body'),
     type: ComponentType.RigidBody,
     enabled: true,
-    velocity: {x: 0, y: 0},
+    velocity: { x: 0, y: 0 },
     mass: 1,
     isStatic: false,
     gravityScale: 1,
-    drag: {x: 0, y: 0},
-    bounce: {x: 0, y: 0},
-    maxVelocity: {x: 450, y: 1400},
+    drag: { x: 0, y: 0 },
+    bounce: { x: 0, y: 0 },
+    maxVelocity: { x: 450, y: 1400 },
     ...options,
   };
 }
@@ -206,10 +206,10 @@ export function createEntityFromPrefab(
           tags: ['player'],
           components: [
             createTransform(position),
-            createSprite({color: '#d4c095', width: 72, height: 96, shape: 'rectangle'}),
-            createRigidBody({drag: {x: 800, y: 0}, maxVelocity: {x: 320, y: 1200}}),
-            createCollider({width: 72, height: 96}),
-            createBehavior('player-platformer', {moveSpeed: 240, jumpForce: 620}),
+            createSprite({ color: '#d4c095', width: 72, height: 96, shape: 'rectangle' }),
+            createRigidBody({ drag: { x: 800, y: 0 }, maxVelocity: { x: 320, y: 1200 } }),
+            createCollider({ width: 72, height: 96 }),
+            createBehavior('player-platformer', { moveSpeed: 240, jumpForce: 620 }),
           ],
         },
         prefab,
@@ -221,9 +221,9 @@ export function createEntityFromPrefab(
           name: 'Platform',
           components: [
             createTransform(position),
-            createSprite({color: '#666d77', width: 240, height: 32, shape: 'rectangle'}),
-            createRigidBody({isStatic: true, gravityScale: 0}),
-            createCollider({width: 240, height: 32}),
+            createSprite({ color: '#666d77', width: 240, height: 32, shape: 'rectangle' }),
+            createRigidBody({ isStatic: true, gravityScale: 0 }),
+            createCollider({ width: 240, height: 32 }),
           ],
         },
         prefab,
@@ -235,10 +235,10 @@ export function createEntityFromPrefab(
           name: 'Patrol Enemy',
           components: [
             createTransform(position),
-            createSprite({color: '#8e6f73', width: 80, height: 80, shape: 'diamond'}),
-            createRigidBody({drag: {x: 600, y: 0}, maxVelocity: {x: 220, y: 1200}}),
-            createCollider({width: 80, height: 80}),
-            createBehavior('enemy-patrol', {patrolDistance: 260, patrolSpeed: 120}),
+            createSprite({ color: '#8e6f73', width: 80, height: 80, shape: 'diamond' }),
+            createRigidBody({ drag: { x: 600, y: 0 }, maxVelocity: { x: 220, y: 1200 } }),
+            createCollider({ width: 80, height: 80 }),
+            createBehavior('enemy-patrol', { patrolDistance: 260, patrolSpeed: 120 }),
           ],
         },
         prefab,
@@ -250,9 +250,9 @@ export function createEntityFromPrefab(
           name: 'Collectible',
           components: [
             createTransform(position),
-            createSprite({color: '#b6a071', width: 40, height: 40, shape: 'ellipse'}),
-            createCollider({width: 44, height: 44, isTrigger: true}),
-            createBehavior('collectible', {collectibleValue: 10}),
+            createSprite({ color: '#b6a071', width: 40, height: 40, shape: 'ellipse' }),
+            createCollider({ width: 44, height: 44, isTrigger: true }),
+            createBehavior('collectible', { collectibleValue: 10 }),
           ],
         },
         prefab,
@@ -264,8 +264,8 @@ export function createEntityFromPrefab(
           name: 'Goal',
           components: [
             createTransform(position),
-            createSprite({color: '#8a9199', width: 64, height: 112, shape: 'rectangle'}),
-            createCollider({width: 64, height: 112, isTrigger: true}),
+            createSprite({ color: '#8a9199', width: 64, height: 112, shape: 'rectangle' }),
+            createCollider({ width: 64, height: 112, isTrigger: true }),
             createBehavior('goal'),
           ],
         },
@@ -278,8 +278,8 @@ export function createEntityFromPrefab(
           name: 'Hazard',
           components: [
             createTransform(position),
-            createSprite({color: '#8d666d', width: 120, height: 28, shape: 'diamond'}),
-            createCollider({width: 120, height: 28, isTrigger: true}),
+            createSprite({ color: '#8d666d', width: 120, height: 28, shape: 'diamond' }),
+            createCollider({ width: 120, height: 28, isTrigger: true }),
             createBehavior('hazard'),
           ],
         },
@@ -292,7 +292,7 @@ export function createEntityFromPrefab(
           name: 'Decoration',
           components: [
             createTransform(position),
-            createSprite({color: '#5d636c', width: 96, height: 160, shape: 'diamond', opacity: 0.65}),
+            createSprite({ color: '#5d636c', width: 96, height: 160, shape: 'diamond', opacity: 0.65 }),
           ],
         },
         prefab,
@@ -303,7 +303,7 @@ export function createEntityFromPrefab(
           ...base,
           components: [
             createTransform(position),
-            createSprite({color: '#7f858d'}),
+            createSprite({ color: '#7f858d' }),
             createCollider(),
           ],
         },
@@ -368,27 +368,27 @@ export function createBlankScene(name = 'Scene 1') {
 
 export function createPlatformerTemplate() {
   const scene = createScene('Skyline Run', [
-    createEntityFromPrefab('player', {x: 160, y: 620}),
-    createEntityFromPrefab('platform', {x: 800, y: 840}),
+    createEntityFromPrefab('player', { x: 160, y: 620 }),
+    createEntityFromPrefab('platform', { x: 800, y: 840 }),
     {
-      ...createEntityFromPrefab('platform', {x: 520, y: 720}),
+      ...createEntityFromPrefab('platform', { x: 520, y: 720 }),
       name: 'Mid Platform',
     },
     {
-      ...createEntityFromPrefab('platform', {x: 980, y: 620}),
+      ...createEntityFromPrefab('platform', { x: 980, y: 620 }),
       name: 'Upper Platform',
     },
-    createEntityFromPrefab('enemy', {x: 980, y: 560}),
-    createEntityFromPrefab('collectible', {x: 520, y: 660}),
-    createEntityFromPrefab('collectible', {x: 1000, y: 560}),
-    createEntityFromPrefab('goal', {x: 1380, y: 720}),
-    createEntityFromPrefab('hazard', {x: 1190, y: 858}),
+    createEntityFromPrefab('enemy', { x: 980, y: 560 }),
+    createEntityFromPrefab('collectible', { x: 520, y: 660 }),
+    createEntityFromPrefab('collectible', { x: 1000, y: 560 }),
+    createEntityFromPrefab('goal', { x: 1380, y: 720 }),
+    createEntityFromPrefab('hazard', { x: 1190, y: 858 }),
   ]);
 
   scene.settings.backgroundTop = '#2a2d33';
   scene.settings.backgroundBottom = '#202329';
-  scene.settings.worldSize = {x: 1800, y: 960};
-  scene.settings.gravity = {x: 0, y: 1100};
+  scene.settings.worldSize = { x: 1800, y: 960 };
+  scene.settings.gravity = { x: 0, y: 1100 };
   scene.notes = 'Template platformer scene with player, patrol enemy, collectibles and goal.';
 
   return scene;
@@ -397,70 +397,70 @@ export function createPlatformerTemplate() {
 export function createTopDownTemplate() {
   const scene = createScene('Neon Maze', [
     {
-      ...createEntityFromPrefab('player', {x: 280, y: 280}),
+      ...createEntityFromPrefab('player', { x: 280, y: 280 }),
       name: 'Explorer',
       components: [
-        createTransform({x: 280, y: 280}),
-        createSprite({color: '#b8c2c9', width: 72, height: 72, shape: 'ellipse'}),
-        createRigidBody({drag: {x: 900, y: 900}, gravityScale: 0, maxVelocity: {x: 280, y: 280}}),
-        createCollider({width: 72, height: 72}),
-        createBehavior('player-topdown', {moveSpeed: 220}),
+        createTransform({ x: 280, y: 280 }),
+        createSprite({ color: '#b8c2c9', width: 72, height: 72, shape: 'ellipse' }),
+        createRigidBody({ drag: { x: 900, y: 900 }, gravityScale: 0, maxVelocity: { x: 280, y: 280 } }),
+        createCollider({ width: 72, height: 72 }),
+        createBehavior('player-topdown', { moveSpeed: 220 }),
       ],
     },
     {
-      ...createEntityFromPrefab('platform', {x: 800, y: 120}),
+      ...createEntityFromPrefab('platform', { x: 800, y: 120 }),
       name: 'North Wall',
       components: [
-        createTransform({x: 800, y: 120}),
-        createSprite({color: '#5d636b', width: 1180, height: 32}),
-        createRigidBody({isStatic: true, gravityScale: 0}),
-        createCollider({width: 1180, height: 32}),
+        createTransform({ x: 800, y: 120 }),
+        createSprite({ color: '#5d636b', width: 1180, height: 32 }),
+        createRigidBody({ isStatic: true, gravityScale: 0 }),
+        createCollider({ width: 1180, height: 32 }),
       ],
     },
     {
-      ...createEntityFromPrefab('platform', {x: 800, y: 780}),
+      ...createEntityFromPrefab('platform', { x: 800, y: 780 }),
       name: 'South Wall',
       components: [
-        createTransform({x: 800, y: 780}),
-        createSprite({color: '#5d636b', width: 1180, height: 32}),
-        createRigidBody({isStatic: true, gravityScale: 0}),
-        createCollider({width: 1180, height: 32}),
+        createTransform({ x: 800, y: 780 }),
+        createSprite({ color: '#5d636b', width: 1180, height: 32 }),
+        createRigidBody({ isStatic: true, gravityScale: 0 }),
+        createCollider({ width: 1180, height: 32 }),
       ],
     },
     {
-      ...createEntityFromPrefab('platform', {x: 220, y: 450}),
+      ...createEntityFromPrefab('platform', { x: 220, y: 450 }),
       name: 'West Wall',
       components: [
-        createTransform({x: 220, y: 450}),
-        createSprite({color: '#5d636b', width: 32, height: 680}),
-        createRigidBody({isStatic: true, gravityScale: 0}),
-        createCollider({width: 32, height: 680}),
+        createTransform({ x: 220, y: 450 }),
+        createSprite({ color: '#5d636b', width: 32, height: 680 }),
+        createRigidBody({ isStatic: true, gravityScale: 0 }),
+        createCollider({ width: 32, height: 680 }),
       ],
     },
     {
-      ...createEntityFromPrefab('platform', {x: 1380, y: 450}),
+      ...createEntityFromPrefab('platform', { x: 1380, y: 450 }),
       name: 'East Wall',
       components: [
-        createTransform({x: 1380, y: 450}),
-        createSprite({color: '#5d636b', width: 32, height: 680}),
-        createRigidBody({isStatic: true, gravityScale: 0}),
-        createCollider({width: 32, height: 680}),
+        createTransform({ x: 1380, y: 450 }),
+        createSprite({ color: '#5d636b', width: 32, height: 680 }),
+        createRigidBody({ isStatic: true, gravityScale: 0 }),
+        createCollider({ width: 32, height: 680 }),
       ],
     },
     {
-      ...createEntityFromPrefab('collectible', {x: 800, y: 450}),
+      ...createEntityFromPrefab('collectible', { x: 800, y: 450 }),
       name: 'Energy Core',
     },
     {
-      ...createEntityFromPrefab('goal', {x: 1220, y: 670}),
+      ...createEntityFromPrefab('goal', { x: 1220, y: 670 }),
       name: 'Exit Gate',
     },
   ]);
 
   scene.settings.backgroundTop = '#2a2d33';
   scene.settings.backgroundBottom = '#202329';
-  scene.settings.gravity = {x: 0, y: 0};
-  scene.settings.worldSize = {x: 1600, y: 900};
+  scene.settings.gravity = { x: 0, y: 0 };
+  scene.settings.worldSize = { x: 1600, y: 900 };
   scene.notes = 'Top-down arena template with walls and collectible objective.';
 
   return scene;
@@ -553,8 +553,8 @@ export function normalizeProject(input: unknown, fallback = createDefaultProject
     updatedAt: nowIso(),
     assets: Array.isArray(source.assets)
       ? source.assets
-          .map((asset, index) => normalizeAsset(asset, index))
-          .filter(Boolean)
+        .map((asset, index) => normalizeAsset(asset, index))
+        .filter(Boolean)
       : fallback.assets,
     controls: normalizeControls(source.controls, fallback.controls),
     scenes: scenes.length > 0 ? scenes : fallback.scenes,
@@ -624,13 +624,13 @@ function normalizeSceneSettings(input: unknown, fallback: SceneSettings): SceneS
 }
 
 function normalizeEntity(input: unknown, fallback?: Entity): Entity {
-  const base = fallback ?? createEntityFromPrefab('custom', {x: 240, y: 240});
+  const base = fallback ?? createEntityFromPrefab('custom', { x: 240, y: 240 });
   const source = input && typeof input === 'object' ? (input as Partial<Entity>) : {};
   const prefab = isPrefab(source.prefab) ? source.prefab : base.prefab;
   const components = Array.isArray(source.components)
     ? source.components
-        .map((component, index) => normalizeComponent(component, base.components[index]))
-        .filter(Boolean)
+      .map((component, index) => normalizeComponent(component, base.components[index]))
+      .filter(Boolean)
     : base.components;
 
   return {
@@ -674,9 +674,9 @@ function normalizeComponent(input: unknown, fallback?: Component) {
         id: stringOr(source.id, generateId('transform')),
         type: ComponentType.Transform,
         enabled: booleanOr(source.enabled, true),
-        position: vectorOr((source as Partial<TransformComponent>).position, fallback && fallback.type === ComponentType.Transform ? fallback.position : {x: 0, y: 0}),
+        position: vectorOr((source as Partial<TransformComponent>).position, fallback && fallback.type === ComponentType.Transform ? fallback.position : { x: 0, y: 0 }),
         rotation: numberOr((source as Partial<TransformComponent>).rotation, fallback && fallback.type === ComponentType.Transform ? fallback.rotation : 0),
-        scale: vectorOr((source as Partial<TransformComponent>).scale, fallback && fallback.type === ComponentType.Transform ? fallback.scale : {x: 1, y: 1}),
+        scale: vectorOr((source as Partial<TransformComponent>).scale, fallback && fallback.type === ComponentType.Transform ? fallback.scale : { x: 1, y: 1 }),
       } satisfies TransformComponent;
     case ComponentType.Sprite:
       return {
@@ -702,13 +702,13 @@ function normalizeComponent(input: unknown, fallback?: Component) {
         id: stringOr(source.id, generateId('body')),
         type: ComponentType.RigidBody,
         enabled: booleanOr(source.enabled, true),
-        velocity: vectorOr((source as Partial<RigidBodyComponent>).velocity, fallback && fallback.type === ComponentType.RigidBody ? fallback.velocity : {x: 0, y: 0}),
+        velocity: vectorOr((source as Partial<RigidBodyComponent>).velocity, fallback && fallback.type === ComponentType.RigidBody ? fallback.velocity : { x: 0, y: 0 }),
         mass: Math.max(0.1, numberOr((source as Partial<RigidBodyComponent>).mass, fallback && fallback.type === ComponentType.RigidBody ? fallback.mass : 1)),
         isStatic: booleanOr((source as Partial<RigidBodyComponent>).isStatic, fallback && fallback.type === ComponentType.RigidBody ? fallback.isStatic : false),
         gravityScale: numberOr((source as Partial<RigidBodyComponent>).gravityScale, fallback && fallback.type === ComponentType.RigidBody ? fallback.gravityScale : 1),
-        drag: vectorOr((source as Partial<RigidBodyComponent>).drag, fallback && fallback.type === ComponentType.RigidBody ? fallback.drag : {x: 0, y: 0}),
-        bounce: vectorOr((source as Partial<RigidBodyComponent>).bounce, fallback && fallback.type === ComponentType.RigidBody ? fallback.bounce : {x: 0, y: 0}),
-        maxVelocity: vectorOr((source as Partial<RigidBodyComponent>).maxVelocity, fallback && fallback.type === ComponentType.RigidBody ? fallback.maxVelocity : {x: 450, y: 1400}),
+        drag: vectorOr((source as Partial<RigidBodyComponent>).drag, fallback && fallback.type === ComponentType.RigidBody ? fallback.drag : { x: 0, y: 0 }),
+        bounce: vectorOr((source as Partial<RigidBodyComponent>).bounce, fallback && fallback.type === ComponentType.RigidBody ? fallback.bounce : { x: 0, y: 0 }),
+        maxVelocity: vectorOr((source as Partial<RigidBodyComponent>).maxVelocity, fallback && fallback.type === ComponentType.RigidBody ? fallback.maxVelocity : { x: 450, y: 1400 }),
       } satisfies RigidBodyComponent;
     case ComponentType.Collider:
       return {
