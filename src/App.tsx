@@ -1743,6 +1743,7 @@ export default function App() {
 
     setSelectedEntityId(null);
     setSelectedEntityIds([]);
+    setDetailsFilter('');
     setRightTab('inspector');
     if (isCompact) {
       setRightSidebarOpen(true);
@@ -1759,6 +1760,7 @@ export default function App() {
 
     setSelectedEntityId(entityId);
     setSelectedEntityIds([entityId]);
+    setDetailsFilter('');
     setRightTab('inspector');
     if (isCompact) {
       setRightSidebarOpen(true);
