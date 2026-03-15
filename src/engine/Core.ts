@@ -948,9 +948,7 @@ class MainScene extends Phaser.Scene {
     }
 
     this.deaths += 1;
-    player.sprite.setPosition(this.spawnPoint.x, this.spawnPoint.y);
-    body.setVelocity(0, 0);
-    body.updateFromGameObject();
+    body.reset(this.spawnPoint.x, this.spawnPoint.y);
   }
 
   private getPlayerInstance() {
