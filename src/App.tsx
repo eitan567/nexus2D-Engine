@@ -2072,10 +2072,11 @@ export default function App() {
     }
 
     if (key === 'delete' || key === 'backspace') {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation?.();
       if (selectedEntity) {
         deleteSelection();
-      } else {
-        deleteActiveScene();
       }
       return;
     }
@@ -2111,8 +2112,8 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    window.addEventListener('keydown', handleHotkeys);
-    return () => window.removeEventListener('keydown', handleHotkeys);
+    window.addEventListener('keydown', handleHotkeys, true);
+    return () => window.removeEventListener('keydown', handleHotkeys, true);
   }, []);
 
   useEffect(() => {

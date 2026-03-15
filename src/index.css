@@ -199,6 +199,20 @@ img {
   cursor: crosshair;
 }
 
+.nexus-canvas-frame:focus-within {
+  box-shadow: inset 0 0 0 1px rgba(200, 162, 122, 0.32);
+}
+
+.nexus-canvas-frame canvas {
+  display: block;
+  outline: none;
+}
+
+.nexus-canvas-frame canvas:focus,
+.nexus-canvas-frame canvas:focus-visible {
+  outline: none;
+}
+
 .nexus-canvas-frame.is-panning {
   cursor: grabbing;
 }
