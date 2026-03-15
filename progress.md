@@ -464,3 +464,9 @@ pm run lint עדיין נכשל, אבל על שגיאות TypeScript ישנות 
   - כלומר dx=0, dy=0; אין יותר קפיצה/יישור מאוחר.
 - screenshot ממוקד הראה את ה-Player במרכז עם gizmo מיושר מיד ב-camera view.
 - web_game_playwright_client רץ שוב ללא errors-0.json; screenshot ה-headless השגרתי נשאר שחור בגלל capture של WebGL headless, ו-state-0.json היה mode=loading בלבד.
+
+- 2026-03-15 18:24
+  - תוקן desync של transform gizmo אחרי editor zoom/pan/resize.
+  - src/App.tsx קיבל efreshViewportOverlay() שמכריח rerender מיידי של שכבת ה-HTML של ה-gizmo אחרי djustEditorZoom, panEditor, ngine.resize ומעבר World/Camera.
+  - אימות Playwright ממוקד על Create -> Player -> zoom -> mousemove הראה dx=0, dy=0 לידית scale-nw, כלומר ה-gizmo לא זז יותר אחרי hover נוסף.
+

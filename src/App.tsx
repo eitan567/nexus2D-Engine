@@ -1830,6 +1830,9 @@ export default function App() {
   const [leftSidebarWidth, setLeftSidebarWidth] = useState(296);
   const [leftSidebarResizeState, setLeftSidebarResizeState] = useState<{startX: number; startWidth: number} | null>(null);
   const [, setViewportOverlayRefreshToken] = useState(0);
+  const refreshViewportOverlay = () => {
+    setViewportOverlayRefreshToken((value) => value + 1);
+  };
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stageShellRef = useRef<HTMLDivElement>(null);
@@ -2647,6 +2650,7 @@ export default function App() {
       }
 
       engineRef.current?.panEditor(screenPoint.x - panState.screenStart.x, screenPoint.y - panState.screenStart.y);
+      refreshViewportOverlay();
       setPanState({mode: 'editor-pan', screenStart: screenPoint});
       return;
     }
@@ -2916,6 +2920,7 @@ export default function App() {
       return;
     }
     engineRef.current?.adjustEditorZoom(event.deltaY, screenPoint.x, screenPoint.y);
+    refreshViewportOverlay();
   });
 
   const addPrefab = (prefab: EntityPrefab) => {
@@ -3455,7 +3460,7 @@ export default function App() {
     // The gizmo overlay reads engine world/screen transforms during render.
     // Force one immediate rerender after the engine camera mode changes so
     // the selection overlay does not stay in the old viewport until hover.
-    setViewportOverlayRefreshToken((value) => value + 1);
+    refreshViewportOverlay();
   }, [stageViewportMode, sessionStarted]);
 
   useEffect(() => {
@@ -3488,6 +3493,7 @@ export default function App() {
     const width = viewportMode === 'mobile' ? 390 : Math.max(1, Math.round(stageCanvasSize?.width ?? 1280));
     const height = viewportMode === 'mobile' ? 844 : Math.max(1, Math.round(stageCanvasSize?.height ?? 820));
     engine.resize(width, height);
+    refreshViewportOverlay();
   }, [viewportMode, stageCanvasSize, sessionStarted]);
 
   useEffect(() => {
