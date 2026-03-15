@@ -1,5 +1,6 @@
 import {
   startTransition,
+  type CSSProperties,
   type ReactNode,
   useEffect,
   useEffectEvent,
@@ -92,6 +93,29 @@ const AI_IDEAS = [
   'הוסף לשלב הנוכחי moving platforms, hazard lava ו־checkpoint אחד',
   'הפוך את המשחק ל־top-down dungeon עם מטרה לאסוף 5 אנרגיות',
 ];
+
+function getPrefabIcon(prefab: EntityPrefab) {
+  switch (prefab) {
+    case 'player':
+      return <Gamepad2 size={14} />;
+    case 'platform':
+      return <Layers3 size={14} />;
+    case 'enemy':
+      return <Bot size={14} />;
+    case 'collectible':
+      return <Sparkles size={14} />;
+    case 'goal':
+      return <Map size={14} />;
+    case 'hazard':
+      return <X size={14} />;
+    case 'decoration':
+      return <ImagePlus size={14} />;
+    case 'custom':
+      return <Wand2 size={14} />;
+    default:
+      return <Plus size={14} />;
+  }
+}
 
 type AiHealth = {
   ok: boolean;
@@ -1627,7 +1651,10 @@ export default function App() {
   const [worldOutlinerMode, setWorldOutlinerMode] = useState<WorldOutlinerMode>('tree');
   const [expandedOutlinerNodes, setExpandedOutlinerNodes] = useState<Record<string, boolean>>({});
   const [detailsFilter, setDetailsFilter] = useState('');
+  const [focusedOutlinerComponentId, setFocusedOutlinerComponentId] = useState<string | null>(null);
   const [assetFilter, setAssetFilter] = useState('');
+  const [leftSidebarWidth, setLeftSidebarWidth] = useState(296);
+  const [leftSidebarResizeState, setLeftSidebarResizeState] = useState<{startX: number; startWidth: number} | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stageShellRef = useRef<HTMLDivElement>(null);
@@ -1684,6 +1711,35 @@ export default function App() {
     }));
   };
 
+  useEffect(() => {
+    if (!leftSidebarResizeState || isCompact) {
+      return;
+    }
+
+    const handlePointerMove = (event: PointerEvent) => {
+      const nextWidth = Math.max(296, Math.min(520, leftSidebarResizeState.startWidth + event.clientX - leftSidebarResizeState.startX));
+      setLeftSidebarWidth(nextWidth);
+    };
+
+    const handlePointerUp = () => {
+      setLeftSidebarResizeState(null);
+    };
+
+    const previousCursor = document.body.style.cursor;
+    const previousUserSelect = document.body.style.userSelect;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+
+    return () => {
+      document.body.style.cursor = previousCursor;
+      document.body.style.userSelect = previousUserSelect;
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+  }, [isCompact, leftSidebarResizeState]);
+
   const launchProject = (nextProject: Project) => {
     history.reset(touchProject(nextProject));
     const nextSelectedId = getActiveScene(nextProject).entities[0]?.id ?? null;
@@ -1697,6 +1753,7 @@ export default function App() {
     setContentDrawerOpen(false);
     setOutlinerFilter('');
     setDetailsFilter('');
+    setFocusedOutlinerComponentId(null);
     setAssetFilter('');
     setRightTab('inspector');
   };
@@ -1731,6 +1788,7 @@ export default function App() {
       options?.primaryId && uniqueIds.includes(options.primaryId) ? options.primaryId : uniqueIds[0] ?? null;
     setSelectedEntityIds(uniqueIds);
     setSelectedEntityId(nextPrimary);
+    setFocusedOutlinerComponentId(null);
   };
 
   const focusSceneInOutliner = (sceneId: string) => {
@@ -1744,6 +1802,7 @@ export default function App() {
     setSelectedEntityId(null);
     setSelectedEntityIds([]);
     setDetailsFilter('');
+    setFocusedOutlinerComponentId(null);
     setRightTab('inspector');
     if (isCompact) {
       setRightSidebarOpen(true);
@@ -1761,6 +1820,7 @@ export default function App() {
     setSelectedEntityId(entityId);
     setSelectedEntityIds([entityId]);
     setDetailsFilter('');
+    setFocusedOutlinerComponentId(null);
     setRightTab('inspector');
     if (isCompact) {
       setRightSidebarOpen(true);
@@ -1768,8 +1828,21 @@ export default function App() {
   };
 
   const focusComponentInOutliner = (sceneId: string, entityId: string, component: Component) => {
-    focusEntityInOutliner(sceneId, entityId);
+    if (sceneId !== project.activeSceneId) {
+      mutateProject((draft) => {
+        draft.activeSceneId = sceneId;
+      });
+      stopSimulation();
+    }
+
+    setSelectedEntityId(entityId);
+    setSelectedEntityIds([entityId]);
     setDetailsFilter(component.type);
+    setFocusedOutlinerComponentId(component.id);
+    setRightTab('inspector');
+    if (isCompact) {
+      setRightSidebarOpen(true);
+    }
   };
 
   const removeEntityFromScene = (sceneId: string, entityId: string) => {
@@ -3467,8 +3540,7 @@ export default function App() {
   const renderOutlinerComponentNode = (sceneId: string, entity: Entity, component: Component, depth = 0): ReactNode => {
     const descriptor = getOutlinerComponentDescriptor(component);
     const nodeId = `component:${sceneId}:${entity.id}:${component.id}`;
-    const componentDetailsActive = detailsFilter.trim().length > 0 && matchesFilterQuery(detailsFilter, component.type, descriptor.label);
-    const isFocused = sceneId === activeScene.id && primarySelectedEntityId === entity.id && componentDetailsActive;
+    const isFocused = sceneId === activeScene.id && primarySelectedEntityId === entity.id && focusedOutlinerComponentId === component.id;
 
     return (
       <div key={nodeId} className="nexus-outliner-tree-node nexus-outliner-tree-node-component">
@@ -3497,7 +3569,8 @@ export default function App() {
       : sortComponentsForOutliner(node.entity.components);
     const hasChildren = visibleChildren.length > 0 || visibleComponents.length > 0;
     const expanded = hasChildren ? (outlinerFilter.trim() ? true : isOutlinerNodeExpanded(nodeId, false)) : false;
-    const isSelected = sceneId === activeScene.id && selectedEntityIdsInScene.includes(node.entity.id);
+    const hasFocusedComponent = focusedOutlinerComponentId ? node.entity.components.some((component) => component.id === focusedOutlinerComponentId) : false;
+    const isSelected = sceneId === activeScene.id && selectedEntityIdsInScene.includes(node.entity.id) && !hasFocusedComponent;
 
     return (
       <div key={nodeId} className="nexus-outliner-tree-node">
@@ -3704,12 +3777,25 @@ export default function App() {
         </div>
       </header>
 
-      <main className="nexus-workspace">
+      <main
+        className="nexus-workspace"
+        style={
+          !isCompact
+            ? ({
+                '--nexus-left-sidebar-width': `${leftSidebarWidth}px`,
+                gridTemplateColumns: [leftSidebarOpen ? `${leftSidebarWidth}px` : null, 'minmax(0, 1fr)', rightSidebarOpen ? '296px' : null]
+                  .filter(Boolean)
+                  .join(' '),
+              } as CSSProperties)
+            : undefined
+        }
+      >
         {leftSidebarOpen && (
           <motion.aside
             initial={{x: -24, opacity: 0}}
             animate={{x: 0, opacity: 1}}
             className={`nexus-panel ${isCompact ? 'nexus-panel-floating-left' : 'nexus-panel-left'}`}
+            style={!isCompact ? ({width: `${leftSidebarWidth}px`} as CSSProperties) : undefined}
           >
             <PanelHeader
               icon={<Layers3 size={16} />}
@@ -3809,8 +3895,13 @@ export default function App() {
                       onClick={() => addPrefab(entry.prefab)}
                       className="nexus-prefab-card"
                     >
-                      <div className="nexus-prefab-card-title">{entry.label}</div>
-                      <div className="nexus-prefab-card-hint">{entry.hint}</div>
+                      <span className={`nexus-prefab-card-icon prefab-${entry.prefab}`} aria-hidden="true">
+                        {getPrefabIcon(entry.prefab)}
+                      </span>
+                      <div className="nexus-prefab-card-copy">
+                        <div className="nexus-prefab-card-title">{entry.label}</div>
+                        <div className="nexus-prefab-card-hint">{entry.hint}</div>
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -3874,6 +3965,18 @@ export default function App() {
               </SectionCard>
             </div>
           </motion.aside>
+        )}
+        {leftSidebarOpen && !isCompact && (
+          <button
+            type="button"
+            className={`nexus-workspace-resize-handle ${leftSidebarResizeState ? 'is-active' : ''}`}
+            aria-label="Resize outliner panel"
+            title="Drag to resize the outliner"
+            onPointerDown={(event) => {
+              event.preventDefault();
+              setLeftSidebarResizeState({startX: event.clientX, startWidth: leftSidebarWidth});
+            }}
+          />
         )}
 
         <section className="nexus-center">
@@ -4146,7 +4249,10 @@ export default function App() {
               <div className="nexus-panel-search">
                 <input
                   value={detailsFilter}
-                  onChange={(event) => setDetailsFilter(event.target.value)}
+                  onChange={(event) => {
+                    setDetailsFilter(event.target.value);
+                    setFocusedOutlinerComponentId(null);
+                  }}
                   placeholder={detailsPlaceholder}
                   className="nexus-input"
                 />

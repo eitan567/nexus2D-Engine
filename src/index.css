@@ -105,7 +105,7 @@ img {
 .nexus-workspace {
   position: relative;
   display: grid;
-  grid-template-columns: 296px minmax(0, 1fr) 296px;
+  grid-template-columns: var(--nexus-left-sidebar-width, 296px) minmax(0, 1fr) 296px;
   grid-template-rows: minmax(0, 1fr);
   gap: 4px;
   flex: 1;
@@ -135,6 +135,15 @@ img {
 .nexus-panel-left,
 .nexus-panel-right {
   width: auto;
+}
+
+.nexus-panel-left {
+  position: relative;
+  width: var(--nexus-left-sidebar-width, 296px);
+}
+
+.nexus-panel-right {
+  width: 296px;
 }
 
 .nexus-panel-floating-left,
@@ -563,19 +572,18 @@ img {
 .nexus-prefab-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 5px;
+  gap: 4px;
 }
 
 .nexus-prefab-card {
   display: flex;
-  min-height: 48px;
-  flex-direction: column;
-  justify-content: flex-start;
-  gap: 2px;
+  min-height: 36px;
+  align-items: flex-start;
+  gap: 5px;
   border: 1px solid var(--border);
   border-radius: 4px;
   background: #26282c;
-  padding: 5px 7px;
+  padding: 4px 6px;
   text-align: left;
   transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
 }
@@ -586,21 +594,82 @@ img {
 }
 
 .nexus-prefab-card-title {
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.05;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: var(--text);
 }
 
 .nexus-prefab-card-hint {
-  display: -webkit-box;
   overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  font-size: 9.5px;
-  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 9px;
+  line-height: 1.1;
   color: var(--muted);
+}
+
+.nexus-prefab-card-copy {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.nexus-prefab-card-icon {
+  display: inline-flex;
+  height: 16px;
+  width: 16px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #c7ced8;
+}
+
+.nexus-prefab-card-icon.prefab-player { color: #d1c09a; border-color: rgba(209, 192, 154, 0.18); background: rgba(209, 192, 154, 0.08); }
+.nexus-prefab-card-icon.prefab-platform { color: #9ba5b4; border-color: rgba(155, 165, 180, 0.18); background: rgba(155, 165, 180, 0.08); }
+.nexus-prefab-card-icon.prefab-enemy { color: #c79396; border-color: rgba(199, 147, 150, 0.18); background: rgba(199, 147, 150, 0.08); }
+.nexus-prefab-card-icon.prefab-collectible { color: #d7c076; border-color: rgba(215, 192, 118, 0.18); background: rgba(215, 192, 118, 0.08); }
+.nexus-prefab-card-icon.prefab-goal { color: #98bf8a; border-color: rgba(152, 191, 138, 0.18); background: rgba(152, 191, 138, 0.08); }
+.nexus-prefab-card-icon.prefab-hazard { color: #d28c86; border-color: rgba(210, 140, 134, 0.18); background: rgba(210, 140, 134, 0.08); }
+.nexus-prefab-card-icon.prefab-decoration { color: #8cb2cb; border-color: rgba(140, 178, 203, 0.18); background: rgba(140, 178, 203, 0.08); }
+.nexus-prefab-card-icon.prefab-custom { color: #bfabd4; border-color: rgba(191, 171, 212, 0.18); background: rgba(191, 171, 212, 0.08); }
+
+.nexus-workspace-resize-handle {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: calc(var(--nexus-left-sidebar-width, 296px) + 1px);
+  z-index: 20;
+  width: 10px;
+  border: 0;
+  background: transparent;
+  cursor: col-resize;
+}
+
+.nexus-workspace-resize-handle::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 4px;
+  width: 2px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  transition: background 140ms ease;
+}
+
+.nexus-workspace-resize-handle:hover::before,
+.nexus-workspace-resize-handle.is-active::before {
+  background: rgba(198, 138, 73, 0.5);
 }
 
 .nexus-outliner-tree {
