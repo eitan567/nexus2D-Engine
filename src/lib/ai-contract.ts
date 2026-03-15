@@ -1,7 +1,7 @@
-import {Project} from '../types';
-import {buildAiPromptContext} from './project-utils';
+import { Project } from '../types';
+import { buildAiPromptContext } from './project-utils';
 
-export const AI_MODEL = 'gemini-2.5-flash';
+export const AI_MODEL = 'gemini-3.1-pro-preview';
 
 export const AI_RESPONSE_JSON_SCHEMA = {
   $schema: 'https://json-schema.org/draft/2020-12/schema',
@@ -15,7 +15,7 @@ export const AI_RESPONSE_JSON_SCHEMA = {
     },
     notes: {
       type: 'array',
-      items: {type: 'string'},
+      items: { type: 'string' },
       description: 'Short implementation notes or caveats for the user.',
     },
     project: {
