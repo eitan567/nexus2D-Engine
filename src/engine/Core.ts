@@ -522,10 +522,11 @@ class MainScene extends Phaser.Scene {
 
     const previewFrame = this.getPreviewCameraFrame(scene);
     const player = this.getPlayerInstance();
+    const cameraBaseZoom = this.getCameraBaseZoom(scene);
 
     if (scene.settings.cameraFollowPlayer && player && this.isPlaying && !this.manualCameraControlActive) {
       this.cameras.main.stopFollow();
-      this.cameras.main.setZoom(1);
+      this.cameras.main.setZoom(cameraBaseZoom);
       this.cameras.main.setScroll(previewFrame.x, previewFrame.y);
       this.cameras.main.setDeadzone(this.scale.width * 0.52, this.scale.height * 0.58);
       this.clampCameraToScene(scene);
@@ -1194,10 +1195,10 @@ class MainScene extends Phaser.Scene {
   }
 
   private getPreviewCameraFrame(scene: Scene) {
-    const viewportWidth = this.scale.width;
-    const viewportHeight = this.scale.height;
-    const width = Math.min(viewportWidth, scene.settings.worldSize.x);
-    const height = Math.min(viewportHeight, scene.settings.worldSize.y);
+    const cameraWidth = Math.max(1, scene.settings.cameraSize.x);
+    const cameraHeight = Math.max(1, scene.settings.cameraSize.y);
+    const width = Math.min(cameraWidth, scene.settings.worldSize.x);
+    const height = Math.min(cameraHeight, scene.settings.worldSize.y);
     const maxScrollX = Math.max(0, scene.settings.worldSize.x - width);
     const maxScrollY = Math.max(0, scene.settings.worldSize.y - height);
 
@@ -1210,17 +1211,29 @@ class MainScene extends Phaser.Scene {
   }
 
   private getEditorZoom(scene: Scene) {
-    const baseZoom = this.editorViewportMode === 'world' ? this.getWorldBaseZoom(scene) : 1;
+    const baseZoom = this.editorViewportMode === 'world' ? this.getWorldBaseZoom(scene) : this.getCameraBaseZoom(scene);
 
     return clamp(baseZoom * this.editorZoomFactor, 0.08, 6);
   }
 
   private getMinZoomFactor(scene: Scene) {
-    const baseZoom = this.editorViewportMode === 'world' ? this.getWorldBaseZoom(scene) : 1;
+    const baseZoom = this.editorViewportMode === 'world' ? this.getWorldBaseZoom(scene) : this.getCameraBaseZoom(scene);
     const minimumZoom = this.editorViewportMode === 'world' ? this.getWorldFitZoom(scene) : 0.08;
     const minimumFactor = minimumZoom / Math.max(baseZoom, 0.0001);
 
-    return this.editorViewportMode === 'world' ? Math.max(0.08 / Math.max(baseZoom, 0.0001), minimumFactor) : Math.max(0.08, minimumFactor);
+    return Math.max(0.08 / Math.max(baseZoom, 0.0001), minimumFactor);
+  }
+
+  private getCameraBaseZoom(scene: Scene) {
+    if (!this.cameras?.main) {
+      return 1;
+    }
+
+    const previewFrame = this.getPreviewCameraFrame(scene);
+    return Math.min(
+      this.cameras.main.width / Math.max(1, previewFrame.width),
+      this.cameras.main.height / Math.max(1, previewFrame.height),
+    );
   }
 
   private getWorldBaseZoom(scene: Scene) {

@@ -1,0 +1,1182 @@
+{
+  "request": {
+    "mode": "create",
+    "prompt": "create the snake game for me",
+    "project": {
+      "version": 2,
+      "name": "Untitled Project",
+      "description": "Blank 2D project ready for scene construction, scripting and AI-assisted iteration.",
+      "updatedAt": "2026-03-15T15:08:56.865Z",
+      "assets": [],
+      "controls": {
+        "left": "ArrowLeft",
+        "right": "ArrowRight",
+        "up": "ArrowUp",
+        "down": "ArrowDown",
+        "jump": "Space",
+        "action": "KeyE",
+        "altAction": "ShiftLeft"
+      },
+      "scenes": [
+        {
+          "id": "scene-wi8jyskg",
+          "name": "Scene 1",
+          "notes": "Empty scene. Build the level from scratch or load a sample project.",
+          "settings": {
+            "worldSize": {
+              "x": 3000,
+              "y": 1393
+            },
+            "cameraStart": {
+              "x": 0,
+              "y": 0
+            },
+            "gravity": {
+              "x": 0,
+              "y": 980
+            },
+            "gridSize": 32,
+            "snapToGrid": false,
+            "showGrid": true,
+            "cameraFollowPlayer": true,
+            "backgroundTop": "#292c31",
+            "backgroundBottom": "#1e2126",
+            "ambientColor": "#5f656e"
+          },
+          "entities": []
+        }
+      ],
+      "activeSceneId": "scene-wi8jyskg"
+    }
+  },
+  "response": {
+    "summary": "A classic grid-based Snake game where you eat food to grow and avoid hitting the walls or your own tail.",
+    "notes": [
+      "Use Arrow Keys to change direction.",
+      "Eat the red food to grow your tail.",
+      "Avoid the grey walls and your own green tail."
+    ],
+    "project": {
+      "version": 2,
+      "name": "Classic Snake",
+      "description": "A top-down grid-based snake game utilizing custom scripts for tail management and grid movement.",
+      "updatedAt": "2026-03-15T15:11:16.903Z",
+      "assets": [],
+      "controls": {
+        "left": "ArrowLeft",
+        "right": "ArrowRight",
+        "up": "ArrowUp",
+        "down": "ArrowDown",
+        "jump": "Space",
+        "action": "KeyE",
+        "altAction": "ShiftLeft"
+      },
+      "scenes": [
+        {
+          "id": "scene-snake-main",
+          "name": "Snake Level",
+          "notes": "Main game scene containing the grid, walls, snake head, food, and pooled tail segments.",
+          "settings": {
+            "worldSize": {
+              "x": 640,
+              "y": 640
+            },
+            "cameraStart": {
+              "x": 320,
+              "y": 320
+            },
+            "gravity": {
+              "x": 0,
+              "y": 0
+            },
+            "gridSize": 32,
+            "snapToGrid": true,
+            "showGrid": true,
+            "cameraFollowPlayer": false,
+            "backgroundTop": "#1a1c23",
+            "backgroundBottom": "#1a1c23",
+            "ambientColor": "#ffffff"
+          },
+          "entities": [
+            {
+              "id": "entity-player-head",
+              "name": "Player",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "player",
+              "components": [
+                {
+                  "id": "transform-a5zxds1q",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-a40ocja6",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#4ade80",
+                  "opacity": 1,
+                  "width": 96,
+                  "height": 96,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                },
+                {
+                  "id": "body-p5n3cl98",
+                  "type": "RigidBody",
+                  "enabled": true,
+                  "velocity": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "mass": 1,
+                  "isStatic": false,
+                  "gravityScale": 1,
+                  "drag": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "bounce": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "maxVelocity": {
+                    "x": 450,
+                    "y": 1400
+                  }
+                },
+                {
+                  "id": "collider-umgpqkwx",
+                  "type": "Collider",
+                  "enabled": true,
+                  "shape": "box",
+                  "autoSize": true,
+                  "width": 28,
+                  "height": 28,
+                  "radius": 48,
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "isTrigger": false,
+                  "isPassThrough": false
+                },
+                {
+                  "id": "behavior-4chgfhuj",
+                  "type": "Behavior",
+                  "enabled": true,
+                  "kind": "none",
+                  "moveSpeed": 220,
+                  "jumpForce": 560,
+                  "patrolDistance": 180,
+                  "patrolSpeed": 90,
+                  "patrolAxis": "x",
+                  "collectibleValue": 10,
+                  "respawnDelay": 0,
+                  "checkpointId": ""
+                },
+                {
+                  "id": "script-d6hl3dxg",
+                  "type": "Script",
+                  "enabled": true,
+                  "code": ""
+                }
+              ]
+            },
+            {
+              "id": "entity-food",
+              "name": "Food",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "collectible",
+              "components": [
+                {
+                  "id": "transform-flk3de0w",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-b2vdc0nm",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#ef4444",
+                  "opacity": 1,
+                  "width": 96,
+                  "height": 96,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                },
+                {
+                  "id": "collider-a2alnnot",
+                  "type": "Collider",
+                  "enabled": true,
+                  "shape": "box",
+                  "autoSize": true,
+                  "width": 24,
+                  "height": 24,
+                  "radius": 48,
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "isTrigger": true,
+                  "isPassThrough": false
+                },
+                {
+                  "id": "behavior-cjv4d5za",
+                  "type": "Behavior",
+                  "enabled": true,
+                  "kind": "none",
+                  "moveSpeed": 220,
+                  "jumpForce": 560,
+                  "patrolDistance": 180,
+                  "patrolSpeed": 90,
+                  "patrolAxis": "x",
+                  "collectibleValue": 10,
+                  "respawnDelay": 0,
+                  "checkpointId": ""
+                }
+              ]
+            },
+            {
+              "id": "entity-wall-top",
+              "name": "WallTop",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "hazard",
+              "components": [
+                {
+                  "id": "transform-653e0ite",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-td1r6ock",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#4b5563",
+                  "opacity": 1,
+                  "width": 96,
+                  "height": 96,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                },
+                {
+                  "id": "collider-fxdff8w9",
+                  "type": "Collider",
+                  "enabled": true,
+                  "shape": "box",
+                  "autoSize": true,
+                  "width": 640,
+                  "height": 32,
+                  "radius": 48,
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "isTrigger": false,
+                  "isPassThrough": false
+                },
+                {
+                  "id": "behavior-mp82rdwx",
+                  "type": "Behavior",
+                  "enabled": true,
+                  "kind": "none",
+                  "moveSpeed": 220,
+                  "jumpForce": 560,
+                  "patrolDistance": 180,
+                  "patrolSpeed": 90,
+                  "patrolAxis": "x",
+                  "collectibleValue": 10,
+                  "respawnDelay": 0,
+                  "checkpointId": ""
+                }
+              ]
+            },
+            {
+              "id": "entity-wall-bottom",
+              "name": "WallBottom",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "hazard",
+              "components": [
+                {
+                  "id": "transform-l8bre4em",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-8nvj8q6s",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#4b5563",
+                  "opacity": 1,
+                  "width": 96,
+                  "height": 96,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                },
+                {
+                  "id": "collider-3xe7thaz",
+                  "type": "Collider",
+                  "enabled": true,
+                  "shape": "box",
+                  "autoSize": true,
+                  "width": 640,
+                  "height": 32,
+                  "radius": 48,
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "isTrigger": false,
+                  "isPassThrough": false
+                },
+                {
+                  "id": "behavior-y2ts95by",
+                  "type": "Behavior",
+                  "enabled": true,
+                  "kind": "none",
+                  "moveSpeed": 220,
+                  "jumpForce": 560,
+                  "patrolDistance": 180,
+                  "patrolSpeed": 90,
+                  "patrolAxis": "x",
+                  "collectibleValue": 10,
+                  "respawnDelay": 0,
+                  "checkpointId": ""
+                }
+              ]
+            },
+            {
+              "id": "entity-wall-left",
+              "name": "WallLeft",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "hazard",
+              "components": [
+                {
+                  "id": "transform-pz4sgv1w",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-khbk0qzh",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#4b5563",
+                  "opacity": 1,
+                  "width": 96,
+                  "height": 96,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                },
+                {
+                  "id": "collider-6nxlisxv",
+                  "type": "Collider",
+                  "enabled": true,
+                  "shape": "box",
+                  "autoSize": true,
+                  "width": 32,
+                  "height": 640,
+                  "radius": 48,
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "isTrigger": false,
+                  "isPassThrough": false
+                },
+                {
+                  "id": "behavior-byxrhxy9",
+                  "type": "Behavior",
+                  "enabled": true,
+                  "kind": "none",
+                  "moveSpeed": 220,
+                  "jumpForce": 560,
+                  "patrolDistance": 180,
+                  "patrolSpeed": 90,
+                  "patrolAxis": "x",
+                  "collectibleValue": 10,
+                  "respawnDelay": 0,
+                  "checkpointId": ""
+                }
+              ]
+            },
+            {
+              "id": "entity-wall-right",
+              "name": "WallRight",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "hazard",
+              "components": [
+                {
+                  "id": "transform-0eyeyoqf",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-5xp6hbzk",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#4b5563",
+                  "opacity": 1,
+                  "width": 96,
+                  "height": 96,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                },
+                {
+                  "id": "collider-5e8kj8zi",
+                  "type": "Collider",
+                  "enabled": true,
+                  "shape": "box",
+                  "autoSize": true,
+                  "width": 32,
+                  "height": 640,
+                  "radius": 48,
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "isTrigger": false,
+                  "isPassThrough": false
+                },
+                {
+                  "id": "behavior-0c4cxfm1",
+                  "type": "Behavior",
+                  "enabled": true,
+                  "kind": "none",
+                  "moveSpeed": 220,
+                  "jumpForce": 560,
+                  "patrolDistance": 180,
+                  "patrolSpeed": 90,
+                  "patrolAxis": "x",
+                  "collectibleValue": 10,
+                  "respawnDelay": 0,
+                  "checkpointId": ""
+                }
+              ]
+            },
+            {
+              "id": "entity-tail-0",
+              "name": "Tail0",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "decoration",
+              "components": [
+                {
+                  "id": "transform-w8m6wgxu",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-wztu4k4x",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#22c55e",
+                  "opacity": 1,
+                  "width": 96,
+                  "height": 96,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                }
+              ]
+            },
+            {
+              "id": "entity-tail-1",
+              "name": "Tail1",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "decoration",
+              "components": [
+                {
+                  "id": "transform-e3i8isah",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-xz87uog7",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#22c55e",
+                  "opacity": 1,
+                  "width": 96,
+                  "height": 96,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                }
+              ]
+            },
+            {
+              "id": "entity-tail-2",
+              "name": "Tail2",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "decoration",
+              "components": [
+                {
+                  "id": "transform-fjz89o50",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-7z59fft8",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#22c55e",
+                  "opacity": 1,
+                  "width": 96,
+                  "height": 96,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                }
+              ]
+            },
+            {
+              "id": "entity-tail-3",
+              "name": "Tail3",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "decoration",
+              "components": [
+                {
+                  "id": "transform-6ya30o6n",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-6fn8jmea",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#22c55e",
+                  "opacity": 1,
+                  "width": 96,
+                  "height": 96,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                }
+              ]
+            },
+            {
+              "id": "entity-tail-4",
+              "name": "Tail4",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "decoration",
+              "components": [
+                {
+                  "id": "transform-mpou8ucq",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-ohawh8fy",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#22c55e",
+                  "opacity": 1,
+                  "width": 96,
+                  "height": 96,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                }
+              ]
+            },
+            {
+              "id": "entity-tail-5",
+              "name": "Tail5",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "decoration",
+              "components": [
+                {
+                  "id": "transform-sfzw7i3e",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-93vunh5p",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#22c55e",
+                  "opacity": 1,
+                  "width": 96,
+                  "height": 96,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                }
+              ]
+            },
+            {
+              "id": "entity-tail-6",
+              "name": "Tail6",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "decoration",
+              "components": [
+                {
+                  "id": "transform-rxtwppvy",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-74t84gue",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#22c55e",
+                  "opacity": 1,
+                  "width": 96,
+                  "height": 96,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                }
+              ]
+            },
+            {
+              "id": "entity-tail-7",
+              "name": "Tail7",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "decoration",
+              "components": [
+                {
+                  "id": "transform-rbfnfcii",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-2puxopuk",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#22c55e",
+                  "opacity": 1,
+                  "width": 96,
+                  "height": 96,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                }
+              ]
+            },
+            {
+              "id": "entity-tail-8",
+              "name": "Tail8",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "decoration",
+              "components": [
+                {
+                  "id": "transform-l9m94djv",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-l79jbzdh",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#22c55e",
+                  "opacity": 1,
+                  "width": 96,
+                  "height": 96,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                }
+              ]
+            },
+            {
+              "id": "entity-tail-9",
+              "name": "Tail9",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "decoration",
+              "components": [
+                {
+                  "id": "transform-dey91oax",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-9cqjxsoz",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#22c55e",
+                  "opacity": 1,
+                  "width": 96,
+                  "height": 96,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                }
+              ]
+            },
+            {
+              "id": "entity-tail-10",
+              "name": "Tail10",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "decoration",
+              "components": [
+                {
+                  "id": "transform-m1e34f0s",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-1p9xgp2w",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#22c55e",
+                  "opacity": 1,
+                  "width": 96,
+                  "height": 96,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                }
+              ]
+            },
+            {
+              "id": "entity-tail-11",
+              "name": "Tail11",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "decoration",
+              "components": [
+                {
+                  "id": "transform-uzv17l2g",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-e3qj303o",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#22c55e",
+                  "opacity": 1,
+                  "width": 96,
+                  "height": 96,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                }
+              ]
+            },
+            {
+              "id": "entity-tail-12",
+              "name": "Tail12",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "decoration",
+              "components": [
+                {
+                  "id": "transform-4chk41kz",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-opfllbja",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#22c55e",
+                  "opacity": 1,
+                  "width": 96,
+                  "height": 96,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                }
+              ]
+            },
+            {
+              "id": "entity-tail-13",
+              "name": "Tail13",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "decoration",
+              "components": [
+                {
+                  "id": "transform-x4dixwv6",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-1tf18vtx",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#22c55e",
+                  "opacity": 1,
+                  "width": 96,
+                  "height": 96,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                }
+              ]
+            },
+            {
+              "id": "entity-tail-14",
+              "name": "Tail14",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "decoration",
+              "components": [
+                {
+                  "id": "transform-f5rl32hn",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-6hfqsi7c",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#22c55e",
+                  "opacity": 1,
+                  "width": 96,
+                  "height": 96,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "activeSceneId": "scene-snake-main"
+    }
+  },
+  "debug": {
+    "id": "ai-mmrw6vmv-pohkpz",
+    "timestamp": "2026-03-15T15:11:16.903Z",
+    "model": "gemini-3.1-pro-preview",
+    "mode": "create",
+    "prompt": "create the snake game for me",
+    "parseMode": "direct",
+    "planText": "",
+    "generationText": "{\n  \"summary\": \"A classic grid-based Snake game where you eat food to grow and avoid hitting the walls or your own tail.\",\n  \"notes\": [\n    \"Use Arrow Keys to change direction.\",\n    \"Eat the red food to grow your tail.\",\n    \"Avoid the grey walls and your own green tail.\"\n  ],\n  \"project\": {\n    \"version\": 2,\n    \"name\": \"Classic Snake\",\n    \"description\": \"A top-down grid-based snake game utilizing custom scripts for tail management and grid movement.\",\n    \"updatedAt\": \"2026-03-15T15:08:56.865Z\",\n    \"assets\": [],\n    \"controls\": {\n      \"left\": \"ArrowLeft\",\n      \"right\": \"ArrowRight\",\n      \"up\": \"ArrowUp\",\n      \"down\": \"ArrowDown\",\n      \"jump\": \"Space\",\n      \"action\": \"KeyE\",\n      \"altAction\": \"ShiftLeft\"\n    },\n    \"scenes\": [\n      {\n        \"id\": \"scene-snake-main\",\n        \"name\": \"Snake Level\",\n        \"notes\": \"Main game scene containing the grid, walls, snake head, food, and pooled tail segments.\",\n        \"settings\": {\n          \"worldSize\": {\n            \"x\": 640,\n            \"y\": 640\n          },\n          \"cameraStart\": {\n            \"x\": 320,\n            \"y\": 320\n          },\n          \"gravity\": {\n            \"x\": 0,\n            \"y\": 0\n          },\n          \"gridSize\": 32,\n          \"snapToGrid\": true,\n          \"showGrid\": true,\n          \"cameraFollowPlayer\": false,\n          \"backgroundTop\": \"#1a1c23\",\n          \"backgroundBottom\": \"#1a1c23\",\n          \"ambientColor\": \"#ffffff\"\n        },\n        \"entities\": [\n          {\n            \"id\": \"entity-player-head\",\n            \"name\": \"Player\",\n            \"prefab\": \"player\",\n            \"components\": [\n              {\n                \"type\": \"Transform\",\n                \"x\": 320,\n                \"y\": 320,\n                \"width\": 32,\n                \"height\": 32,\n                \"rotation\": 0\n              },\n              {\n                \"type\": \"Sprite\",\n                \"color\": \"#4ade80\",\n                \"visible\": true\n              },\n              {\n                \"type\": \"RigidBody\",\n                \"bodyType\": \"kinematic\",\n                \"mass\": 1\n              },\n              {\n                \"type\": \"Collider\",\n                \"shape\": \"rectangle\",\n                \"width\": 28,\n                \"height\": 28,\n                \"isTrigger\": false\n              },\n              {\n                \"type\": \"Behavior\",\n                \"behaviorType\": \"player-topdown\"\n              },\n              {\n                \"type\": \"Script\",\n                \"source\": \"if (!this.initialized) {\\n  this.timer = 0;\\n  this.tickRate = 0.15;\\n  this.gridSize = 32;\\n  this.dir = {x: 1, y: 0};\\n  this.nextDir = {x: 1, y: 0};\\n  this.tailPos = [];\\n  this.length = 3;\\n  this.initialized = true;\\n  if (this.entity.body) this.entity.body.type = 'static';\\n}\\n\\nconst up = Input.keys && Input.keys['ArrowUp'];\\nconst down = Input.keys && Input.keys['ArrowDown'];\\nconst left = Input.keys && Input.keys['ArrowLeft'];\\nconst right = Input.keys && Input.keys['ArrowRight'];\\n\\nif (up && this.dir.y === 0) this.nextDir = {x: 0, y: -1};\\nif (down && this.dir.y === 0) this.nextDir = {x: 0, y: 1};\\nif (left && this.dir.x === 0) this.nextDir = {x: -1, y: 0};\\nif (right && this.dir.x === 0) this.nextDir = {x: 1, y: 0};\\n\\nthis.timer += Time.deltaTime || 0.016;\\n\\nif (this.timer >= this.tickRate) {\\n  this.timer = 0;\\n  this.dir = this.nextDir;\\n\\n  this.tailPos.unshift({x: this.entity.transform.x, y: this.entity.transform.y});\\n  if (this.tailPos.length > this.length) {\\n    this.tailPos.pop();\\n  }\\n\\n  this.entity.transform.x += this.dir.x * this.gridSize;\\n  this.entity.transform.y += this.dir.y * this.gridSize;\\n\\n  let food = scene.entities.find(e => e.name === 'Food');\\n  if (food) {\\n    let dx = Math.abs(this.entity.transform.x - food.transform.x);\\n    let dy = Math.abs(this.entity.transform.y - food.transform.y);\\n    if (dx < 10 && dy < 10) {\\n      this.length++;\\n      food.transform.x = Math.floor(Math.random() * 17 + 1) * this.gridSize;\\n      food.transform.y = Math.floor(Math.random() * 17 + 1) * this.gridSize;\\n    }\\n  }\\n\\n  for(let i=0; i<15; i++) {\\n    let t = scene.entities.find(e => e.name === 'Tail' + i);\\n    if (t) {\\n      if (i < this.tailPos.length) {\\n        t.transform.x = this.tailPos[i].x;\\n        t.transform.y = this.tailPos[i].y;\\n      } else {\\n        t.transform.x = -1000;\\n      }\\n    }\\n  }\\n\\n  let dead = false;\\n  if (this.entity.transform.x < 32 || this.entity.transform.x > 576 ||\\n      this.entity.transform.y < 32 || this.entity.transform.y > 576) {\\n    dead = true;\\n  }\\n  for(let i=0; i<this.tailPos.length; i++) {\\n    if (this.entity.transform.x === this.tailPos[i].x &&\\n        this.entity.transform.y === this.tailPos[i].y) {\\n      dead = true;\\n    }\\n  }\\n\\n  if (dead) {\\n    this.entity.transform.x = 320;\\n    this.entity.transform.y = 320;\\n    this.length = 3;\\n    this.tailPos = [];\\n    this.dir = {x: 1, y: 0};\\n    this.nextDir = {x: 1, y: 0};\\n  }\\n}\"\n              }\n            ]\n          },\n          {\n            \"id\": \"entity-food\",\n            \"name\": \"Food\",\n            \"prefab\": \"collectible\",\n            \"components\": [\n              {\n                \"type\": \"Transform\",\n                \"x\": 448,\n                \"y\": 320,\n                \"width\": 32,\n                \"height\": 32,\n                \"rotation\": 0\n              },\n              {\n                \"type\": \"Sprite\",\n                \"color\": \"#ef4444\",\n                \"visible\": true\n              },\n              {\n                \"type\": \"Collider\",\n                \"shape\": \"rectangle\",\n                \"width\": 24,\n                \"height\": 24,\n                \"isTrigger\": true\n              },\n              {\n                \"type\": \"Behavior\",\n                \"behaviorType\": \"collectible\"\n              }\n            ]\n          },\n          {\n            \"id\": \"entity-wall-top\",\n            \"name\": \"WallTop\",\n            \"prefab\": \"hazard\",\n            \"components\": [\n              {\n                \"type\": \"Transform\",\n                \"x\": 0,\n                \"y\": 0,\n                \"width\": 640,\n                \"height\": 32,\n                \"rotation\": 0\n              },\n              {\n                \"type\": \"Sprite\",\n                \"color\": \"#4b5563\",\n                \"visible\": true\n              },\n              {\n                \"type\": \"Collider\",\n                \"shape\": \"rectangle\",\n                \"width\": 640,\n                \"height\": 32,\n                \"isTrigger\": false\n              },\n              {\n                \"type\": \"Behavior\",\n                \"behaviorType\": \"hazard\"\n              }\n            ]\n          },\n          {\n            \"id\": \"entity-wall-bottom\",\n            \"name\": \"WallBottom\",\n            \"prefab\": \"hazard\",\n            \"components\": [\n              {\n                \"type\": \"Transform\",\n                \"x\": 0,\n                \"y\": 608,\n                \"width\": 640,\n                \"height\": 32,\n                \"rotation\": 0\n              },\n              {\n                \"type\": \"Sprite\",\n                \"color\": \"#4b5563\",\n                \"visible\": true\n              },\n              {\n                \"type\": \"Collider\",\n                \"shape\": \"rectangle\",\n                \"width\": 640,\n                \"height\": 32,\n                \"isTrigger\": false\n              },\n              {\n                \"type\": \"Behavior\",\n                \"behaviorType\": \"hazard\"\n              }\n            ]\n          },\n          {\n            \"id\": \"entity-wall-left\",\n            \"name\": \"WallLeft\",\n            \"prefab\": \"hazard\",\n            \"components\": [\n              {\n                \"type\": \"Transform\",\n                \"x\": 0,\n                \"y\": 0,\n                \"width\": 32,\n                \"height\": 640,\n                \"rotation\": 0\n              },\n              {\n                \"type\": \"Sprite\",\n                \"color\": \"#4b5563\",\n                \"visible\": true\n              },\n              {\n                \"type\": \"Collider\",\n                \"shape\": \"rectangle\",\n                \"width\": 32,\n                \"height\": 640,\n                \"isTrigger\": false\n              },\n              {\n                \"type\": \"Behavior\",\n                \"behaviorType\": \"hazard\"\n              }\n            ]\n          },\n          {\n            \"id\": \"entity-wall-right\",\n            \"name\": \"WallRight\",\n            \"prefab\": \"hazard\",\n            \"components\": [\n              {\n                \"type\": \"Transform\",\n                \"x\": 608,\n                \"y\": 0,\n                \"width\": 32,\n                \"height\": 640,\n                \"rotation\": 0\n              },\n              {\n                \"type\": \"Sprite\",\n                \"color\": \"#4b5563\",\n                \"visible\": true\n              },\n              {\n                \"type\": \"Collider\",\n                \"shape\": \"rectangle\",\n                \"width\": 32,\n                \"height\": 640,\n                \"isTrigger\": false\n              },\n              {\n                \"type\": \"Behavior\",\n                \"behaviorType\": \"hazard\"\n              }\n            ]\n          },\n          {\n            \"id\": \"entity-tail-0\",\n            \"name\": \"Tail0\",\n            \"prefab\": \"decoration\",\n            \"components\": [\n              { \"type\": \"Transform\", \"x\": -1000, \"y\": -1000, \"width\": 32, \"height\": 32, \"rotation\": 0 },\n              { \"type\": \"Sprite\", \"color\": \"#22c55e\", \"visible\": true }\n            ]\n          },\n          {\n            \"id\": \"entity-tail-1\",\n            \"name\": \"Tail1\",\n            \"prefab\": \"decoration\",\n            \"components\": [\n              { \"type\": \"Transform\", \"x\": -1000, \"y\": -1000, \"width\": 32, \"height\": 32, \"rotation\": 0 },\n              { \"type\": \"Sprite\", \"color\": \"#22c55e\", \"visible\": true }\n            ]\n          },\n          {\n            \"id\": \"entity-tail-2\",\n            \"name\": \"Tail2\",\n            \"prefab\": \"decoration\",\n            \"components\": [\n              { \"type\": \"Transform\", \"x\": -1000, \"y\": -1000, \"width\": 32, \"height\": 32, \"rotation\": 0 },\n              { \"type\": \"Sprite\", \"color\": \"#22c55e\", \"visible\": true }\n            ]\n          },\n          {\n            \"id\": \"entity-tail-3\",\n            \"name\": \"Tail3\",\n            \"prefab\": \"decoration\",\n            \"components\": [\n              { \"type\": \"Transform\", \"x\": -1000, \"y\": -1000, \"width\": 32, \"height\": 32, \"rotation\": 0 },\n              { \"type\": \"Sprite\", \"color\": \"#22c55e\", \"visible\": true }\n            ]\n          },\n          {\n            \"id\": \"entity-tail-4\",\n            \"name\": \"Tail4\",\n            \"prefab\": \"decoration\",\n            \"components\": [\n              { \"type\": \"Transform\", \"x\": -1000, \"y\": -1000, \"width\": 32, \"height\": 32, \"rotation\": 0 },\n              { \"type\": \"Sprite\", \"color\": \"#22c55e\", \"visible\": true }\n            ]\n          },\n          {\n            \"id\": \"entity-tail-5\",\n            \"name\": \"Tail5\",\n            \"prefab\": \"decoration\",\n            \"components\": [\n              { \"type\": \"Transform\", \"x\": -1000, \"y\": -1000, \"width\": 32, \"height\": 32, \"rotation\": 0 },\n              { \"type\": \"Sprite\", \"color\": \"#22c55e\", \"visible\": true }\n            ]\n          },\n          {\n            \"id\": \"entity-tail-6\",\n            \"name\": \"Tail6\",\n            \"prefab\": \"decoration\",\n            \"components\": [\n              { \"type\": \"Transform\", \"x\": -1000, \"y\": -1000, \"width\": 32, \"height\": 32, \"rotation\": 0 },\n              { \"type\": \"Sprite\", \"color\": \"#22c55e\", \"visible\": true }\n            ]\n          },\n          {\n            \"id\": \"entity-tail-7\",\n            \"name\": \"Tail7\",\n            \"prefab\": \"decoration\",\n            \"components\": [\n              { \"type\": \"Transform\", \"x\": -1000, \"y\": -1000, \"width\": 32, \"height\": 32, \"rotation\": 0 },\n              { \"type\": \"Sprite\", \"color\": \"#22c55e\", \"visible\": true }\n            ]\n          },\n          {\n            \"id\": \"entity-tail-8\",\n            \"name\": \"Tail8\",\n            \"prefab\": \"decoration\",\n            \"components\": [\n              { \"type\": \"Transform\", \"x\": -1000, \"y\": -1000, \"width\": 32, \"height\": 32, \"rotation\": 0 },\n              { \"type\": \"Sprite\", \"color\": \"#22c55e\", \"visible\": true }\n            ]\n          },\n          {\n            \"id\": \"entity-tail-9\",\n            \"name\": \"Tail9\",\n            \"prefab\": \"decoration\",\n            \"components\": [\n              { \"type\": \"Transform\", \"x\": -1000, \"y\": -1000, \"width\": 32, \"height\": 32, \"rotation\": 0 },\n              { \"type\": \"Sprite\", \"color\": \"#22c55e\", \"visible\": true }\n            ]\n          },\n          {\n            \"id\": \"entity-tail-10\",\n            \"name\": \"Tail10\",\n            \"prefab\": \"decoration\",\n            \"components\": [\n              { \"type\": \"Transform\", \"x\": -1000, \"y\": -1000, \"width\": 32, \"height\": 32, \"rotation\": 0 },\n              { \"type\": \"Sprite\", \"color\": \"#22c55e\", \"visible\": true }\n            ]\n          },\n          {\n            \"id\": \"entity-tail-11\",\n            \"name\": \"Tail11\",\n            \"prefab\": \"decoration\",\n            \"components\": [\n              { \"type\": \"Transform\", \"x\": -1000, \"y\": -1000, \"width\": 32, \"height\": 32, \"rotation\": 0 },\n              { \"type\": \"Sprite\", \"color\": \"#22c55e\", \"visible\": true }\n            ]\n          },\n          {\n            \"id\": \"entity-tail-12\",\n            \"name\": \"Tail12\",\n            \"prefab\": \"decoration\",\n            \"components\": [\n              { \"type\": \"Transform\", \"x\": -1000, \"y\": -1000, \"width\": 32, \"height\": 32, \"rotation\": 0 },\n              { \"type\": \"Sprite\", \"color\": \"#22c55e\", \"visible\": true }\n            ]\n          },\n          {\n            \"id\": \"entity-tail-13\",\n            \"name\": \"Tail13\",\n            \"prefab\": \"decoration\",\n            \"components\": [\n              { \"type\": \"Transform\", \"x\": -1000, \"y\": -1000, \"width\": 32, \"height\": 32, \"rotation\": 0 },\n              { \"type\": \"Sprite\", \"color\": \"#22c55e\", \"visible\": true }\n            ]\n          },\n          {\n            \"id\": \"entity-tail-14\",\n            \"name\": \"Tail14\",\n            \"prefab\": \"decoration\",\n            \"components\": [\n              { \"type\": \"Transform\", \"x\": -1000, \"y\": -1000, \"width\": 32, \"height\": 32, \"rotation\": 0 },\n              { \"type\": \"Sprite\", \"color\": \"#22c55e\", \"visible\": true }\n            ]\n          }\n        ]\n      }\n    ],\n    \"activeSceneId\": \"scene-snake-main\"\n  }\n}",
+    "repairText": "",
+    "planFinishReason": "plan request failed",
+    "generationFinishReason": "STOP",
+    "repairFinishReason": "repair not needed",
+    "savedFilePath": "output/ai-debug/2026-03-15T15-11-16-903Z-ai-mmrw6vmv-pohkpz.json",
+    "stats": {
+      "inputSceneCount": 1,
+      "inputEntityCount": 0,
+      "outputSceneCount": 1,
+      "outputEntityCount": 21,
+      "assetCount": 0,
+      "behaviorCount": 0,
+      "scriptCount": 1,
+      "rigidBodyCount": 1,
+      "colliderCount": 6,
+      "playerCount": 1,
+      "collectibleCount": 1,
+      "goalCount": 0,
+      "hazardCount": 4
+    },
+    "issues": [
+      {
+        "code": "empty-script",
+        "level": "warning",
+        "message": "Entity \"Player\" has a Script component with empty code."
+      }
+    ]
+  }
+}

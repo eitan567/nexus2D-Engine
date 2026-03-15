@@ -23,6 +23,7 @@ export const STORAGE_KEY = 'nexus2d.editor.project';
 
 const DEFAULT_SCENE_SETTINGS: SceneSettings = {
   worldSize: { x: 3000, y: 1393 },
+  cameraSize: { x: 1280, y: 720 },
   cameraStart: { x: 0, y: 0 },
   gravity: { x: 0, y: 980 },
   gridSize: 32,
@@ -611,6 +612,7 @@ function normalizeSceneSettings(input: unknown, fallback: SceneSettings): SceneS
 
   return {
     worldSize: vectorOr(source.worldSize, fallback.worldSize),
+    cameraSize: vectorOr(source.cameraSize, fallback.cameraSize),
     cameraStart: vectorOr(source.cameraStart, fallback.cameraStart),
     gravity: vectorOr(source.gravity, fallback.gravity),
     gridSize: Math.max(8, numberOr(source.gridSize, fallback.gridSize)),
@@ -796,7 +798,7 @@ export function buildAiPromptContext(project: Project) {
         'Return a complete project JSON that keeps IDs stable when extending an existing project.',
         'Every gameplay entity should include Transform and Sprite.',
         'Player entities should include RigidBody, Collider and a player behavior.',
-        'Scene settings must include worldSize, gravity, gridSize and background colors.',
+        'Scene settings must include worldSize, cameraSize, gravity, gridSize and background colors.',
         'Use Script components when the request requires custom engine functionality beyond the built-in behaviors.',
       ],
     },

@@ -131,6 +131,7 @@ export interface Asset {
 
 export interface SceneSettings {
   worldSize: Vector2;
+  cameraSize: Vector2;
   cameraStart: Vector2;
   gravity: Vector2;
   gridSize: number;
@@ -215,8 +216,49 @@ export interface AIRequestPayload {
   project: Project;
 }
 
+export interface AIDebugIssue {
+  code: string;
+  level: 'info' | 'warning' | 'error';
+  message: string;
+}
+
+export interface AIDebugStats {
+  inputSceneCount: number;
+  inputEntityCount: number;
+  outputSceneCount: number;
+  outputEntityCount: number;
+  assetCount: number;
+  behaviorCount: number;
+  scriptCount: number;
+  rigidBodyCount: number;
+  colliderCount: number;
+  playerCount: number;
+  collectibleCount: number;
+  goalCount: number;
+  hazardCount: number;
+}
+
+export interface AIDebugPayload {
+  id: string;
+  timestamp: string;
+  model: string;
+  mode: 'create' | 'extend';
+  prompt: string;
+  parseMode: 'direct' | 'repaired' | 'failed';
+  planText: string;
+  generationText: string;
+  repairText: string;
+  planFinishReason: string;
+  generationFinishReason: string;
+  repairFinishReason: string;
+  savedFilePath: string | null;
+  issues: AIDebugIssue[];
+  stats: AIDebugStats;
+}
+
 export interface AIResponsePayload {
   summary: string;
   notes: string[];
   project: Project;
+  debug?: AIDebugPayload;
 }

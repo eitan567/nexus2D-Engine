@@ -1,0 +1,593 @@
+{
+  "request": {
+    "mode": "create",
+    "prompt": "create the snake game for me",
+    "project": {
+      "version": 2,
+      "name": "Untitled Project",
+      "description": "Blank 2D project ready for scene construction, scripting and AI-assisted iteration.",
+      "updatedAt": "2026-03-15T15:11:44.325Z",
+      "assets": [],
+      "controls": {
+        "left": "ArrowLeft",
+        "right": "ArrowRight",
+        "up": "ArrowUp",
+        "down": "ArrowDown",
+        "jump": "Space",
+        "action": "KeyE",
+        "altAction": "ShiftLeft"
+      },
+      "scenes": [
+        {
+          "id": "scene-56r9u8wj",
+          "name": "Scene 1",
+          "notes": "Empty scene. Build the level from scratch or load a sample project.",
+          "settings": {
+            "worldSize": {
+              "x": 3000,
+              "y": 1393
+            },
+            "cameraStart": {
+              "x": 0,
+              "y": 0
+            },
+            "gravity": {
+              "x": 0,
+              "y": 980
+            },
+            "gridSize": 32,
+            "snapToGrid": false,
+            "showGrid": true,
+            "cameraFollowPlayer": true,
+            "backgroundTop": "#292c31",
+            "backgroundBottom": "#1e2126",
+            "ambientColor": "#5f656e"
+          },
+          "entities": []
+        }
+      ],
+      "activeSceneId": "scene-56r9u8wj"
+    }
+  },
+  "response": {
+    "summary": "A classic top-down Snake game arena with grid-based movement logic and collectibles.",
+    "notes": [
+      "Use arrow keys to move the snake.",
+      "Eat the red apples to grow your tail.",
+      "Avoid colliding with the walls or yourself."
+    ],
+    "project": {
+      "version": 2,
+      "name": "Snake Game",
+      "description": "Classic snake game implementation using top-down physics and custom scripts for grid movement.",
+      "updatedAt": "2026-03-15T15:12:37.765Z",
+      "assets": [],
+      "controls": {
+        "left": "ArrowLeft",
+        "right": "ArrowRight",
+        "up": "ArrowUp",
+        "down": "ArrowDown",
+        "jump": "Space",
+        "action": "KeyE",
+        "altAction": "ShiftLeft"
+      },
+      "scenes": [
+        {
+          "id": "scene-snake-main",
+          "name": "Snake Arena",
+          "notes": "Main game arena bounded by hazard walls.",
+          "settings": {
+            "worldSize": {
+              "x": 800,
+              "y": 600
+            },
+            "cameraStart": {
+              "x": 400,
+              "y": 300
+            },
+            "gravity": {
+              "x": 0,
+              "y": 0
+            },
+            "gridSize": 32,
+            "snapToGrid": true,
+            "showGrid": true,
+            "cameraFollowPlayer": false,
+            "backgroundTop": "#1a1c20",
+            "backgroundBottom": "#111215",
+            "ambientColor": "#ffffff"
+          },
+          "entities": [
+            {
+              "id": "ent-snake-head",
+              "name": "Snake Head",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "player",
+              "components": [
+                {
+                  "id": "transform-xpca222o",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-4r6kb2jf",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#4ade80",
+                  "opacity": 1,
+                  "width": 32,
+                  "height": 32,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                },
+                {
+                  "id": "body-xizox2oz",
+                  "type": "RigidBody",
+                  "enabled": true,
+                  "velocity": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "mass": 1,
+                  "isStatic": false,
+                  "gravityScale": 1,
+                  "drag": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "bounce": {
+                    "x": 0,
+                    "y": 0
+                  },
+                  "maxVelocity": {
+                    "x": 450,
+                    "y": 1400
+                  }
+                },
+                {
+                  "id": "collider-vgu948oz",
+                  "type": "Collider",
+                  "enabled": true,
+                  "shape": "box",
+                  "autoSize": true,
+                  "width": 30,
+                  "height": 30,
+                  "radius": 48,
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "isTrigger": false,
+                  "isPassThrough": false
+                },
+                {
+                  "id": "behavior-myih1w38",
+                  "type": "Behavior",
+                  "enabled": true,
+                  "kind": "none",
+                  "moveSpeed": 220,
+                  "jumpForce": 560,
+                  "patrolDistance": 180,
+                  "patrolSpeed": 90,
+                  "patrolAxis": "x",
+                  "collectibleValue": 10,
+                  "respawnDelay": 0,
+                  "checkpointId": ""
+                },
+                {
+                  "id": "script-zkw27r38",
+                  "type": "Script",
+                  "enabled": true,
+                  "code": ""
+                }
+              ]
+            },
+            {
+              "id": "ent-apple",
+              "name": "Apple",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "collectible",
+              "components": [
+                {
+                  "id": "transform-2x95maag",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-ylg61y1b",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#ef4444",
+                  "opacity": 1,
+                  "width": 24,
+                  "height": 24,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                },
+                {
+                  "id": "collider-ccu567zg",
+                  "type": "Collider",
+                  "enabled": true,
+                  "shape": "circle",
+                  "autoSize": true,
+                  "width": 96,
+                  "height": 96,
+                  "radius": 12,
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "isTrigger": true,
+                  "isPassThrough": false
+                },
+                {
+                  "id": "behavior-xg536qck",
+                  "type": "Behavior",
+                  "enabled": true,
+                  "kind": "none",
+                  "moveSpeed": 220,
+                  "jumpForce": 560,
+                  "patrolDistance": 180,
+                  "patrolSpeed": 90,
+                  "patrolAxis": "x",
+                  "collectibleValue": 10,
+                  "respawnDelay": 0,
+                  "checkpointId": ""
+                },
+                {
+                  "id": "script-ll81x1c0",
+                  "type": "Script",
+                  "enabled": true,
+                  "code": ""
+                }
+              ]
+            },
+            {
+              "id": "ent-wall-top",
+              "name": "Top Wall",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "hazard",
+              "components": [
+                {
+                  "id": "transform-c1gtpxc8",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-f66cm3wu",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#374151",
+                  "opacity": 1,
+                  "width": 832,
+                  "height": 32,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                },
+                {
+                  "id": "collider-17b85ied",
+                  "type": "Collider",
+                  "enabled": true,
+                  "shape": "box",
+                  "autoSize": true,
+                  "width": 832,
+                  "height": 32,
+                  "radius": 48,
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "isTrigger": false,
+                  "isPassThrough": false
+                },
+                {
+                  "id": "behavior-k8ovj6zu",
+                  "type": "Behavior",
+                  "enabled": true,
+                  "kind": "none",
+                  "moveSpeed": 220,
+                  "jumpForce": 560,
+                  "patrolDistance": 180,
+                  "patrolSpeed": 90,
+                  "patrolAxis": "x",
+                  "collectibleValue": 10,
+                  "respawnDelay": 0,
+                  "checkpointId": ""
+                }
+              ]
+            },
+            {
+              "id": "ent-wall-bottom",
+              "name": "Bottom Wall",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "hazard",
+              "components": [
+                {
+                  "id": "transform-mvz4d39p",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-umjlpu2z",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#374151",
+                  "opacity": 1,
+                  "width": 832,
+                  "height": 32,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                },
+                {
+                  "id": "collider-5piw34bk",
+                  "type": "Collider",
+                  "enabled": true,
+                  "shape": "box",
+                  "autoSize": true,
+                  "width": 832,
+                  "height": 32,
+                  "radius": 48,
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "isTrigger": false,
+                  "isPassThrough": false
+                },
+                {
+                  "id": "behavior-0p9awv3h",
+                  "type": "Behavior",
+                  "enabled": true,
+                  "kind": "none",
+                  "moveSpeed": 220,
+                  "jumpForce": 560,
+                  "patrolDistance": 180,
+                  "patrolSpeed": 90,
+                  "patrolAxis": "x",
+                  "collectibleValue": 10,
+                  "respawnDelay": 0,
+                  "checkpointId": ""
+                }
+              ]
+            },
+            {
+              "id": "ent-wall-left",
+              "name": "Left Wall",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "hazard",
+              "components": [
+                {
+                  "id": "transform-f079hqv6",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-jvj94a98",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#374151",
+                  "opacity": 1,
+                  "width": 32,
+                  "height": 632,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                },
+                {
+                  "id": "collider-nwp9dfb0",
+                  "type": "Collider",
+                  "enabled": true,
+                  "shape": "box",
+                  "autoSize": true,
+                  "width": 32,
+                  "height": 632,
+                  "radius": 48,
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "isTrigger": false,
+                  "isPassThrough": false
+                },
+                {
+                  "id": "behavior-wjauoaav",
+                  "type": "Behavior",
+                  "enabled": true,
+                  "kind": "none",
+                  "moveSpeed": 220,
+                  "jumpForce": 560,
+                  "patrolDistance": 180,
+                  "patrolSpeed": 90,
+                  "patrolAxis": "x",
+                  "collectibleValue": 10,
+                  "respawnDelay": 0,
+                  "checkpointId": ""
+                }
+              ]
+            },
+            {
+              "id": "ent-wall-right",
+              "name": "Right Wall",
+              "parent": null,
+              "children": [],
+              "tags": [],
+              "layer": 0,
+              "locked": false,
+              "hidden": false,
+              "prefab": "hazard",
+              "components": [
+                {
+                  "id": "transform-i6twi1ph",
+                  "type": "Transform",
+                  "enabled": true,
+                  "position": {
+                    "x": 240,
+                    "y": 240
+                  },
+                  "rotation": 0,
+                  "scale": {
+                    "x": 1,
+                    "y": 1
+                  }
+                },
+                {
+                  "id": "sprite-i517t6pk",
+                  "type": "Sprite",
+                  "enabled": true,
+                  "assetId": "",
+                  "color": "#374151",
+                  "opacity": 1,
+                  "width": 32,
+                  "height": 632,
+                  "shape": "rectangle",
+                  "flipX": false,
+                  "flipY": false
+                },
+                {
+                  "id": "collider-uxe8whym",
+                  "type": "Collider",
+                  "enabled": true,
+                  "shape": "box",
+                  "autoSize": true,
+                  "width": 32,
+                  "height": 632,
+                  "radius": 48,
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "isTrigger": false,
+                  "isPassThrough": false
+                },
+                {
+                  "id": "behavior-o07g0vn9",
+                  "type": "Behavior",
+                  "enabled": true,
+                  "kind": "none",
+                  "moveSpeed": 220,
+                  "jumpForce": 560,
+                  "patrolDistance": 180,
+                  "patrolSpeed": 90,
+                  "patrolAxis": "x",
+                  "collectibleValue": 10,
+                  "respawnDelay": 0,
+                  "checkpointId": ""
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "activeSceneId": "scene-snake-main"
+    }
+  },
+  "debug": {
+    "id": "ai-mmrw8m11-7aghf8",
+    "timestamp": "2026-03-15T15:12:37.765Z",
+    "model": "gemini-3.1-pro-preview",
+    "mode": "create",
+    "prompt": "create the snake game for me",
+    "parseMode": "direct",
+    "planText": "",
+    "generationText": "{\n  \"summary\": \"A classic top-down Snake game arena with grid-based movement logic and collectibles.\",\n  \"notes\": [\n    \"Use arrow keys to move the snake.\",\n    \"Eat the red apples to grow your tail.\",\n    \"Avoid colliding with the walls or yourself.\"\n  ],\n  \"project\": {\n    \"version\": 2,\n    \"name\": \"Snake Game\",\n    \"description\": \"Classic snake game implementation using top-down physics and custom scripts for grid movement.\",\n    \"updatedAt\": \"2026-03-15T15:11:44.325Z\",\n    \"assets\": [],\n    \"controls\": {\n      \"left\": \"ArrowLeft\",\n      \"right\": \"ArrowRight\",\n      \"up\": \"ArrowUp\",\n      \"down\": \"ArrowDown\",\n      \"jump\": \"Space\",\n      \"action\": \"KeyE\",\n      \"altAction\": \"ShiftLeft\"\n    },\n    \"scenes\": [\n      {\n        \"id\": \"scene-snake-main\",\n        \"name\": \"Snake Arena\",\n        \"notes\": \"Main game arena bounded by hazard walls.\",\n        \"settings\": {\n          \"worldSize\": {\n            \"x\": 800,\n            \"y\": 600\n          },\n          \"cameraStart\": {\n            \"x\": 400,\n            \"y\": 300\n          },\n          \"gravity\": {\n            \"x\": 0,\n            \"y\": 0\n          },\n          \"gridSize\": 32,\n          \"snapToGrid\": true,\n          \"showGrid\": true,\n          \"cameraFollowPlayer\": false,\n          \"backgroundTop\": \"#1a1c20\",\n          \"backgroundBottom\": \"#111215\",\n          \"ambientColor\": \"#ffffff\"\n        },\n        \"entities\": [\n          {\n            \"id\": \"ent-snake-head\",\n            \"name\": \"Snake Head\",\n            \"prefab\": \"player\",\n            \"components\": [\n              {\n                \"type\": \"Transform\",\n                \"x\": 400,\n                \"y\": 300,\n                \"rotation\": 0,\n                \"scale\": {\n                  \"x\": 1,\n                  \"y\": 1\n                }\n              },\n              {\n                \"type\": \"Sprite\",\n                \"texture\": \"square\",\n                \"color\": \"#4ade80\",\n                \"width\": 32,\n                \"height\": 32\n              },\n              {\n                \"type\": \"RigidBody\",\n                \"bodyType\": \"kinematic\",\n                \"mass\": 1,\n                \"fixedRotation\": true\n              },\n              {\n                \"type\": \"Collider\",\n                \"shape\": \"rectangle\",\n                \"width\": 30,\n                \"height\": 30,\n                \"isTrigger\": false\n              },\n              {\n                \"type\": \"Behavior\",\n                \"behaviorType\": \"player-topdown\"\n              },\n              {\n                \"type\": \"Script\",\n                \"name\": \"SnakeMovement\",\n                \"source\": \"let dx = 32, dy = 0; let tick = 0; function update(dt) { if (Input.left && dx === 0) { dx = -32; dy = 0; } if (Input.right && dx === 0) { dx = 32; dy = 0; } if (Input.up && dy === 0) { dx = 0; dy = -32; } if (Input.down && dy === 0) { dx = 0; dy = 32; } tick += dt; if (tick > 0.15) { transform.x += dx; transform.y += dy; tick = 0; /* Broadcast event to move tail segments */ } }\"\n              }\n            ]\n          },\n          {\n            \"id\": \"ent-apple\",\n            \"name\": \"Apple\",\n            \"prefab\": \"collectible\",\n            \"components\": [\n              {\n                \"type\": \"Transform\",\n                \"x\": 560,\n                \"y\": 300,\n                \"rotation\": 0,\n                \"scale\": {\n                  \"x\": 1,\n                  \"y\": 1\n                }\n              },\n              {\n                \"type\": \"Sprite\",\n                \"texture\": \"circle\",\n                \"color\": \"#ef4444\",\n                \"width\": 24,\n                \"height\": 24\n              },\n              {\n                \"type\": \"Collider\",\n                \"shape\": \"circle\",\n                \"radius\": 12,\n                \"isTrigger\": true\n              },\n              {\n                \"type\": \"Behavior\",\n                \"behaviorType\": \"collectible\"\n              },\n              {\n                \"type\": \"Script\",\n                \"name\": \"AppleLogic\",\n                \"source\": \"function onCollect(player) { transform.x = Math.floor(Math.random() * 23 + 1) * 32; transform.y = Math.floor(Math.random() * 17 + 1) * 32; /* Broadcast event to grow snake tail */ }\"\n              }\n            ]\n          },\n          {\n            \"id\": \"ent-wall-top\",\n            \"name\": \"Top Wall\",\n            \"prefab\": \"hazard\",\n            \"components\": [\n              {\n                \"type\": \"Transform\",\n                \"x\": 400,\n                \"y\": -16,\n                \"rotation\": 0,\n                \"scale\": {\n                  \"x\": 1,\n                  \"y\": 1\n                }\n              },\n              {\n                \"type\": \"Sprite\",\n                \"texture\": \"square\",\n                \"color\": \"#374151\",\n                \"width\": 832,\n                \"height\": 32\n              },\n              {\n                \"type\": \"Collider\",\n                \"shape\": \"rectangle\",\n                \"width\": 832,\n                \"height\": 32,\n                \"isTrigger\": false\n              },\n              {\n                \"type\": \"Behavior\",\n                \"behaviorType\": \"hazard\"\n              }\n            ]\n          },\n          {\n            \"id\": \"ent-wall-bottom\",\n            \"name\": \"Bottom Wall\",\n            \"prefab\": \"hazard\",\n            \"components\": [\n              {\n                \"type\": \"Transform\",\n                \"x\": 400,\n                \"y\": 616,\n                \"rotation\": 0,\n                \"scale\": {\n                  \"x\": 1,\n                  \"y\": 1\n                }\n              },\n              {\n                \"type\": \"Sprite\",\n                \"texture\": \"square\",\n                \"color\": \"#374151\",\n                \"width\": 832,\n                \"height\": 32\n              },\n              {\n                \"type\": \"Collider\",\n                \"shape\": \"rectangle\",\n                \"width\": 832,\n                \"height\": 32,\n                \"isTrigger\": false\n              },\n              {\n                \"type\": \"Behavior\",\n                \"behaviorType\": \"hazard\"\n              }\n            ]\n          },\n          {\n            \"id\": \"ent-wall-left\",\n            \"name\": \"Left Wall\",\n            \"prefab\": \"hazard\",\n            \"components\": [\n              {\n                \"type\": \"Transform\",\n                \"x\": -16,\n                \"y\": 300,\n                \"rotation\": 0,\n                \"scale\": {\n                  \"x\": 1,\n                  \"y\": 1\n                }\n              },\n              {\n                \"type\": \"Sprite\",\n                \"texture\": \"square\",\n                \"color\": \"#374151\",\n                \"width\": 32,\n                \"height\": 632\n              },\n              {\n                \"type\": \"Collider\",\n                \"shape\": \"rectangle\",\n                \"width\": 32,\n                \"height\": 632,\n                \"isTrigger\": false\n              },\n              {\n                \"type\": \"Behavior\",\n                \"behaviorType\": \"hazard\"\n              }\n            ]\n          },\n          {\n            \"id\": \"ent-wall-right\",\n            \"name\": \"Right Wall\",\n            \"prefab\": \"hazard\",\n            \"components\": [\n              {\n                \"type\": \"Transform\",\n                \"x\": 816,\n                \"y\": 300,\n                \"rotation\": 0,\n                \"scale\": {\n                  \"x\": 1,\n                  \"y\": 1\n                }\n              },\n              {\n                \"type\": \"Sprite\",\n                \"texture\": \"square\",\n                \"color\": \"#374151\",\n                \"width\": 32,\n                \"height\": 632\n              },\n              {\n                \"type\": \"Collider\",\n                \"shape\": \"rectangle\",\n                \"width\": 32,\n                \"height\": 632,\n                \"isTrigger\": false\n              },\n              {\n                \"type\": \"Behavior\",\n                \"behaviorType\": \"hazard\"\n              }\n            ]\n          }\n        ]\n      }\n    ],\n    \"activeSceneId\": \"scene-snake-main\"\n  }\n}",
+    "repairText": "",
+    "planFinishReason": "plan request failed",
+    "generationFinishReason": "STOP",
+    "repairFinishReason": "repair not needed",
+    "savedFilePath": "output/ai-debug/2026-03-15T15-12-37-765Z-ai-mmrw8m11-7aghf8.json",
+    "stats": {
+      "inputSceneCount": 1,
+      "inputEntityCount": 0,
+      "outputSceneCount": 1,
+      "outputEntityCount": 6,
+      "assetCount": 0,
+      "behaviorCount": 0,
+      "scriptCount": 2,
+      "rigidBodyCount": 1,
+      "colliderCount": 6,
+      "playerCount": 1,
+      "collectibleCount": 1,
+      "goalCount": 0,
+      "hazardCount": 4
+    },
+    "issues": [
+      {
+        "code": "empty-script",
+        "level": "warning",
+        "message": "Entity \"Snake Head\" has a Script component with empty code."
+      },
+      {
+        "code": "empty-script",
+        "level": "warning",
+        "message": "Entity \"Apple\" has a Script component with empty code."
+      }
+    ]
+  }
+}

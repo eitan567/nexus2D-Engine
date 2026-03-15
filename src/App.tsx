@@ -59,6 +59,7 @@ import {
   STORAGE_KEY,
 } from './lib/project-utils';
 import {
+  AIDebugPayload,
   AIResponsePayload,
   BehaviorComponent,
   ColliderComponent,
@@ -263,6 +264,39 @@ function matchesFilterQuery(filterText: string, ...values: Array<string | number
   }
 
   return values.some((value) => String(value ?? '').toLowerCase().includes(query));
+}
+
+async function copyTextToClipboard(text: string) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.style.position = 'fixed';
+  textarea.style.opacity = '0';
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand('copy');
+  document.body.removeChild(textarea);
+}
+
+function downloadTextFile(filename: string, content: string) {
+  const blob = new Blob([content], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function getSceneCameraSize(scene: Scene): Vector2 {
+  return {
+    x: Math.max(1, Math.round(scene.settings.cameraSize.x)),
+    y: Math.max(1, Math.round(scene.settings.cameraSize.y)),
+  };
 }
 
 function sortEntitiesForOutliner(entities: Entity[]) {
@@ -795,7 +829,11 @@ function AiPanel({
   aiError,
   aiSummary,
   aiNotes,
+  aiDebug,
+  aiDebugProject,
   onRun,
+  onCopyDebug,
+  onDownloadDebug,
 }: {
   aiHealth: AiHealth | null;
   aiMode: 'create' | 'extend';
@@ -807,7 +845,11 @@ function AiPanel({
   aiError: string;
   aiSummary: string;
   aiNotes: string[];
+  aiDebug: AIDebugPayload | null;
+  aiDebugProject: Project | null;
   onRun: () => void;
+  onCopyDebug: () => void;
+  onDownloadDebug: () => void;
 }) {
   return (
     <div className="space-y-2">
@@ -888,6 +930,115 @@ function AiPanel({
           </div>
         )}
       </SectionCard>
+
+      {aiDebug && (
+        <SectionCard title="AI Debug Trace" subtitle="Raw model output, validation and saved artifact">
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-2 text-[11px] text-[var(--muted)]">
+              <div className="rounded-sm border border-[var(--border)] bg-[#202226] px-2.5 py-2">
+                <div className="uppercase tracking-[0.14em] opacity-70">Model</div>
+                <div className="mt-1 text-[12px] font-semibold text-[var(--text)]">{aiDebug.model}</div>
+              </div>
+              <div className="rounded-sm border border-[var(--border)] bg-[#202226] px-2.5 py-2">
+                <div className="uppercase tracking-[0.14em] opacity-70">Parse Mode</div>
+                <div className="mt-1 text-[12px] font-semibold text-[var(--text)]">{aiDebug.parseMode}</div>
+              </div>
+              <div className="rounded-sm border border-[var(--border)] bg-[#202226] px-2.5 py-2">
+                <div className="uppercase tracking-[0.14em] opacity-70">Output</div>
+                <div className="mt-1 text-[12px] font-semibold text-[var(--text)]">
+                  {aiDebug.stats.outputSceneCount} scenes • {aiDebug.stats.outputEntityCount} entities
+                </div>
+                <div className="mt-1 text-[11px]">
+                  {aiDebug.stats.behaviorCount} behaviors • {aiDebug.stats.scriptCount} scripts • {aiDebug.stats.colliderCount} colliders
+                </div>
+              </div>
+              <div className="rounded-sm border border-[var(--border)] bg-[#202226] px-2.5 py-2">
+                <div className="uppercase tracking-[0.14em] opacity-70">Server Artifact</div>
+                <div className="mt-1 break-all font-mono text-[11px] text-[var(--text)]">
+                  {aiDebug.savedFilePath || 'Not saved'}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={onCopyDebug}
+                className="inline-flex h-8 items-center gap-2 rounded-sm border border-[var(--border)] bg-[#26282c] px-3 text-[11px] font-semibold text-[var(--text)]"
+              >
+                <Copy size={14} />
+                Copy Trace
+              </button>
+              <button
+                onClick={onDownloadDebug}
+                className="inline-flex h-8 items-center gap-2 rounded-sm border border-[var(--border)] bg-[#26282c] px-3 text-[11px] font-semibold text-[var(--text)]"
+              >
+                <Download size={14} />
+                Download Trace
+              </button>
+            </div>
+
+            {aiDebug.issues.length > 0 && (
+              <div className="space-y-2">
+                {aiDebug.issues.map((issue) => (
+                  <div
+                    key={`${issue.code}-${issue.message}`}
+                    className={`rounded-sm border px-2.5 py-2 text-[11px] ${
+                      issue.level === 'error'
+                        ? 'border-[#6b4348] bg-[#38262a] text-[#f0d2d7]'
+                        : issue.level === 'warning'
+                          ? 'border-[#6b5c43] bg-[#382f24] text-[#ead8b7]'
+                          : 'border-[var(--border)] bg-[#202226] text-[var(--muted)]'
+                    }`}
+                  >
+                    <div className="font-semibold uppercase tracking-[0.14em]">{issue.code}</div>
+                    <div className="mt-1 leading-5">{issue.message}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <details className="rounded-sm border border-[var(--border)] bg-[#202226]" open>
+              <summary className="cursor-pointer list-none px-3 py-2 text-[12px] font-semibold text-[var(--text)]">
+                Planning Response
+              </summary>
+              <pre className="max-h-48 overflow-auto border-t border-[var(--border)] px-3 py-2 text-[11px] leading-5 text-[var(--muted)] whitespace-pre-wrap break-words">
+                {`Finish: ${aiDebug.planFinishReason}\n\n${aiDebug.planText || 'No planning text captured.'}`}
+              </pre>
+            </details>
+
+            <details className="rounded-sm border border-[var(--border)] bg-[#202226]" open>
+              <summary className="cursor-pointer list-none px-3 py-2 text-[12px] font-semibold text-[var(--text)]">
+                Generation Response
+              </summary>
+              <pre className="max-h-64 overflow-auto border-t border-[var(--border)] px-3 py-2 font-mono text-[11px] leading-5 text-[var(--muted)] whitespace-pre-wrap break-words">
+                {`Finish: ${aiDebug.generationFinishReason}\n\n${aiDebug.generationText || 'No generation text captured.'}`}
+              </pre>
+            </details>
+
+            {aiDebug.repairText && (
+              <details className="rounded-sm border border-[var(--border)] bg-[#202226]">
+                <summary className="cursor-pointer list-none px-3 py-2 text-[12px] font-semibold text-[var(--text)]">
+                  Repair Response
+                </summary>
+                <pre className="max-h-56 overflow-auto border-t border-[var(--border)] px-3 py-2 font-mono text-[11px] leading-5 text-[var(--muted)] whitespace-pre-wrap break-words">
+                  {`Finish: ${aiDebug.repairFinishReason}\n\n${aiDebug.repairText}`}
+                </pre>
+              </details>
+            )}
+
+            {aiDebugProject && (
+              <details className="rounded-sm border border-[var(--border)] bg-[#202226]">
+                <summary className="cursor-pointer list-none px-3 py-2 text-[12px] font-semibold text-[var(--text)]">
+                  Normalized Project JSON
+                </summary>
+                <pre className="max-h-64 overflow-auto border-t border-[var(--border)] px-3 py-2 font-mono text-[11px] leading-5 text-[var(--muted)] whitespace-pre-wrap break-words">
+                  {JSON.stringify(aiDebugProject, null, 2)}
+                </pre>
+              </details>
+            )}
+          </div>
+        </SectionCard>
+      )}
     </div>
   );
 }
@@ -1017,6 +1168,24 @@ function SceneInspector({
               />
             </LabeledField>
             <NumberField
+              label="Camera Width"
+              value={activeScene.settings.cameraSize.x}
+              onChange={(value) =>
+                mutateActiveScene((scene) => {
+                  scene.settings.cameraSize.x = Math.max(1, Math.round(value));
+                })
+              }
+            />
+            <NumberField
+              label="Camera Height"
+              value={activeScene.settings.cameraSize.y}
+              onChange={(value) =>
+                mutateActiveScene((scene) => {
+                  scene.settings.cameraSize.y = Math.max(1, Math.round(value));
+                })
+              }
+            />
+            <NumberField
               label="Camera Start X"
               value={activeScene.settings.cameraStart.x}
               onChange={(value) =>
@@ -1038,7 +1207,9 @@ function SceneInspector({
           <div className="mt-3 flex items-center justify-between gap-3">
             <div className="text-[11px] text-[var(--muted)]">
               {editorCameraStart
-                ? `Current view: ${Math.round(editorCameraStart.x)}, ${Math.round(editorCameraStart.y)}`
+                ? `Current view: ${Math.round(editorCameraStart.x)}, ${Math.round(editorCameraStart.y)} • Frame ${Math.round(
+                    activeScene.settings.cameraSize.x,
+                  )} x ${Math.round(activeScene.settings.cameraSize.y)}`
                 : 'Current view is not available yet.'}
             </div>
             <button type="button" onClick={captureCameraStart} className="nexus-ghost-button">
@@ -1617,6 +1788,7 @@ export default function App() {
   const history = useProjectHistory(loadInitialProject());
   const project = history.project;
   const activeScene = getActiveScene(project);
+  const cameraViewportSize = getSceneCameraSize(activeScene);
   const stats = projectStats(project);
 
   const [sessionStarted, setSessionStarted] = useState(true);
@@ -1642,6 +1814,8 @@ export default function App() {
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiSummary, setAiSummary] = useState('');
   const [aiNotes, setAiNotes] = useState<string[]>([]);
+  const [aiDebug, setAiDebug] = useState<AIDebugPayload | null>(null);
+  const [aiDebugProject, setAiDebugProject] = useState<Project | null>(null);
   const [aiStatus, setAiStatus] = useState<'idle' | 'loading' | 'error'>('idle');
   const [aiError, setAiError] = useState('');
   const [aiHealth, setAiHealth] = useState<AiHealth | null>(null);
@@ -1655,6 +1829,7 @@ export default function App() {
   const [assetFilter, setAssetFilter] = useState('');
   const [leftSidebarWidth, setLeftSidebarWidth] = useState(296);
   const [leftSidebarResizeState, setLeftSidebarResizeState] = useState<{startX: number; startWidth: number} | null>(null);
+  const [, setViewportOverlayRefreshToken] = useState(0);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stageShellRef = useRef<HTMLDivElement>(null);
@@ -2744,10 +2919,8 @@ export default function App() {
   });
 
   const addPrefab = (prefab: EntityPrefab) => {
-    const viewportWidth = viewportMode === 'mobile' ? 390 : Math.max(1, Math.round(stageCanvasSize?.width ?? 1280));
-    const viewportHeight = viewportMode === 'mobile' ? 844 : Math.max(1, Math.round(stageCanvasSize?.height ?? 820));
-    const cameraFrameWidth = Math.min(viewportWidth, activeScene.settings.worldSize.x);
-    const cameraFrameHeight = Math.min(viewportHeight, activeScene.settings.worldSize.y);
+    const cameraFrameWidth = Math.min(cameraViewportSize.x, activeScene.settings.worldSize.x);
+    const cameraFrameHeight = Math.min(cameraViewportSize.y, activeScene.settings.worldSize.y);
     const maxCameraStartX = Math.max(0, activeScene.settings.worldSize.x - cameraFrameWidth);
     const maxCameraStartY = Math.max(0, activeScene.settings.worldSize.y - cameraFrameHeight);
     const cameraFrame = {
@@ -2928,13 +3101,33 @@ export default function App() {
   };
 
   const exportProject = () => {
-    const blob = new Blob([JSON.stringify(project, null, 2)], {type: 'application/json'});
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${project.name.replace(/\s+/g, '-').toLowerCase()}.nexus2d.json`;
-    link.click();
-    URL.revokeObjectURL(url);
+    downloadTextFile(`${project.name.replace(/\s+/g, '-').toLowerCase()}.nexus2d.json`, JSON.stringify(project, null, 2));
+  };
+
+  const serializeAiDebugTrace = () =>
+    JSON.stringify(
+      {
+        debug: aiDebug,
+        project: aiDebugProject,
+      },
+      null,
+      2,
+    );
+
+  const copyAiDebugTrace = async () => {
+    if (!aiDebug) {
+      return;
+    }
+
+    await copyTextToClipboard(serializeAiDebugTrace());
+  };
+
+  const downloadAiDebugTrace = () => {
+    if (!aiDebug) {
+      return;
+    }
+
+    downloadTextFile(`${aiDebug.id}.json`, serializeAiDebugTrace());
   };
 
   const importProjectFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -2980,6 +3173,8 @@ export default function App() {
 
     setAiStatus('loading');
     setAiError('');
+    setAiDebug(null);
+    setAiDebugProject(null);
 
     try {
       const response = await fetch('/api/ai/generate-project', {
@@ -2993,13 +3188,16 @@ export default function App() {
       });
 
       const payload = (await response.json()) as AIResponsePayload & {error?: string};
+      setAiDebug(payload.debug ?? null);
       if (!response.ok) {
+        setAiDebugProject(payload.project ? normalizeProject(payload.project, project) : null);
         throw new Error(payload.error || 'Vertex AI request failed.');
       }
 
       const normalized = normalizeAiResponse(payload, project);
       setAiSummary(normalized.summary);
       setAiNotes(normalized.notes);
+      setAiDebugProject(normalized.project);
 
       startTransition(() => {
         history.setProject(touchProject(normalized.project));
@@ -3010,7 +3208,7 @@ export default function App() {
       });
 
       setAiStatus('idle');
-      setRightTab('inspector');
+      setRightTab('ai');
     } catch (error) {
       setAiStatus('error');
       setAiError(error instanceof Error ? error.message : 'Unknown AI error.');
@@ -3216,7 +3414,7 @@ export default function App() {
     setStoredProject(project);
   }, [project, sessionStarted]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!sessionStarted) {
       return;
     }
@@ -3253,6 +3451,11 @@ export default function App() {
     }
 
     engine.setEditorViewportMode(stageViewportMode);
+
+    // The gizmo overlay reads engine world/screen transforms during render.
+    // Force one immediate rerender after the engine camera mode changes so
+    // the selection overlay does not stay in the old viewport until hover.
+    setViewportOverlayRefreshToken((value) => value + 1);
   }, [stageViewportMode, sessionStarted]);
 
   useEffect(() => {
@@ -4031,7 +4234,7 @@ export default function App() {
               <StagePill label="Stage View" value={stageViewportMode} />
               <StagePill label="Device" value={viewportMode} />
               <StagePill label="World" value={`${activeScene.settings.worldSize.x} x ${activeScene.settings.worldSize.y}`} />
-              <StagePill label="Camera" value={`${runtimeSnapshot?.camera.width ?? 0} x ${runtimeSnapshot?.camera.height ?? 0}`} />
+              <StagePill label="Camera" value={`${cameraViewportSize.x} x ${cameraViewportSize.y}`} />
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <StagePill label="Grid" value={activeScene.settings.gridSize} />
@@ -4271,7 +4474,11 @@ export default function App() {
                   aiError={aiError}
                   aiSummary={aiSummary}
                   aiNotes={aiNotes}
+                  aiDebug={aiDebug}
+                  aiDebugProject={aiDebugProject}
                   onRun={() => void runAiGeneration()}
+                  onCopyDebug={() => void copyAiDebugTrace()}
+                  onDownloadDebug={downloadAiDebugTrace}
                 />
               ) : selectionCount > 1 ? (
                 <div className="rounded-sm border border-[var(--border)] bg-[#26292e] p-3">

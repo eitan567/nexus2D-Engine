@@ -437,3 +437,30 @@ ormalizeAiResponse הוקשח כך שיקבל גם וריאציות תקינות
   - 
 pm run lint עדיין נכשל, אבל על שגיאות TypeScript ישנות ב-App.tsx/project-utils.ts שאינן חלק מהתיקון.
 
+
+- נוסף AI debug trace מלא ל-editor:
+  - ה-server מחזיר עכשיו debug עם plan/raw generation/raw repair, סטטיסטיקות פרויקט, finish reasons ו-validation issues.
+  - כל ריצת AI נשמרת לקובץ תחת output/ai-debug/*.json.
+  - פאנל ה-Assistant מציג חלון debug רציני עם warnings, raw responses, ו-Normalized Project JSON, כולל Copy/Download trace.
+  - אחרי AI run נשארים בטאב Assistant כדי לראות מיד את ה-trace ולא נזרקים ל-Inspector.
+- אימות:
+  - קריאת create the snake game for me החזירה 200 עם debug.savedFilePath תקין.
+  - במקרה הבדיקה: outputEntityCount=6, scriptCount=2, ehaviorCount=0, וה-validator סימן mpty-script פעמיים.
+  - Playwright client רץ בלי rrors-0.json חדש; screenshot headless נשאר שחור כבעיית capture מוכרת של WebGL headless, אבל state file נוצר.
+
+- חיזוק נוסף ל-prompt contract: Script components חייבים להכיל קוד לא ריק, ו-create mode חייב להחזיר game loop runnable ולא רק layout.
+- ניסיון ריצה נוסף אחרי חיזוק ה-contract נתקע על latency/timeout של המודל, אבל /api/health נשאר תקין; כלומר אין crash בשרת.
+
+- נוסף ערך cameraSize ל-scene settings והוצגו שדות Camera Width / Camera Height ב-Scene Settings, בלי לשנות את מבנה ה-editor.
+- תצוגת ה-stage הוחזרה להתנהגות הקודמת: ה-canvas שוב ממלא את אזור העבודה, וגודל המצלמה משפיע רק על frame המצלמה ועל camera/play zoom במנוע.
+- נוסף favicon סטטי דרך public/favicon.ico + public/favicon.svg וקישור ב-index.html כדי לבטל את שגיאת /favicon.ico 404.
+- אימות:
+  - בדיקת headless מאותו origin אחרי Create החזירה shellWidth=992, frameWidth=978, leftGap=7, rightGap=7; כלומר נשאר רק padding/מסגרת רגילים ולא הרווחים הגדולים שנוצרו קודם.
+  - אותה בדיקה אישרה cameraWidthFieldVisible=true ו-faviconStatus=200.
+- תוקן race ב-UI של selection gizmo בזמן מעבר World/Camera: ה-engine מעדכן את viewport mode ב-useLayoutEffect ונכפה rerender אחד נוסף של שכבת ה-gizmo, כדי שהידיות לא יישארו במיקום הישן עד hover.
+- אימות ממוקד עם Playwright על הרצף Create -> Player -> Camera:
+  - rotate handle לפני mousemove: x=794, y=370.703125
+  - rotate handle אחרי mousemove: x=794, y=370.703125
+  - כלומר dx=0, dy=0; אין יותר קפיצה/יישור מאוחר.
+- screenshot ממוקד הראה את ה-Player במרכז עם gizmo מיושר מיד ב-camera view.
+- web_game_playwright_client רץ שוב ללא errors-0.json; screenshot ה-headless השגרתי נשאר שחור בגלל capture של WebGL headless, ו-state-0.json היה mode=loading בלבד.

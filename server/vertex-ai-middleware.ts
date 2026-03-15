@@ -1,8 +1,24 @@
+import { mkdir, writeFile } from 'node:fs/promises';
 import { GoogleGenAI, ThinkingLevel } from '@google/genai';
 import type {IncomingMessage, ServerResponse} from 'node:http';
+import path from 'node:path';
 import {AI_MODEL, buildAiSystemInstruction, buildAiUserPrompt} from '../src/lib/ai-contract';
-import {createDefaultProject, normalizeAiResponse} from '../src/lib/project-utils';
-import {AIRequestPayload} from '../src/types';
+import {createDefaultProject, getComponent, normalizeAiResponse, projectStats} from '../src/lib/project-utils';
+import {
+  AIRequestPayload,
+  type BehaviorComponent,
+  type ColliderComponent,
+  type AIDebugIssue,
+  type AIDebugPayload,
+  type AIDebugStats,
+  type AIResponsePayload,
+  type Project,
+  type RigidBodyComponent,
+  type ScriptComponent,
+  type SpriteComponent,
+  type TransformComponent,
+  ComponentType,
+} from '../src/types';
 
 type Next = (error?: unknown) => void;
 type MiddlewareContainer = {
@@ -12,6 +28,17 @@ type MiddlewareContainer = {
 const AI_MAX_OUTPUT_TOKENS = 16_384;
 const AI_PLAN_OUTPUT_TOKENS = 1_024;
 const AI_THINKING_BUDGET = 2_048;
+const AI_DEBUG_DIR = path.resolve(process.cwd(), 'output', 'ai-debug');
+
+class AiGenerationError extends Error {
+  debug?: AIDebugPayload;
+
+  constructor(message: string, debug?: AIDebugPayload) {
+    super(message);
+    this.name = 'AiGenerationError';
+    this.debug = debug;
+  }
+}
 
 function sendJson(res: ServerResponse, statusCode: number, payload: unknown) {
   res.statusCode = statusCode;
@@ -183,6 +210,229 @@ function finishReasonSummary(response: Awaited<ReturnType<typeof requestProjectG
   return candidate.finishMessage ? `${candidate.finishReason}: ${candidate.finishMessage}` : candidate.finishReason;
 }
 
+function createDebugId() {
+  return `ai-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function collectProjectDebugStats(inputProject: Project, outputProject?: Project): AIDebugStats {
+  const input = projectStats(inputProject);
+
+  let scriptCount = 0;
+  let rigidBodyCount = 0;
+  let colliderCount = 0;
+  let behaviorCount = 0;
+  let playerCount = 0;
+  let collectibleCount = 0;
+  let goalCount = 0;
+  let hazardCount = 0;
+
+  for (const scene of outputProject?.scenes ?? []) {
+    for (const entity of scene.entities) {
+      if (entity.prefab === 'player') {
+        playerCount += 1;
+      } else if (entity.prefab === 'collectible') {
+        collectibleCount += 1;
+      } else if (entity.prefab === 'goal') {
+        goalCount += 1;
+      } else if (entity.prefab === 'hazard') {
+        hazardCount += 1;
+      }
+
+      const behavior = getComponent<BehaviorComponent>(entity, ComponentType.Behavior);
+      if (behavior?.enabled && behavior.kind !== 'none') {
+        behaviorCount += 1;
+      }
+
+      for (const component of entity.components) {
+        switch (component.type) {
+          case ComponentType.Script:
+            scriptCount += 1;
+            break;
+          case ComponentType.RigidBody:
+            rigidBodyCount += 1;
+            break;
+          case ComponentType.Collider:
+            colliderCount += 1;
+            break;
+          default:
+            break;
+        }
+      }
+    }
+  }
+
+  return {
+    inputSceneCount: input.sceneCount,
+    inputEntityCount: input.entityCount,
+    outputSceneCount: outputProject?.scenes.length ?? 0,
+    outputEntityCount: outputProject?.scenes.reduce((sum, scene) => sum + scene.entities.length, 0) ?? 0,
+    assetCount: outputProject?.assets.length ?? 0,
+    behaviorCount,
+    scriptCount,
+    rigidBodyCount,
+    colliderCount,
+    playerCount,
+    collectibleCount,
+    goalCount,
+    hazardCount,
+  };
+}
+
+function buildAiDebugIssues(params: {
+  mode: 'create' | 'extend';
+  parseMode: AIDebugPayload['parseMode'];
+  project?: Project;
+  stats: AIDebugStats;
+  summary?: string;
+  notes?: string[];
+  planText: string;
+  generationText: string;
+}) {
+  const issues: AIDebugIssue[] = [];
+  const narrative = [params.summary ?? '', ...(params.notes ?? []), params.planText].join('\n').toLowerCase();
+
+  if (params.parseMode === 'repaired') {
+    issues.push({
+      code: 'json-repaired',
+      level: 'warning',
+      message: 'The first AI response was invalid JSON, so the server used a repair pass before applying the project.',
+    });
+  } else if (params.parseMode === 'failed') {
+    issues.push({
+      code: 'json-failed',
+      level: 'error',
+      message: 'The AI response could not be parsed into valid JSON.',
+    });
+  }
+
+  if (!params.project || params.stats.outputSceneCount === 0) {
+    issues.push({
+      code: 'no-scenes',
+      level: 'error',
+      message: 'The AI output does not contain any usable scenes.',
+    });
+    return issues;
+  }
+
+  if (params.stats.outputEntityCount === 0) {
+    issues.push({
+      code: 'no-entities',
+      level: 'error',
+      message: 'The AI output contains no entities, so the scene cannot be playable.',
+    });
+  }
+
+  if (params.mode === 'create' && params.stats.outputEntityCount <= 1) {
+    issues.push({
+      code: 'minimal-create-output',
+      level: 'warning',
+      message: 'Create mode returned only one entity. This usually means the game is incomplete.',
+    });
+  }
+
+  if (params.mode === 'create' && params.stats.behaviorCount === 0 && params.stats.scriptCount === 0) {
+    issues.push({
+      code: 'no-runtime-logic',
+      level: 'warning',
+      message: 'The generated project has no behaviors and no scripts, so it is likely static.',
+    });
+  }
+
+  if (params.stats.scriptCount === 0 && /\bscript\b/.test(narrative)) {
+    issues.push({
+      code: 'script-mentioned-but-missing',
+      level: 'warning',
+      message: 'The AI summary or notes mention scripts, but the normalized project contains zero Script components.',
+    });
+  }
+
+  if (params.stats.collectibleCount === 0 && /\bcollectible\b|\bfood\b|\bpickup\b|\bcoin\b/.test(narrative)) {
+    issues.push({
+      code: 'collectible-mentioned-but-missing',
+      level: 'warning',
+      message: 'The AI description mentions collectibles or food, but no collectible-prefab entities were created.',
+    });
+  }
+
+  if (params.stats.hazardCount === 0 && /\bhazard\b|\blava\b|\bspike\b|\bwall\b/.test(narrative)) {
+    issues.push({
+      code: 'hazard-mentioned-but-missing',
+      level: 'warning',
+      message: 'The AI description mentions hazards or walls, but no hazard-prefab entities were created.',
+    });
+  }
+
+  if (params.stats.scriptCount === 0 && /"type"\s*:\s*"Script"/.test(params.generationText)) {
+    issues.push({
+      code: 'script-lost-during-normalization',
+      level: 'error',
+      message: 'The raw AI JSON mentioned Script components, but the final normalized project contains none.',
+    });
+  }
+
+  for (const scene of params.project.scenes) {
+    for (const entity of scene.entities) {
+      const transform = getComponent<TransformComponent>(entity, ComponentType.Transform);
+      const sprite = getComponent<SpriteComponent>(entity, ComponentType.Sprite);
+      const rigidBody = getComponent<RigidBodyComponent>(entity, ComponentType.RigidBody);
+      const collider = getComponent<ColliderComponent>(entity, ComponentType.Collider);
+      const behavior = getComponent<BehaviorComponent>(entity, ComponentType.Behavior);
+      const script = getComponent<ScriptComponent>(entity, ComponentType.Script);
+
+      if (!transform || !sprite) {
+        issues.push({
+          code: 'entity-missing-core-components',
+          level: 'error',
+          message: `Entity "${entity.name}" is missing Transform or Sprite and cannot render correctly in the engine.`,
+        });
+      }
+
+      if (
+        behavior?.enabled &&
+        ['player-platformer', 'player-topdown', 'enemy-patrol', 'moving-platform'].includes(behavior.kind) &&
+        (!rigidBody || !collider)
+      ) {
+        issues.push({
+          code: 'behavior-missing-physics',
+          level: 'warning',
+          message: `Entity "${entity.name}" uses ${behavior.kind} but is missing RigidBody or Collider.`,
+        });
+      }
+
+      if (script?.enabled && !script.code.trim()) {
+        issues.push({
+          code: 'empty-script',
+          level: 'warning',
+          message: `Entity "${entity.name}" has a Script component with empty code.`,
+        });
+      }
+    }
+  }
+
+  return issues;
+}
+
+async function persistAiDebugArtifact(debug: AIDebugPayload, artifact: Record<string, unknown>) {
+  await mkdir(AI_DEBUG_DIR, {recursive: true});
+  const filename = `${debug.timestamp.replace(/[:.]/g, '-')}-${debug.id}.json`;
+  const relativePath = path.posix.join('output', 'ai-debug', filename);
+  const absolutePath = path.resolve(AI_DEBUG_DIR, filename);
+  debug.savedFilePath = relativePath;
+  await writeFile(
+    absolutePath,
+    JSON.stringify(
+      {
+        ...artifact,
+        debug,
+      },
+      null,
+      2,
+    ),
+    'utf8',
+  );
+  return relativePath;
+}
+
 async function handleGenerateProject(req: IncomingMessage, res: ServerResponse) {
   const body = await readJsonBody<AIRequestPayload>(req);
   const fallbackProject = body.project ?? createDefaultProject();
@@ -196,35 +446,111 @@ async function handleGenerateProject(req: IncomingMessage, res: ServerResponse) 
 
   const ai = createVertexClient();
   let planningNotes = '';
+  let planFinishReason = 'plan skipped';
 
   try {
     const planResponse = await requestProjectPlan(ai, body, fallbackProject);
     planningNotes = (planResponse.text ?? '').trim();
+    planFinishReason = finishReasonSummary(planResponse);
   } catch {
     planningNotes = '';
+    planFinishReason = 'plan request failed';
   }
 
   const response = await requestProjectGeneration(ai, body, fallbackProject, planningNotes);
   let parsed: unknown;
+  let parseMode: AIDebugPayload['parseMode'] = 'direct';
+  let repairText = '';
+  let repairFinishReason = 'repair not needed';
 
   try {
     parsed = extractJson(response.text ?? '');
   } catch (initialError) {
     const repaired = await repairProjectJson(ai, response.text ?? '', body.mode ?? 'extend', body.prompt.trim());
+    parseMode = 'repaired';
+    repairText = repaired.text ?? '';
+    repairFinishReason = finishReasonSummary(repaired);
 
     try {
       parsed = extractJson(repaired.text ?? '');
     } catch (repairError) {
       const initialMessage = initialError instanceof Error ? initialError.message : 'Unknown initial parse failure.';
       const repairMessage = repairError instanceof Error ? repairError.message : 'Unknown repair parse failure.';
-      throw new Error(
+      const failedDebug: AIDebugPayload = {
+        id: createDebugId(),
+        timestamp: new Date().toISOString(),
+        model: AI_MODEL,
+        mode: body.mode ?? 'extend',
+        prompt: body.prompt.trim(),
+        parseMode: 'failed',
+        planText: planningNotes,
+        generationText: response.text ?? '',
+        repairText,
+        planFinishReason,
+        generationFinishReason: finishReasonSummary(response),
+        repairFinishReason,
+        savedFilePath: null,
+        stats: collectProjectDebugStats(fallbackProject),
+        issues: buildAiDebugIssues({
+          mode: body.mode ?? 'extend',
+          parseMode: 'failed',
+          stats: collectProjectDebugStats(fallbackProject),
+          planText: planningNotes,
+          generationText: response.text ?? '',
+        }),
+      };
+      await persistAiDebugArtifact(failedDebug, {
+        request: body,
+        error: {
+          initialMessage,
+          repairMessage,
+        },
+      });
+      throw new AiGenerationError(
         `AI returned invalid JSON after repair. Initial response: ${finishReasonSummary(response)}. ${initialMessage} Repair response: ${finishReasonSummary(repaired)}. ${repairMessage}`,
+        failedDebug,
       );
     }
   }
 
   const normalized = normalizeAiResponse(parsed, fallbackProject);
-  sendJson(res, 200, normalized);
+  const debugStats = collectProjectDebugStats(fallbackProject, normalized.project);
+  const debug: AIDebugPayload = {
+    id: createDebugId(),
+    timestamp: new Date().toISOString(),
+    model: AI_MODEL,
+    mode: body.mode ?? 'extend',
+    prompt: body.prompt.trim(),
+    parseMode,
+    planText: planningNotes,
+    generationText: response.text ?? '',
+    repairText,
+    planFinishReason,
+    generationFinishReason: finishReasonSummary(response),
+    repairFinishReason,
+    savedFilePath: null,
+    stats: debugStats,
+    issues: buildAiDebugIssues({
+      mode: body.mode ?? 'extend',
+      parseMode,
+      project: normalized.project,
+      stats: debugStats,
+      summary: normalized.summary,
+      notes: normalized.notes,
+      planText: planningNotes,
+      generationText: response.text ?? '',
+    }),
+  };
+
+  await persistAiDebugArtifact(debug, {
+    request: body,
+    response: normalized,
+  });
+
+  sendJson(res, 200, {
+    ...normalized,
+    debug,
+  } satisfies AIResponsePayload);
 }
 
 export function attachVertexAiMiddleware(container: MiddlewareContainer) {
@@ -264,6 +590,7 @@ export function attachVertexAiMiddleware(container: MiddlewareContainer) {
 
       sendJson(res, 500, {
         error: `${message}${authHint}`,
+        debug: error instanceof AiGenerationError ? error.debug : undefined,
       });
     }
   });
