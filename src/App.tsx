@@ -1353,6 +1353,8 @@ export default function App() {
   const menuBarRef = useRef<HTMLDivElement>(null);
   const dragPointerRef = useRef<Vector2 | null>(null);
   const dragFrameRef = useRef<number | null>(null);
+  const simulationStageViewportRestoreRef = useRef<StageViewportMode>('world');
+  const simulationStageViewportPendingRef = useRef(false);
 
   const activeSceneEntityIds = new globalThis.Set(activeScene.entities.map((entity) => entity.id));
   const selectedEntityIdsInScene = selectedEntityIds.filter((entityId) => activeSceneEntityIds.has(entityId));
@@ -1383,7 +1385,7 @@ export default function App() {
     const nextSelectedId = getActiveScene(nextProject).entities[0]?.id ?? null;
     setSelectedEntityId(nextSelectedId);
     setSelectedEntityIds(nextSelectedId ? [nextSelectedId] : []);
-    setIsPlaying(false);
+    stopSimulation({restoreStageViewport: false});
     setLauncherOpen(false);
     setSessionStarted(true);
     setStageViewportMode('world');
@@ -1827,11 +1829,28 @@ export default function App() {
     }
   };
 
-  const toggleSimulation = () => {
-    if (!isPlaying) {
-      setStageViewportMode('camera');
+  const startSimulation = () => {
+    simulationStageViewportRestoreRef.current = stageViewportMode;
+    simulationStageViewportPendingRef.current = true;
+    setStageViewportMode('camera');
+    setIsPlaying(true);
+  };
+
+  const stopSimulation = (options?: {restoreStageViewport?: boolean}) => {
+    if ((options?.restoreStageViewport ?? true) && simulationStageViewportPendingRef.current) {
+      setStageViewportMode(simulationStageViewportRestoreRef.current);
     }
-    setIsPlaying((playing) => !playing);
+
+    simulationStageViewportPendingRef.current = false;
+    setIsPlaying(false);
+  };
+
+  const toggleSimulation = () => {
+    if (isPlaying) {
+      stopSimulation();
+    } else {
+      startSimulation();
+    }
     window.requestAnimationFrame(() => {
       focusStageViewport();
     });
@@ -2409,7 +2428,7 @@ export default function App() {
     });
     setSelectedEntityId(scene.entities[0]?.id ?? null);
     setSelectedEntityIds(scene.entities[0]?.id ? [scene.entities[0].id] : []);
-    setIsPlaying(false);
+    stopSimulation();
   };
 
   const openAssistant = (mode?: 'create' | 'extend') => {
@@ -2427,7 +2446,7 @@ export default function App() {
     const nextScene = project.scenes.find((scene) => scene.id === sceneId);
     setSelectedEntityId(nextScene?.entities[0]?.id ?? null);
     setSelectedEntityIds(nextScene?.entities[0]?.id ? [nextScene.entities[0].id] : []);
-    setIsPlaying(false);
+    stopSimulation();
   };
 
   const deleteActiveScene = () => {
@@ -2451,7 +2470,7 @@ export default function App() {
 
     setSelectedEntityId(nextScene.entities[0]?.id ?? null);
     setSelectedEntityIds(nextScene.entities[0]?.id ? [nextScene.entities[0].id] : []);
-    setIsPlaying(false);
+    stopSimulation();
   };
 
   const captureCameraStart = () => {
@@ -2547,7 +2566,7 @@ export default function App() {
         const nextSelectedId = getActiveScene(normalized.project).entities[0]?.id ?? null;
         setSelectedEntityId(nextSelectedId);
         setSelectedEntityIds(nextSelectedId ? [nextSelectedId] : []);
-        setIsPlaying(false);
+        stopSimulation();
       });
 
       setAiStatus('idle');
@@ -3293,7 +3312,7 @@ export default function App() {
                           if (project.activeSceneId === scene.id) {
                             setSelectedEntityId(nextScene.entities[0]?.id ?? null);
                             setSelectedEntityIds(nextScene.entities[0]?.id ? [nextScene.entities[0].id] : []);
-                            setIsPlaying(false);
+                            stopSimulation();
                           }
                         }}
                         className="rounded-sm p-1.5 text-[var(--muted)] hover:bg-[#2e3137] hover:text-[var(--text)]"
