@@ -1737,20 +1737,58 @@ export default function App() {
   });
 
   const addPrefab = (prefab: EntityPrefab) => {
+    const viewportWidth = viewportMode === 'mobile' ? 390 : Math.max(1, Math.round(stageCanvasSize?.width ?? 1280));
+    const viewportHeight = viewportMode === 'mobile' ? 844 : Math.max(1, Math.round(stageCanvasSize?.height ?? 820));
+    const cameraFrameWidth = Math.min(viewportWidth, activeScene.settings.worldSize.x);
+    const cameraFrameHeight = Math.min(viewportHeight, activeScene.settings.worldSize.y);
+    const maxCameraStartX = Math.max(0, activeScene.settings.worldSize.x - cameraFrameWidth);
+    const maxCameraStartY = Math.max(0, activeScene.settings.worldSize.y - cameraFrameHeight);
+    const cameraFrame = {
+      x: clampScalar(activeScene.settings.cameraStart.x, 0, maxCameraStartX),
+      y: clampScalar(activeScene.settings.cameraStart.y, 0, maxCameraStartY),
+      width: cameraFrameWidth,
+      height: cameraFrameHeight,
+    };
+
     const selectedAnchor = selectedEntity
       ? getComponent<TransformComponent>(selectedEntity, ComponentType.Transform)?.position
       : null;
     const anchor = selectedAnchor ?? {
-      x: viewportMode === 'mobile' ? 180 : 420,
-      y: viewportMode === 'mobile' ? 320 : 300,
+      x: cameraFrame.x + cameraFrame.width / 2,
+      y: cameraFrame.y + cameraFrame.height / 2,
     };
 
-    let position = {x: anchor.x + 64, y: anchor.y - 32};
+    let position = selectedAnchor
+      ? {x: anchor.x + 64, y: anchor.y - 32}
+      : {x: anchor.x, y: anchor.y};
     if (activeScene.settings.snapToGrid) {
       position = snapPoint(position, activeScene.settings.gridSize);
     }
 
     const entity = createEntityFromPrefab(prefab, position);
+    const entityTransform = getComponent<TransformComponent>(entity, ComponentType.Transform);
+    if (entityTransform) {
+      const entitySprite = getComponent<SpriteComponent>(entity, ComponentType.Sprite);
+      const halfWidth = Math.max(
+        8,
+        ((entitySprite?.width ?? 64) * Math.max(0.2, Math.abs(entityTransform.scale.x))) / 2,
+      );
+      const halfHeight = Math.max(
+        8,
+        ((entitySprite?.height ?? 64) * Math.max(0.2, Math.abs(entityTransform.scale.y))) / 2,
+      );
+
+      const minX = cameraFrame.x + halfWidth;
+      const maxX = cameraFrame.x + cameraFrame.width - halfWidth;
+      const minY = cameraFrame.y + halfHeight;
+      const maxY = cameraFrame.y + cameraFrame.height - halfHeight;
+
+      entityTransform.position.x =
+        minX <= maxX ? clampScalar(entityTransform.position.x, minX, maxX) : cameraFrame.x + cameraFrame.width / 2;
+      entityTransform.position.y =
+        minY <= maxY ? clampScalar(entityTransform.position.y, minY, maxY) : cameraFrame.y + cameraFrame.height / 2;
+    }
+
     mutateActiveScene((scene) => {
       scene.entities.push(entity);
     });
