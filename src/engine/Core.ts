@@ -635,6 +635,13 @@ class MainScene extends Phaser.Scene {
     body.setCollideWorldBounds(true);
     body.moves = true;
     const colliderMetrics = collider ? this.resolveColliderMetrics(collider, sprite) : null;
+    const isSolidCollider = Boolean(colliderMetrics && !colliderMetrics.isTrigger);
+
+    if (isSolidCollider) {
+      // Add to the collision group before configuring body physics, because the
+      // group can apply its own defaults when a sprite joins it.
+      this.solidGroup.add(sprite);
+    }
 
     if (rigidBody) {
       body.setAllowGravity(this.isPlaying && !rigidBody.isStatic);
@@ -680,9 +687,6 @@ class MainScene extends Phaser.Scene {
       body.checkCollision.left = !colliderMetrics.isTrigger;
       body.checkCollision.right = !colliderMetrics.isTrigger;
 
-      if (!colliderMetrics.isTrigger) {
-        this.solidGroup.add(sprite);
-      }
     } else {
       body.checkCollision.none = true;
     }
