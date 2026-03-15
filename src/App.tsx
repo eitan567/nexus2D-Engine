@@ -61,6 +61,7 @@ import {
   AIResponsePayload,
   BehaviorComponent,
   ColliderComponent,
+  Component,
   ComponentType,
   Entity,
   EntityPrefab,
@@ -97,6 +98,16 @@ type AiHealth = {
   vertexAiConfigured?: boolean;
   project?: string | null;
   location?: string | null;
+};
+
+type OutlinerComponentTone = 'transform' | 'visual' | 'physics' | 'logic' | 'script';
+
+type OutlinerComponentDescriptor = {
+  label: string;
+  badge: string;
+  subtitle: string;
+  tone: OutlinerComponentTone;
+  search: string[];
 };
 
 type TransformInteraction = 'move' | 'rotate' | 'scale';
@@ -164,6 +175,7 @@ type PanState =
   | null;
 
 type StageViewportMode = 'world' | 'camera';
+type WorldOutlinerMode = 'list' | 'tree';
 type TopMenuKey = 'file' | 'edit' | 'scene' | 'window' | 'assistant';
 type MenuAction = {
   label: string;
@@ -172,6 +184,20 @@ type MenuAction = {
   disabled?: boolean;
   onSelect: () => void;
 };
+
+type OutlinerEntityTreeNode = {
+  entity: Entity;
+  children: OutlinerEntityTreeNode[];
+};
+
+const OUTLINER_COMPONENT_ORDER: ComponentType[] = [
+  ComponentType.Transform,
+  ComponentType.Sprite,
+  ComponentType.RigidBody,
+  ComponentType.Collider,
+  ComponentType.Behavior,
+  ComponentType.Script,
+];
 
 function rotateVector(point: Vector2, radians: number): Vector2 {
   const cos = Math.cos(radians);
@@ -213,6 +239,139 @@ function matchesFilterQuery(filterText: string, ...values: Array<string | number
   }
 
   return values.some((value) => String(value ?? '').toLowerCase().includes(query));
+}
+
+function sortEntitiesForOutliner(entities: Entity[]) {
+  return entities.slice().sort((left, right) => right.layer - left.layer || left.name.localeCompare(right.name));
+}
+
+function sortComponentsForOutliner(components: Component[]) {
+  const order = new globalThis.Map(OUTLINER_COMPONENT_ORDER.map((type, index) => [type, index]));
+  return components
+    .slice()
+    .sort((left, right) => (order.get(left.type) ?? 999) - (order.get(right.type) ?? 999) || left.type.localeCompare(right.type));
+}
+
+function getOutlinerComponentDescriptor(component: Component): OutlinerComponentDescriptor {
+  switch (component.type) {
+    case ComponentType.Transform:
+      return {
+        label: 'Transform',
+        badge: 'TR',
+        subtitle: `Pos ${Math.round(component.position.x)}, ${Math.round(component.position.y)} • Rot ${Math.round(component.rotation)}°`,
+        tone: 'transform',
+        search: ['transform', 'position', 'rotation', 'scale'],
+      };
+    case ComponentType.Sprite:
+      return {
+        label: 'Sprite',
+        badge: 'SP',
+        subtitle: `${component.shape} • ${Math.round(component.width)} x ${Math.round(component.height)}`,
+        tone: 'visual',
+        search: ['sprite', 'render', 'shape', component.shape, component.assetId, component.color],
+      };
+    case ComponentType.RigidBody:
+      return {
+        label: 'RigidBody',
+        badge: 'RB',
+        subtitle: `${component.isStatic ? 'static' : 'dynamic'} • Grav ${component.gravityScale} • Drag ${component.drag.x}/${component.drag.y}`,
+        tone: 'physics',
+        search: ['rigidbody', 'physics', 'gravity', 'drag', 'velocity', component.isStatic ? 'static' : 'dynamic'],
+      };
+    case ComponentType.Collider:
+      return {
+        label: 'Collider',
+        badge: 'CL',
+        subtitle: `${component.shape} • ${component.autoSize ? 'auto size' : 'manual'}${component.isPassThrough ? ' • pass-through' : ''}`,
+        tone: 'physics',
+        search: [
+          'collider',
+          'collision',
+          component.shape,
+          component.autoSize ? 'auto size' : 'manual size',
+          component.isTrigger ? 'trigger' : '',
+          component.isPassThrough ? 'pass through' : '',
+        ],
+      };
+    case ComponentType.Behavior:
+      return {
+        label: 'Behavior',
+        badge: 'BH',
+        subtitle: component.kind === 'none' ? 'No built-in gameplay assigned' : component.kind,
+        tone: 'logic',
+        search: ['behavior', 'gameplay', component.kind, component.patrolAxis],
+      };
+    case ComponentType.Script: {
+      const lineCount = component.code
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean).length;
+      return {
+        label: 'Script',
+        badge: 'SC',
+        subtitle: lineCount > 0 ? `${lineCount} active line${lineCount === 1 ? '' : 's'}` : 'Inline engine-aware script',
+        tone: 'script',
+        search: ['script', 'code', component.code],
+      };
+    }
+    default: {
+      const unknownComponent = component as Component;
+      return {
+        label: unknownComponent.type,
+        badge: unknownComponent.type.slice(0, 2).toUpperCase(),
+        subtitle: 'Component',
+        tone: 'logic',
+        search: [unknownComponent.type],
+      };
+    }
+  }
+}
+
+function doesOutlinerComponentMatch(component: Component, filterText: string) {
+  const descriptor = getOutlinerComponentDescriptor(component);
+  return matchesFilterQuery(filterText, descriptor.label, descriptor.subtitle, ...descriptor.search);
+}
+
+function buildOutlinerEntityTree(scene: Scene): OutlinerEntityTreeNode[] {
+  const entitiesById = new globalThis.Map(scene.entities.map((entity) => [entity.id, entity]));
+  const childrenByParent = new globalThis.Map<string, Entity[]>();
+  const roots: Entity[] = [];
+
+  for (const entity of scene.entities) {
+    const parentId = entity.parent && entitiesById.has(entity.parent) ? entity.parent : null;
+    if (!parentId) {
+      roots.push(entity);
+      continue;
+    }
+
+    const bucket = childrenByParent.get(parentId) ?? [];
+    bucket.push(entity);
+    childrenByParent.set(parentId, bucket);
+  }
+
+  const buildNode = (entity: Entity, ancestry: Set<string> = new Set()): OutlinerEntityTreeNode => {
+    if (ancestry.has(entity.id)) {
+      return {entity, children: []};
+    }
+
+    const nextAncestry = new Set(ancestry);
+    nextAncestry.add(entity.id);
+
+    return {
+      entity,
+      children: sortEntitiesForOutliner(childrenByParent.get(entity.id) ?? []).map((child) => buildNode(child, nextAncestry)),
+    };
+  };
+
+  return sortEntitiesForOutliner(roots).map((entity) => buildNode(entity));
+}
+
+function doesOutlinerEntityTreeMatch(node: OutlinerEntityTreeNode, filterText: string) {
+  return (
+    matchesFilterQuery(filterText, node.entity.name, node.entity.prefab, node.entity.tags.join(' '), node.entity.layer) ||
+    node.entity.components.some((component) => doesOutlinerComponentMatch(component, filterText)) ||
+    node.children.some((child) => doesOutlinerEntityTreeMatch(child, filterText))
+  );
 }
 
 function PanelHeader({
@@ -1136,7 +1295,11 @@ function ComponentInspector({
       )}
 
       {showRigidBodySection ? (
-        <SectionCard title="RigidBody" subtitle="Physics movement and constraints" action={<DangerTextButton onClick={() => removeComponent(ComponentType.RigidBody)}>Remove</DangerTextButton>}>
+        <SectionCard
+          title="RigidBody"
+          subtitle="Physics movement and constraints"
+          action={<DangerIconButton title="Remove RigidBody" onClick={() => removeComponent(ComponentType.RigidBody)} />}
+        >
           <div className="grid grid-cols-2 gap-3">
             <NumberField label="Mass" value={rigidBody.mass} onChange={(value) => replaceRigidBody((component) => ({...component, mass: value}))} />
             <NumberField label="Gravity Scale" value={rigidBody.gravityScale} onChange={(value) => replaceRigidBody((component) => ({...component, gravityScale: value}))} />
@@ -1154,7 +1317,11 @@ function ComponentInspector({
       ) : null}
 
       {showColliderSection ? (
-        <SectionCard title="Collider" subtitle="Collision shape and trigger settings" action={<DangerTextButton onClick={() => removeComponent(ComponentType.Collider)}>Remove</DangerTextButton>}>
+        <SectionCard
+          title="Collider"
+          subtitle="Collision shape and trigger settings"
+          action={<DangerIconButton title="Remove Collider" onClick={() => removeComponent(ComponentType.Collider)} />}
+        >
           <div className="mb-3 space-y-2">
             <ToggleRow
               label="Auto Size"
@@ -1200,7 +1367,11 @@ function ComponentInspector({
       ) : null}
 
       {showBehaviorSection ? (
-        <SectionCard title="Behavior" subtitle="Built-in gameplay logic" action={<DangerTextButton onClick={() => removeComponent(ComponentType.Behavior)}>Remove</DangerTextButton>}>
+        <SectionCard
+          title="Behavior"
+          subtitle="Built-in gameplay logic"
+          action={<DangerIconButton title="Remove Behavior" onClick={() => removeComponent(ComponentType.Behavior)} />}
+        >
           <div className="grid grid-cols-2 gap-3">
             <LabeledField label="Kind">
               <select value={behavior.kind} onChange={(event) => replaceBehavior((component) => ({...component, kind: event.target.value as BehaviorComponent['kind']}))} className="nexus-select">
@@ -1232,7 +1403,11 @@ function ComponentInspector({
       ) : null}
 
       {showScriptSection ? (
-        <SectionCard title="Script" subtitle="Inline engine-aware behavior" action={<DangerTextButton onClick={() => removeComponent(ComponentType.Script)}>Remove</DangerTextButton>}>
+        <SectionCard
+          title="Script"
+          subtitle="Inline engine-aware behavior"
+          action={<DangerIconButton title="Remove Script" onClick={() => removeComponent(ComponentType.Script)} />}
+        >
           <textarea value={script.code} onChange={(event) => updateScript(event.target.value)} className="nexus-textarea h-40 font-mono text-xs" />
         </SectionCard>
       ) : showMissingScript ? (
@@ -1244,16 +1419,16 @@ function ComponentInspector({
   );
 }
 
-function DangerTextButton({
+function DangerIconButton({
   onClick,
-  children,
+  title,
 }: {
   onClick: () => void;
-  children: ReactNode;
+  title: string;
 }) {
   return (
-    <button onClick={onClick} className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#d7a8b2]">
-      {children}
+    <button type="button" onClick={onClick} title={title} aria-label={title} className="nexus-danger-icon-button">
+      <Trash2 size={13} />
     </button>
   );
 }
@@ -1449,6 +1624,8 @@ export default function App() {
   const [stageCanvasSize, setStageCanvasSize] = useState<{width: number; height: number} | null>(null);
   const [contentDrawerOpen, setContentDrawerOpen] = useState(false);
   const [outlinerFilter, setOutlinerFilter] = useState('');
+  const [worldOutlinerMode, setWorldOutlinerMode] = useState<WorldOutlinerMode>('tree');
+  const [expandedOutlinerNodes, setExpandedOutlinerNodes] = useState<Record<string, boolean>>({});
   const [detailsFilter, setDetailsFilter] = useState('');
   const [assetFilter, setAssetFilter] = useState('');
 
@@ -1479,6 +1656,17 @@ export default function App() {
     .sort((left, right) => right.layer - left.layer)
     .filter((entity) => matchesFilterQuery(outlinerFilter, entity.name, entity.prefab, entity.tags.join(' '), entity.layer));
   const filteredAssets = project.assets.filter((asset) => matchesFilterQuery(assetFilter, asset.name, asset.type));
+  const outlinerTreeScenes = project.scenes
+    .map((scene) => {
+      const nodes = buildOutlinerEntityTree(scene);
+      const sceneMatches = matchesFilterQuery(outlinerFilter, scene.name, scene.notes, 'scene');
+      return {
+        scene,
+        sceneMatches,
+        nodes: sceneMatches ? nodes : nodes.filter((node) => doesOutlinerEntityTreeMatch(node, outlinerFilter)),
+      };
+    })
+    .filter(({sceneMatches, nodes}) => sceneMatches || nodes.length > 0);
   const detailsPlaceholder =
     rightTab === 'ai'
       ? 'Assistant prompt and summary live here'
@@ -1487,6 +1675,14 @@ export default function App() {
         : selectedEntity
           ? `Filter ${selectedEntity.name} details`
         : `Filter ${activeScene.name} settings`;
+
+  const isOutlinerNodeExpanded = (nodeId: string, defaultExpanded = true) => expandedOutlinerNodes[nodeId] ?? defaultExpanded;
+  const toggleOutlinerNode = (nodeId: string, defaultExpanded = true) => {
+    setExpandedOutlinerNodes((current) => ({
+      ...current,
+      [nodeId]: !(current[nodeId] ?? defaultExpanded),
+    }));
+  };
 
   const launchProject = (nextProject: Project) => {
     history.reset(touchProject(nextProject));
@@ -1535,6 +1731,67 @@ export default function App() {
       options?.primaryId && uniqueIds.includes(options.primaryId) ? options.primaryId : uniqueIds[0] ?? null;
     setSelectedEntityIds(uniqueIds);
     setSelectedEntityId(nextPrimary);
+  };
+
+  const focusSceneInOutliner = (sceneId: string) => {
+    if (sceneId !== project.activeSceneId) {
+      mutateProject((draft) => {
+        draft.activeSceneId = sceneId;
+      });
+      stopSimulation();
+    }
+
+    setSelectedEntityId(null);
+    setSelectedEntityIds([]);
+    setRightTab('inspector');
+    if (isCompact) {
+      setRightSidebarOpen(true);
+    }
+  };
+
+  const focusEntityInOutliner = (sceneId: string, entityId: string) => {
+    if (sceneId !== project.activeSceneId) {
+      mutateProject((draft) => {
+        draft.activeSceneId = sceneId;
+      });
+      stopSimulation();
+    }
+
+    setSelectedEntityId(entityId);
+    setSelectedEntityIds([entityId]);
+    setRightTab('inspector');
+    if (isCompact) {
+      setRightSidebarOpen(true);
+    }
+  };
+
+  const focusComponentInOutliner = (sceneId: string, entityId: string, component: Component) => {
+    focusEntityInOutliner(sceneId, entityId);
+    setDetailsFilter(component.type);
+  };
+
+  const removeEntityFromScene = (sceneId: string, entityId: string) => {
+    mutateProject((draft) => {
+      const scene = draft.scenes.find((entry) => entry.id === sceneId);
+      if (!scene) {
+        return;
+      }
+
+      scene.entities = scene.entities.filter((entry) => entry.id !== entityId);
+      scene.entities.forEach((entry) => {
+        if (entry.parent === entityId) {
+          entry.parent = null;
+        }
+        entry.children = entry.children.filter((childId) => childId !== entityId);
+      });
+    });
+
+    if (sceneId === activeScene.id && selectedEntityIdsInScene.includes(entityId)) {
+      selectEntities(
+        selectedEntityIdsInScene.filter((selectedId) => selectedId !== entityId),
+        {primaryId: primarySelectedEntityId === entityId ? null : primarySelectedEntityId},
+      );
+    }
   };
 
   const mutateSelectedEntity = (mutator: (entity: Entity) => void, options?: {replace?: boolean}) => {
@@ -3205,6 +3462,140 @@ export default function App() {
     ],
   };
 
+  const renderOutlinerComponentNode = (sceneId: string, entity: Entity, component: Component, depth = 0): ReactNode => {
+    const descriptor = getOutlinerComponentDescriptor(component);
+    const nodeId = `component:${sceneId}:${entity.id}:${component.id}`;
+    const componentDetailsActive = detailsFilter.trim().length > 0 && matchesFilterQuery(detailsFilter, component.type, descriptor.label);
+    const isFocused = sceneId === activeScene.id && primarySelectedEntityId === entity.id && componentDetailsActive;
+
+    return (
+      <div key={nodeId} className="nexus-outliner-tree-node nexus-outliner-tree-node-component">
+        <div className={`nexus-outliner-tree-row nexus-outliner-tree-row-component ${isFocused ? 'is-active' : ''}`} style={{paddingLeft: `${depth * 16}px`}}>
+          <span className="nexus-outliner-tree-toggle-spacer" />
+          <button type="button" className="nexus-outliner-tree-target nexus-outliner-tree-target-component" onClick={() => focusComponentInOutliner(sceneId, entity.id, component)}>
+            <span className={`nexus-outliner-tree-component-icon tone-${descriptor.tone}`}>{descriptor.badge}</span>
+            <div className="nexus-outliner-tree-copy">
+              <div className="nexus-outliner-tree-label">{descriptor.label}</div>
+              <div className="nexus-outliner-tree-subtle">{descriptor.subtitle}</div>
+            </div>
+            <span className="nexus-outliner-tree-pill nexus-outliner-tree-pill-component">Cmp</span>
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderOutlinerEntityNode = (sceneId: string, node: OutlinerEntityTreeNode, depth = 0): ReactNode => {
+    const nodeId = `entity:${sceneId}:${node.entity.id}`;
+    const visibleChildren = outlinerFilter.trim()
+      ? node.children.filter((child) => doesOutlinerEntityTreeMatch(child, outlinerFilter))
+      : node.children;
+    const visibleComponents = outlinerFilter.trim()
+      ? sortComponentsForOutliner(node.entity.components).filter((component) => doesOutlinerComponentMatch(component, outlinerFilter))
+      : sortComponentsForOutliner(node.entity.components);
+    const hasChildren = visibleChildren.length > 0 || visibleComponents.length > 0;
+    const expanded = hasChildren ? (outlinerFilter.trim() ? true : isOutlinerNodeExpanded(nodeId, false)) : false;
+    const isSelected = sceneId === activeScene.id && selectedEntityIdsInScene.includes(node.entity.id);
+
+    return (
+      <div key={nodeId} className="nexus-outliner-tree-node">
+        <div className={`nexus-outliner-tree-row ${isSelected ? 'is-active' : ''}`} style={{paddingLeft: `${depth * 16}px`}}>
+          {hasChildren ? (
+            <button
+              type="button"
+              className="nexus-outliner-tree-toggle"
+              onClick={(event) => {
+                event.stopPropagation();
+                toggleOutlinerNode(nodeId, false);
+              }}
+              aria-label={`${expanded ? 'Collapse' : 'Expand'} ${node.entity.name}`}
+            >
+              <ChevronRight size={13} className={`nexus-outliner-tree-chevron ${expanded ? 'is-open' : ''}`} />
+            </button>
+          ) : (
+            <span className="nexus-outliner-tree-toggle-spacer" />
+          )}
+
+          <button type="button" className="nexus-outliner-tree-target" onClick={() => focusEntityInOutliner(sceneId, node.entity.id)}>
+            <span className={`nexus-outliner-tree-bullet prefab-${node.entity.prefab}`} />
+            <div className="nexus-outliner-tree-copy">
+              <div className="nexus-outliner-tree-label">{node.entity.name}</div>
+              <div className="nexus-outliner-tree-subtle">
+                {node.entity.prefab} • {node.entity.components.length} components • layer {node.entity.layer}
+              </div>
+            </div>
+            <span className="nexus-outliner-tree-pill">Obj</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              removeEntityFromScene(sceneId, node.entity.id);
+            }}
+            className="nexus-outliner-tree-action"
+            title={`Delete ${node.entity.name}`}
+          >
+            <Trash2 size={13} />
+          </button>
+        </div>
+
+        {hasChildren && expanded && (
+          <div className="nexus-outliner-tree-children">
+            {visibleComponents.length > 0 && (
+              <div className="nexus-outliner-tree-component-group">
+                {visibleComponents.map((component) => renderOutlinerComponentNode(sceneId, node.entity, component, depth + 1))}
+              </div>
+            )}
+            {visibleChildren.map((child) => renderOutlinerEntityNode(sceneId, child, depth + 1))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderOutlinerSceneNode = (scene: Scene, nodes: OutlinerEntityTreeNode[]): ReactNode => {
+    const nodeId = `scene:${scene.id}`;
+    const expanded = isOutlinerNodeExpanded(nodeId, scene.id === project.activeSceneId);
+    const isActiveScene = scene.id === project.activeSceneId;
+    const sceneComponentCount = scene.entities.reduce((count, entity) => count + entity.components.length, 0);
+
+    return (
+      <div key={nodeId} className="nexus-outliner-scene-node">
+        <div className={`nexus-outliner-tree-row nexus-outliner-tree-row-scene ${isActiveScene && selectionCount === 0 ? 'is-active' : ''}`}>
+          <button
+            type="button"
+            className="nexus-outliner-tree-toggle"
+            onClick={(event) => {
+              event.stopPropagation();
+              toggleOutlinerNode(nodeId, scene.id === project.activeSceneId);
+            }}
+            aria-label={`${expanded ? 'Collapse' : 'Expand'} ${scene.name}`}
+          >
+            <ChevronRight size={13} className={`nexus-outliner-tree-chevron ${expanded ? 'is-open' : ''}`} />
+          </button>
+
+          <button type="button" className="nexus-outliner-tree-target nexus-outliner-tree-target-scene" onClick={() => focusSceneInOutliner(scene.id)}>
+            <Map size={14} className="shrink-0 text-[var(--accent)]" />
+            <div className="nexus-outliner-tree-copy">
+              <div className="nexus-outliner-tree-label">{scene.name}</div>
+              <div className="nexus-outliner-tree-subtle">
+                {isActiveScene ? 'active scene' : 'scene'} • {scene.entities.length} objects • {sceneComponentCount} components
+              </div>
+            </div>
+            <span className={`nexus-outliner-tree-pill ${isActiveScene ? 'is-active' : ''}`}>Scene</span>
+          </button>
+        </div>
+
+        {expanded && (
+          <div className="nexus-outliner-tree-children nexus-outliner-tree-scene-children">
+            {nodes.length > 0 ? nodes.map((node) => renderOutlinerEntityNode(scene.id, node, 0)) : <div className="nexus-outliner-tree-empty">No actors in this scene.</div>}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="nexus-shell">
       <input
@@ -3409,23 +3800,42 @@ export default function App() {
               </SectionCard>
 
               <SectionCard title="Place Actors" subtitle="Engine-ready entities">
-                <div className="grid grid-cols-2 gap-2">
+                <div className="nexus-prefab-grid">
                   {PREFABS.map((entry) => (
                     <button
                       key={entry.prefab}
                       onClick={() => addPrefab(entry.prefab)}
-                      className="rounded-sm border border-[var(--border)] bg-[#26282c] px-2.5 py-2 text-left"
+                      className="nexus-prefab-card"
                     >
-                      <div className="text-[12px] font-semibold text-[var(--text)]">{entry.label}</div>
-                      <div className="mt-1 text-[11px] text-[var(--muted)]">{entry.hint}</div>
+                      <div className="nexus-prefab-card-title">{entry.label}</div>
+                      <div className="nexus-prefab-card-hint">{entry.hint}</div>
                     </button>
                   ))}
                 </div>
               </SectionCard>
 
-              <SectionCard title="World Outliner" subtitle="Active scene objects">
-                <div className="space-y-2">
-                  {filteredEntities.map((entity) => (
+              <SectionCard
+                title="World Outliner"
+                subtitle={worldOutlinerMode === 'tree' ? 'Scene, object and component hierarchy' : 'Active scene objects'}
+                action={
+                  <div className="flex rounded-sm border border-[var(--border)] bg-[#202226] p-0.5">
+                    <ModeButton active={worldOutlinerMode === 'list'} onClick={() => setWorldOutlinerMode('list')} title="List view">
+                      <span className="px-0.5 text-[10px] uppercase tracking-[0.12em]">List</span>
+                    </ModeButton>
+                    <ModeButton active={worldOutlinerMode === 'tree'} onClick={() => setWorldOutlinerMode('tree')} title="Tree view">
+                      <span className="px-0.5 text-[10px] uppercase tracking-[0.12em]">Tree</span>
+                    </ModeButton>
+                  </div>
+                }
+              >
+                {worldOutlinerMode === 'tree' ? (
+                  <div className="nexus-outliner-tree">
+                    {outlinerTreeScenes.map(({scene, nodes}) => renderOutlinerSceneNode(scene, nodes))}
+                    {outlinerTreeScenes.length === 0 && <div className="nexus-section-empty">No scenes or actors match the current filter.</div>}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {filteredEntities.map((entity) => (
                       <div
                         key={entity.id}
                         onClick={() => {
@@ -3448,15 +3858,7 @@ export default function App() {
                         <button
                           onClick={(event) => {
                             event.stopPropagation();
-                            mutateActiveScene((scene) => {
-                              scene.entities = scene.entities.filter((entry) => entry.id !== entity.id);
-                            });
-                            if (selectedEntityIdsInScene.includes(entity.id)) {
-                              selectEntities(
-                                selectedEntityIdsInScene.filter((selectedId) => selectedId !== entity.id),
-                                {primaryId: primarySelectedEntityId === entity.id ? null : primarySelectedEntityId},
-                              );
-                            }
+                            removeEntityFromScene(activeScene.id, entity.id);
                           }}
                           className="rounded-sm p-1.5 text-[var(--muted)]"
                         >
@@ -3464,8 +3866,9 @@ export default function App() {
                         </button>
                       </div>
                     ))}
-                  {filteredEntities.length === 0 && <div className="nexus-section-empty">No actors match the current filter.</div>}
-                </div>
+                    {filteredEntities.length === 0 && <div className="nexus-section-empty">No actors match the current filter.</div>}
+                  </div>
+                )}
               </SectionCard>
             </div>
           </motion.aside>
