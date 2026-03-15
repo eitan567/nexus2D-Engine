@@ -608,10 +608,32 @@ class MainScene extends Phaser.Scene {
     instance.patrolOrigin = {...transform.position};
     instance.triggerConsumed = false;
 
+    if (!sprite.body) {
+      this.physics.add.existing(sprite);
+    }
+
+    const body = sprite.body as Phaser.Physics.Arcade.Body;
+    // Live project edits during play should update body settings without
+    // snapping dynamic actors back to their authored transform.
+    const preserveRuntimeState = Boolean(
+      this.isPlaying && rigidBody && !rigidBody.isStatic && sprite.body,
+    )
+      ? {
+          x: sprite.x,
+          y: sprite.y,
+          angle: sprite.angle,
+          velocityX: body.velocity.x,
+          velocityY: body.velocity.y,
+        }
+      : null;
+
     sprite.setVisible(true);
     sprite.setTexture(textureKey);
-    sprite.setPosition(transform.position.x, transform.position.y);
-    sprite.setAngle(transform.rotation);
+    sprite.setPosition(
+      preserveRuntimeState?.x ?? transform.position.x,
+      preserveRuntimeState?.y ?? transform.position.y,
+    );
+    sprite.setAngle(preserveRuntimeState?.angle ?? transform.rotation);
     sprite.setDisplaySize(
       spriteComponent.width * transform.scale.x,
       spriteComponent.height * transform.scale.y,
@@ -626,11 +648,6 @@ class MainScene extends Phaser.Scene {
       sprite.clearTint();
     }
 
-    if (!sprite.body) {
-      this.physics.add.existing(sprite);
-    }
-
-    const body = sprite.body as Phaser.Physics.Arcade.Body;
     body.setEnable(Boolean(rigidBody || collider));
     body.setCollideWorldBounds(true);
     body.moves = true;
@@ -658,7 +675,10 @@ class MainScene extends Phaser.Scene {
       if (!this.isPlaying) {
         body.setVelocity(0, 0);
       } else if (!rigidBody.isStatic) {
-        body.setVelocity(rigidBody.velocity.x, rigidBody.velocity.y);
+        body.setVelocity(
+          preserveRuntimeState?.velocityX ?? rigidBody.velocity.x,
+          preserveRuntimeState?.velocityY ?? rigidBody.velocity.y,
+        );
       }
     } else {
       body.setAllowGravity(false);
