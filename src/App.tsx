@@ -2536,7 +2536,7 @@ export default function App() {
 
   const boxSelectionScreenRect = boxSelectionState ? getNormalizedRect(boxSelectionState.screenStart, boxSelectionState.screenCurrent) : null;
   const footerStatusText = isPlaying
-    ? 'Runtime active. Grid controls stay available: Mouse Wheel zoom, Middle/Right Mouse pan.'
+    ? 'Runtime active. Camera view mirrors the game output; switch to World view for editor pan/zoom during simulation.'
     : 'Editor ready. Drag actors from their body to move, use corner handles to scale, use the top handle to rotate, or drag empty grid space to box-select multiple actors. Shortcuts: W/E/R, Delete, Mouse Wheel zoom, Middle/Right Mouse pan, Ctrl/Cmd+Drag camera, Ctrl/Cmd+Shift+Drag camera and contents, Ctrl/Cmd+S, Ctrl/Cmd+Z.';
 
   const handleCanvasMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
@@ -2584,6 +2584,9 @@ export default function App() {
 
     const panMouseButton = event.button === 1 || event.button === 2;
     if (panMouseButton) {
+      if (isPlaying && stageViewportMode === 'camera') {
+        return;
+      }
       event.preventDefault();
       const screenPoint = getCanvasScreenPoint(event);
       if (screenPoint) {
@@ -2910,7 +2913,7 @@ export default function App() {
   };
 
   const handleCanvasWheel = useEffectEvent((event: WheelEvent) => {
-    if (launcherOpen || dragState) {
+    if (launcherOpen || dragState || (isPlaying && stageViewportMode === 'camera')) {
       return;
     }
 

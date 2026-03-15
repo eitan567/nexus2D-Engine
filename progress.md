@@ -470,3 +470,15 @@ pm run lint עדיין נכשל, אבל על שגיאות TypeScript ישנות 
   - src/App.tsx קיבל efreshViewportOverlay() שמכריח rerender מיידי של שכבת ה-HTML של ה-gizmo אחרי djustEditorZoom, panEditor, ngine.resize ומעבר World/Camera.
   - אימות Playwright ממוקד על Create -> Player -> zoom -> mousemove הראה dx=0, dy=0 לידית scale-nw, כלומר ה-gizmo לא זז יותר אחרי hover נוסף.
 
+
+- 2026-03-15 18:56
+  - מצב camera הודק למסגרת המצלמה עצמה: zoom-out כבר לא יכול לרדת מעבר לגודל המצלמה, ו-pan במצב camera לא יכול לצאת מחוץ ל-frame.
+  - Core.ts משתמש עכשיו ב-camera viewport letterboxed, מחשב screen/world עם offset של ה-viewport, ומבצע clamp ייעודי ל-previewFrame במצב camera.
+  - נוסף border בהיר למסגרת המצלמה במצב camera, וה-grid מוסתר בזמן play כדי שתצוגת הסימולציה תישאר תצוגת משחק ולא תצוגת editor.
+  - אימות Playwright + ניתוח תמונה: ה-player נשאר באותו bbox בדיוק לפני ואחרי wheel zoom-out ולפני ואחרי pan (64x85, center 587.5,372.0).
+
+
+- 2026-03-15 19:07
+  - תוקן artifact של עובי שונה למסגרת במצב camera: גבול העולם כבר לא מצויר מתחת למסגרת המצלמה במצב זה, וה-frame של המצלמה נמשך עם inset זהה למסגרת העולם.
+  - בוצע ב-Core.ts דרך suppression של world bounds border ב-drawSceneBackground() עבור ditorViewportMode === 'camera', וב-drawOverlay() frame המצלמה עובר ל-x+1/y+1 עם width-2/height-2.
+

@@ -333,8 +333,8 @@ class MainScene extends Phaser.Scene {
 
     const view = this.cameras.main.worldView;
     return {
-      x: (worldX - view.x) * this.cameras.main.zoom,
-      y: (worldY - view.y) * this.cameras.main.zoom,
+      x: this.cameras.main.x + (worldX - view.x) * this.cameras.main.zoom,
+      y: this.cameras.main.y + (worldY - view.y) * this.cameras.main.zoom,
     };
   }
 
@@ -355,8 +355,8 @@ class MainScene extends Phaser.Scene {
     );
     this.clampCameraToScene(scene);
 
-    const visibleWidth = this.scale.width / this.cameras.main.zoom;
-    const visibleHeight = this.scale.height / this.cameras.main.zoom;
+    const visibleWidth = this.cameras.main.width / this.cameras.main.zoom;
+    const visibleHeight = this.cameras.main.height / this.cameras.main.zoom;
     this.editorCameraCenter = {
       x: this.cameras.main.scrollX + visibleWidth / 2,
       y: this.cameras.main.scrollY + visibleHeight / 2,
@@ -392,8 +392,8 @@ class MainScene extends Phaser.Scene {
     this.cameras.main.setScroll(nextScrollX, nextScrollY);
     this.clampCameraToScene(scene);
 
-    const visibleWidth = this.scale.width / this.cameras.main.zoom;
-    const visibleHeight = this.scale.height / this.cameras.main.zoom;
+    const visibleWidth = this.cameras.main.width / this.cameras.main.zoom;
+    const visibleHeight = this.cameras.main.height / this.cameras.main.zoom;
     this.editorCameraCenter = {
       x: this.cameras.main.scrollX + visibleWidth / 2,
       y: this.cameras.main.scrollY + visibleHeight / 2,
@@ -415,8 +415,8 @@ class MainScene extends Phaser.Scene {
     return {
       x: this.cameras.main.scrollX,
       y: this.cameras.main.scrollY,
-      width: this.scale.width / this.cameras.main.zoom,
-      height: this.scale.height / this.cameras.main.zoom,
+      width: this.cameras.main.width / this.cameras.main.zoom,
+      height: this.cameras.main.height / this.cameras.main.zoom,
       zoom: this.cameras.main.zoom,
     };
   }
@@ -520,33 +520,41 @@ class MainScene extends Phaser.Scene {
       return;
     }
 
+    const viewport = this.getCameraViewport(scene);
+    this.cameras.main.setViewport(viewport.x, viewport.y, viewport.width, viewport.height);
+    this.editorZoomFactor = clamp(this.editorZoomFactor, this.getMinZoomFactor(scene), 6);
+
     const previewFrame = this.getPreviewCameraFrame(scene);
     const player = this.getPlayerInstance();
     const cameraBaseZoom = this.getCameraBaseZoom(scene);
 
-    if (scene.settings.cameraFollowPlayer && player && this.isPlaying && !this.manualCameraControlActive) {
+    if (this.isPlaying && !this.manualCameraControlActive) {
       this.cameras.main.stopFollow();
       this.cameras.main.setZoom(cameraBaseZoom);
       this.cameras.main.setScroll(previewFrame.x, previewFrame.y);
-      this.cameras.main.setDeadzone(this.scale.width * 0.52, this.scale.height * 0.58);
-      this.clampCameraToScene(scene);
-      this.cameras.main.startFollow(player.sprite, true, 0.12, 0.12);
-    } else {
-      this.cameras.main.stopFollow();
       this.cameras.main.setDeadzone();
-
-      const zoom = this.getEditorZoom(scene);
-      this.cameras.main.setZoom(zoom);
-      const visibleWidth = this.scale.width / zoom;
-      const visibleHeight = this.scale.height / zoom;
-      const defaultCenter = {
-        x: previewFrame.x + visibleWidth / 2,
-        y: previewFrame.y + visibleHeight / 2,
-      };
-      const center = this.editorCameraCenter ?? defaultCenter;
-      this.cameras.main.setScroll(center.x - visibleWidth / 2, center.y - visibleHeight / 2);
       this.clampCameraToScene(scene);
+
+      if (scene.settings.cameraFollowPlayer && player) {
+        this.cameras.main.startFollow(player.sprite, false, 1, 1);
+      }
+      return;
     }
+
+    this.cameras.main.stopFollow();
+    this.cameras.main.setDeadzone();
+
+    const zoom = this.getEditorZoom(scene);
+    this.cameras.main.setZoom(zoom);
+    const visibleWidth = this.cameras.main.width / zoom;
+    const visibleHeight = this.cameras.main.height / zoom;
+    const defaultCenter = {
+      x: previewFrame.x + visibleWidth / 2,
+      y: previewFrame.y + visibleHeight / 2,
+    };
+    const center = this.editorCameraCenter ?? defaultCenter;
+    this.cameras.main.setScroll(center.x - visibleWidth / 2, center.y - visibleHeight / 2);
+    this.clampCameraToScene(scene);
   }
 
   private syncEntities(scene: Scene) {
@@ -996,8 +1004,8 @@ class MainScene extends Phaser.Scene {
           x: this.cameras.main.scrollX,
           y: this.cameras.main.scrollY,
           zoom: this.cameras.main.zoom,
-          width: this.scale.width / this.cameras.main.zoom,
-          height: this.scale.height / this.cameras.main.zoom,
+          width: this.cameras.main.width / this.cameras.main.zoom,
+          height: this.cameras.main.height / this.cameras.main.zoom,
         }
       : {
           ...previewFrame,
@@ -1089,6 +1097,7 @@ class MainScene extends Phaser.Scene {
     }
 
     const scene = getActiveScene(this.project);
+    const suppressWorldBoundsBorder = !this.isPlaying && this.editorViewportMode === 'camera';
     const width = scene.settings.worldSize.x;
     const height = scene.settings.worldSize.y;
     const innerMaxX = Math.max(0, width - 1);
@@ -1107,9 +1116,15 @@ class MainScene extends Phaser.Scene {
     );
     this.backgroundGraphics.fillRect(0, 0, width, height);
 
+    if (this.isPlaying) {
+      return;
+    }
+
     if (!scene.settings.showGrid) {
-      this.backgroundGraphics.lineStyle(2, 0x686d76, 0.55);
-      this.backgroundGraphics.strokeRect(borderInset, borderInset, borderWidth, borderHeight);
+      if (!suppressWorldBoundsBorder) {
+        this.backgroundGraphics.lineStyle(2, 0x686d76, 0.55);
+        this.backgroundGraphics.strokeRect(borderInset, borderInset, borderWidth, borderHeight);
+      }
       return;
     }
 
@@ -1140,8 +1155,10 @@ class MainScene extends Phaser.Scene {
     }
     this.backgroundGraphics.strokePath();
 
-    this.backgroundGraphics.lineStyle(2, majorColor, 0.75);
-    this.backgroundGraphics.strokeRect(borderInset, borderInset, borderWidth, borderHeight);
+    if (!suppressWorldBoundsBorder) {
+      this.backgroundGraphics.lineStyle(2, majorColor, 0.75);
+      this.backgroundGraphics.strokeRect(borderInset, borderInset, borderWidth, borderHeight);
+    }
   }
 
   private drawOverlay() {
@@ -1161,6 +1178,17 @@ class MainScene extends Phaser.Scene {
     if (!this.isPlaying && this.editorViewportMode === 'world') {
       this.overlayGraphics.lineStyle(2, 0xc8a27a, 0.7);
       this.overlayGraphics.strokeRect(previewFrame.x, previewFrame.y, previewFrame.width, previewFrame.height);
+    }
+
+    if (!this.isPlaying && this.editorViewportMode === 'camera') {
+      const frameInset = 1;
+      this.overlayGraphics.lineStyle(2, 0xc8a27a, 0.7);
+      this.overlayGraphics.strokeRect(
+        previewFrame.x + frameInset,
+        previewFrame.y + frameInset,
+        Math.max(0, previewFrame.width - frameInset * 2),
+        Math.max(0, previewFrame.height - frameInset * 2),
+      );
     }
 
     if (!this.isPlaying) {
@@ -1216,9 +1244,38 @@ class MainScene extends Phaser.Scene {
     return clamp(baseZoom * this.editorZoomFactor, 0.08, 6);
   }
 
+  private getCameraViewport(scene: Scene) {
+    const fullWidth = Math.max(1, this.scale.width);
+    const fullHeight = Math.max(1, this.scale.height);
+
+    if (this.editorViewportMode === 'world') {
+      return {
+        x: 0,
+        y: 0,
+        width: fullWidth,
+        height: fullHeight,
+      };
+    }
+
+    const previewFrame = this.getPreviewCameraFrame(scene);
+    const scale = Math.min(
+      fullWidth / Math.max(1, previewFrame.width),
+      fullHeight / Math.max(1, previewFrame.height),
+    );
+    const width = Math.max(1, Math.round(previewFrame.width * scale));
+    const height = Math.max(1, Math.round(previewFrame.height * scale));
+
+    return {
+      x: Math.round((fullWidth - width) / 2),
+      y: Math.round((fullHeight - height) / 2),
+      width,
+      height,
+    };
+  }
+
   private getMinZoomFactor(scene: Scene) {
     const baseZoom = this.editorViewportMode === 'world' ? this.getWorldBaseZoom(scene) : this.getCameraBaseZoom(scene);
-    const minimumZoom = this.editorViewportMode === 'world' ? this.getWorldFitZoom(scene) : 0.08;
+    const minimumZoom = this.editorViewportMode === 'world' ? this.getWorldFitZoom(scene) : baseZoom;
     const minimumFactor = minimumZoom / Math.max(baseZoom, 0.0001);
 
     return Math.max(0.08 / Math.max(baseZoom, 0.0001), minimumFactor);
@@ -1256,8 +1313,21 @@ class MainScene extends Phaser.Scene {
       return;
     }
 
-    const visibleWidth = this.scale.width / this.cameras.main.zoom;
-    const visibleHeight = this.scale.height / this.cameras.main.zoom;
+    const visibleWidth = this.cameras.main.width / this.cameras.main.zoom;
+    const visibleHeight = this.cameras.main.height / this.cameras.main.zoom;
+    const previewFrame = this.getPreviewCameraFrame(scene);
+    const lockToCameraFrame = !this.isPlaying && this.editorViewportMode === 'camera';
+
+    if (lockToCameraFrame) {
+      const maxScrollX = previewFrame.x + Math.max(0, previewFrame.width - visibleWidth);
+      const maxScrollY = previewFrame.y + Math.max(0, previewFrame.height - visibleHeight);
+      this.cameras.main.setScroll(
+        clamp(this.cameras.main.scrollX, previewFrame.x, maxScrollX),
+        clamp(this.cameras.main.scrollY, previewFrame.y, maxScrollY),
+      );
+      return;
+    }
+
     const maxScrollX = scene.settings.worldSize.x - visibleWidth;
     const maxScrollY = scene.settings.worldSize.y - visibleHeight;
     const allowFreePan = !this.isPlaying || this.manualCameraControlActive;
