@@ -196,7 +196,7 @@ img {
   overflow: hidden;
   border: 1px solid #1b1d21;
   background: #111214;
-  cursor: crosshair;
+  cursor: pointer;
 }
 
 .nexus-canvas-frame:focus-within {

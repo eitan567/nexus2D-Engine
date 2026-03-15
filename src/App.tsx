@@ -1751,10 +1751,6 @@ export default function App() {
       return;
     }
 
-    if (transformMode !== 'move') {
-      return;
-    }
-
     beginTransformDrag(event, hit, 'move');
   };
 
@@ -3053,7 +3049,7 @@ export default function App() {
                 tabIndex={0}
                 width={viewportMode === 'mobile' ? 390 : Math.max(1, Math.round(stageCanvasSize?.width ?? 1280))}
                 height={viewportMode === 'mobile' ? 844 : Math.max(1, Math.round(stageCanvasSize?.height ?? 820))}
-                className={`h-full w-full rounded-[inherit] ${panState ? 'cursor-grabbing' : 'cursor-crosshair'}`}
+                className={`h-full w-full rounded-[inherit] ${panState ? 'cursor-grabbing' : 'cursor-pointer'}`}
                 onContextMenu={handleCanvasContextMenu}
                 onMouseDown={handleCanvasMouseDown}
                 onMouseMove={handleCanvasMouseMove}
@@ -3338,7 +3334,7 @@ export default function App() {
         <div className="nexus-status-line">
           {isPlaying
             ? 'Runtime active. Grid controls stay available: Mouse Wheel zoom, Middle/Right Mouse pan.'
-            : 'Editor ready. Drag selected actors to move, use corner handles to scale, use the top handle to rotate. Shortcuts: W/E/R, Delete, Mouse Wheel zoom, Middle/Right Mouse pan, Ctrl/Cmd+Drag inside camera frame to move camera start, Ctrl/Cmd+S, Ctrl/Cmd+Z.'}
+            : 'Editor ready. Drag actors directly from their body to move, use corner handles to scale, use the top handle to rotate. Shortcuts: W/E/R, Delete, Mouse Wheel zoom, Middle/Right Mouse pan, Ctrl/Cmd+Drag inside camera frame to move camera start, Ctrl/Cmd+S, Ctrl/Cmd+Z.'}
         </div>
       </footer>
 
