@@ -1647,6 +1647,13 @@ export default function App() {
     }
   };
 
+  const toggleSimulation = () => {
+    setIsPlaying((playing) => !playing);
+    window.requestAnimationFrame(() => {
+      focusStageViewport();
+    });
+  };
+
   const clearPendingDragFrame = () => {
     dragPointerRef.current = null;
     if (dragFrameRef.current !== null) {
@@ -2276,9 +2283,6 @@ export default function App() {
       setTransformMode('rotate');
     } else if (key === 'r') {
       setTransformMode('scale');
-    } else if (key === ' ') {
-      event.preventDefault();
-      setIsPlaying((playing) => !playing);
     }
   });
 
@@ -2800,7 +2804,9 @@ export default function App() {
             </ModeButton>
           </div>
           <button
-            onClick={() => setIsPlaying((playing) => !playing)}
+            type="button"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={toggleSimulation}
             className={`nexus-play-button ${
               isPlaying ? 'nexus-play-button-active' : ''
             }`}
