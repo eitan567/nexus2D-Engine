@@ -99,10 +99,30 @@ type AiHealth = {
   location?: string | null;
 };
 
+type TransformInteraction = 'move' | 'rotate' | 'scale';
+type ScaleHandleId = 'scale-nw' | 'scale-ne' | 'scale-se' | 'scale-sw';
+type ScaleHandleDirection = {
+  id: ScaleHandleId;
+  x: -1 | 1;
+  y: -1 | 1;
+  cursor: string;
+};
+
+const SCALE_HANDLE_DIRECTIONS: ScaleHandleDirection[] = [
+  {id: 'scale-nw', x: -1, y: -1, cursor: 'nwse-resize'},
+  {id: 'scale-ne', x: 1, y: -1, cursor: 'nesw-resize'},
+  {id: 'scale-se', x: 1, y: 1, cursor: 'nwse-resize'},
+  {id: 'scale-sw', x: -1, y: 1, cursor: 'nesw-resize'},
+];
+
 type DragState = {
   entityId: string;
+  interaction: TransformInteraction;
   pointerStart: Vector2;
   transformStart: TransformComponent;
+  spriteSize: Vector2;
+  rotationPointerOffset?: number;
+  scaleHandle?: ScaleHandleDirection;
 } | null;
 
 type PanState =
@@ -128,6 +148,22 @@ type MenuAction = {
   disabled?: boolean;
   onSelect: () => void;
 };
+
+function rotateVector(point: Vector2, radians: number): Vector2 {
+  const cos = Math.cos(radians);
+  const sin = Math.sin(radians);
+  return {
+    x: point.x * cos - point.y * sin,
+    y: point.x * sin + point.y * cos,
+  };
+}
+
+function midpoint(left: Vector2, right: Vector2): Vector2 {
+  return {
+    x: (left.x + right.x) / 2,
+    y: (left.y + right.y) / 2,
+  };
+}
 
 function loadInitialProject() {
   return createDefaultProject();
@@ -415,14 +451,18 @@ function ModeButton({
   active,
   onClick,
   children,
+  title,
 }: {
   active: boolean;
   onClick: () => void;
   children: ReactNode;
+  title?: string;
 }) {
   return (
     <button
       onClick={onClick}
+      title={title}
+      aria-label={title}
       className={`inline-flex h-6 min-w-6 items-center justify-center rounded-sm border px-2 ${
         active
           ? 'border-[#5b6068] bg-[#3a3d44] text-[var(--text)]'
@@ -1287,6 +1327,8 @@ export default function App() {
   const dragFrameRef = useRef<number | null>(null);
 
   const selectedEntity = activeScene.entities.find((entity) => entity.id === selectedEntityId) ?? null;
+  const selectedTransform = selectedEntity ? getComponent<TransformComponent>(selectedEntity, ComponentType.Transform) : null;
+  const selectedSprite = selectedEntity ? getComponent<SpriteComponent>(selectedEntity, ComponentType.Sprite) : null;
   const filteredScenes = project.scenes.filter((scene) => matchesFilterQuery(outlinerFilter, scene.name, scene.notes));
   const filteredEntities = activeScene.entities
     .slice()
@@ -1436,6 +1478,151 @@ export default function App() {
     return screenPoint;
   };
 
+  const getEntityVisual = (entity: Entity) => {
+    const transform = getComponent<TransformComponent>(entity, ComponentType.Transform);
+    const sprite = getComponent<SpriteComponent>(entity, ComponentType.Sprite);
+    if (!transform || !sprite || entity.hidden) {
+      return null;
+    }
+
+    const width = Math.max(1, Math.abs(sprite.width * transform.scale.x));
+    const height = Math.max(1, Math.abs(sprite.height * transform.scale.y));
+    const rotationRadians = (transform.rotation * Math.PI) / 180;
+
+    return {
+      entity,
+      transform,
+      sprite,
+      width,
+      height,
+      rotationRadians,
+    };
+  };
+
+  const worldToCanvasPoint = (point: Vector2): Vector2 | null => {
+    const screenPoint = engineRef.current?.worldToScreen(point.x, point.y);
+    if (!screenPoint) {
+      return null;
+    }
+
+    return screenPoint;
+  };
+
+  const getSelectedTransformGizmo = () => {
+    if (!selectedEntity) {
+      return null;
+    }
+
+    const visual = getEntityVisual(selectedEntity);
+    if (!visual) {
+      return null;
+    }
+
+    const halfWidth = visual.width / 2;
+    const halfHeight = visual.height / 2;
+    const localCorners = [
+      {x: -halfWidth, y: -halfHeight},
+      {x: halfWidth, y: -halfHeight},
+      {x: halfWidth, y: halfHeight},
+      {x: -halfWidth, y: halfHeight},
+    ];
+    const corners = localCorners
+      .map((corner) => {
+        const rotated = rotateVector(corner, visual.rotationRadians);
+        return {
+          x: visual.transform.position.x + rotated.x,
+          y: visual.transform.position.y + rotated.y,
+        };
+      })
+      .map(worldToCanvasPoint);
+
+    if (corners.some((corner) => !corner)) {
+      return null;
+    }
+
+    const [northWest, northEast, southEast, southWest] = corners as [Vector2, Vector2, Vector2, Vector2];
+    const topCenter = midpoint(northWest, northEast);
+    const centerScreen = worldToCanvasPoint(visual.transform.position);
+    if (!centerScreen) {
+      return null;
+    }
+
+    const outwardX = topCenter.x - centerScreen.x;
+    const outwardY = topCenter.y - centerScreen.y;
+    const outwardLength = Math.hypot(outwardX, outwardY);
+    const outwardNormal =
+      outwardLength > 0.0001
+        ? {x: outwardX / outwardLength, y: outwardY / outwardLength}
+        : {x: 0, y: -1};
+    const rotateHandle = {
+      x: topCenter.x + outwardNormal.x * 30,
+      y: topCenter.y + outwardNormal.y * 30,
+    };
+
+    return {
+      corners: {northWest, northEast, southEast, southWest},
+      topCenter,
+      rotateHandle,
+      scaleHandles: SCALE_HANDLE_DIRECTIONS.map((handle) => ({
+        ...handle,
+        point:
+          handle.id === 'scale-nw'
+            ? northWest
+            : handle.id === 'scale-ne'
+              ? northEast
+              : handle.id === 'scale-se'
+                ? southEast
+                : southWest,
+      })),
+    };
+  };
+
+  const beginTransformDrag = (
+    event: {clientX: number; clientY: number; preventDefault: () => void; stopPropagation: () => void},
+    entity: Entity,
+    interaction: TransformInteraction,
+    options?: {scaleHandle?: ScaleHandleDirection},
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const screenPoint = getCanvasScreenPointFromClient(event.clientX, event.clientY, {clampToCanvas: true});
+    if (!screenPoint) {
+      return;
+    }
+
+    const transform = getComponent<TransformComponent>(entity, ComponentType.Transform);
+    const sprite = getComponent<SpriteComponent>(entity, ComponentType.Sprite);
+    if (!transform || !sprite) {
+      return;
+    }
+
+    const worldPoint = engineRef.current?.screenToWorld(screenPoint.x, screenPoint.y) ?? screenPoint;
+    const nextDragState: Exclude<DragState, null> = {
+      entityId: entity.id,
+      interaction,
+      pointerStart: worldPoint,
+      transformStart: structuredClone(transform),
+      spriteSize: {
+        x: Math.max(1, sprite.width),
+        y: Math.max(1, sprite.height),
+      },
+    };
+
+    if (interaction === 'rotate') {
+      const pointerAngle = (Math.atan2(worldPoint.y - transform.position.y, worldPoint.x - transform.position.x) * 180) / Math.PI;
+      nextDragState.rotationPointerOffset = pointerAngle - transform.rotation;
+    }
+
+    if (interaction === 'scale' && options?.scaleHandle) {
+      nextDragState.scaleHandle = options.scaleHandle;
+    }
+
+    setDragState(nextDragState);
+  };
+
+  const selectedTransformGizmo = !isPlaying && selectedEntity && selectedTransform && selectedSprite ? getSelectedTransformGizmo() : null;
+
   const focusStageViewport = () => {
     const canvas = canvasRef.current;
     if (!canvas) {
@@ -1472,20 +1659,17 @@ export default function App() {
     [...activeScene.entities]
       .sort((left, right) => right.layer - left.layer)
       .find((entity) => {
-        const transform = getComponent<TransformComponent>(entity, ComponentType.Transform);
-        const sprite = getComponent<SpriteComponent>(entity, ComponentType.Sprite);
-        if (!transform || !sprite || entity.hidden) {
+        const visual = getEntityVisual(entity);
+        if (!visual) {
           return false;
         }
 
-        const width = Math.abs(sprite.width * transform.scale.x);
-        const height = Math.abs(sprite.height * transform.scale.y);
-        return (
-          point.x >= transform.position.x - width / 2 &&
-          point.x <= transform.position.x + width / 2 &&
-          point.y >= transform.position.y - height / 2 &&
-          point.y <= transform.position.y + height / 2
-        );
+        const offset = {
+          x: point.x - visual.transform.position.x,
+          y: point.y - visual.transform.position.y,
+        };
+        const localPoint = rotateVector(offset, -visual.rotationRadians);
+        return Math.abs(localPoint.x) <= visual.width / 2 && Math.abs(localPoint.y) <= visual.height / 2;
       });
 
   const handleCanvasMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
@@ -1547,6 +1731,8 @@ export default function App() {
       return;
     }
 
+    event.preventDefault();
+
     const point = getWorldPoint(event);
     if (!point) {
       return;
@@ -1565,16 +1751,11 @@ export default function App() {
       return;
     }
 
-    const transform = getComponent<TransformComponent>(hit, ComponentType.Transform);
-    if (!transform) {
+    if (transformMode !== 'move') {
       return;
     }
 
-    setDragState({
-      entityId: hit.id,
-      pointerStart: point,
-      transformStart: structuredClone(transform),
-    });
+    beginTransformDrag(event, hit, 'move');
   };
 
   const handleCanvasPointerMove = useEffectEvent((clientX: number, clientY: number) => {
@@ -1649,7 +1830,7 @@ export default function App() {
       const dx = point.x - dragState.pointerStart.x;
       const dy = point.y - dragState.pointerStart.y;
 
-      if (transformMode === 'move') {
+      if (dragState.interaction === 'move') {
         let position = {
           x: dragState.transformStart.position.x + dx,
           y: dragState.transformStart.position.y + dy,
@@ -1670,14 +1851,15 @@ export default function App() {
         return;
       }
 
-      if (transformMode === 'rotate') {
-        const rotation =
+      if (dragState.interaction === 'rotate') {
+        const pointerAngle =
           (Math.atan2(
             point.y - dragState.transformStart.position.y,
             point.x - dragState.transformStart.position.x,
           ) *
             180) /
           Math.PI;
+        const rotation = pointerAngle - (dragState.rotationPointerOffset ?? 0);
 
         if (Math.abs(rotation - selectedTransform.rotation) < 0.05) {
           return;
@@ -1687,9 +1869,20 @@ export default function App() {
         return;
       }
 
+      if (!dragState.scaleHandle) {
+        return;
+      }
+
+      const localPoint = rotateVector(
+        {
+          x: point.x - dragState.transformStart.position.x,
+          y: point.y - dragState.transformStart.position.y,
+        },
+        (-dragState.transformStart.rotation * Math.PI) / 180,
+      );
       const scale = {
-        x: Math.max(0.2, dragState.transformStart.scale.x + dx / 160),
-        y: Math.max(0.2, dragState.transformStart.scale.y - dy / 160),
+        x: Math.max(0.2, (localPoint.x * dragState.scaleHandle.x) / (dragState.spriteSize.x / 2)),
+        y: Math.max(0.2, (localPoint.y * dragState.scaleHandle.y) / (dragState.spriteSize.y / 2)),
       };
       if (
         Math.abs(scale.x - selectedTransform.scale.x) < 0.005 &&
@@ -2783,13 +2976,13 @@ export default function App() {
         <section className="nexus-center">
           <div className="nexus-stage-toolbar">
             <div className="flex items-center gap-2">
-              <ModeButton active={transformMode === 'move'} onClick={() => setTransformMode('move')}>
+              <ModeButton active={transformMode === 'move'} onClick={() => setTransformMode('move')} title="Move">
                 <Move size={15} />
               </ModeButton>
-              <ModeButton active={transformMode === 'rotate'} onClick={() => setTransformMode('rotate')}>
+              <ModeButton active={transformMode === 'rotate'} onClick={() => setTransformMode('rotate')} title="Rotate">
                 <RotateCcw size={15} />
               </ModeButton>
-              <ModeButton active={transformMode === 'scale'} onClick={() => setTransformMode('scale')}>
+              <ModeButton active={transformMode === 'scale'} onClick={() => setTransformMode('scale')} title="Scale">
                 <Maximize2 size={15} />
               </ModeButton>
               <div className="flex items-center gap-1 rounded-sm border border-[var(--border)] bg-[var(--chrome-panel)] p-0.5">
@@ -2866,6 +3059,74 @@ export default function App() {
                 onMouseMove={handleCanvasMouseMove}
                 onMouseUp={handleCanvasMouseUp}
               />
+
+              {selectedTransformGizmo && (
+                <div className="nexus-transform-gizmo" aria-hidden="true">
+                  <svg className="nexus-transform-gizmo-svg" viewBox={`0 0 ${stageCanvasSize?.width ?? 0} ${stageCanvasSize?.height ?? 0}`}>
+                    <polygon
+                      className="nexus-transform-gizmo-outline"
+                      points={[
+                        `${selectedTransformGizmo.corners.northWest.x},${selectedTransformGizmo.corners.northWest.y}`,
+                        `${selectedTransformGizmo.corners.northEast.x},${selectedTransformGizmo.corners.northEast.y}`,
+                        `${selectedTransformGizmo.corners.southEast.x},${selectedTransformGizmo.corners.southEast.y}`,
+                        `${selectedTransformGizmo.corners.southWest.x},${selectedTransformGizmo.corners.southWest.y}`,
+                      ].join(' ')}
+                    />
+                    <line
+                      className="nexus-transform-gizmo-stem"
+                      x1={selectedTransformGizmo.topCenter.x}
+                      y1={selectedTransformGizmo.topCenter.y}
+                      x2={selectedTransformGizmo.rotateHandle.x}
+                      y2={selectedTransformGizmo.rotateHandle.y}
+                    />
+                  </svg>
+
+                  {selectedTransformGizmo.scaleHandles.map((handle) => (
+                    <button
+                      key={handle.id}
+                      type="button"
+                      data-transform-handle={handle.id}
+                      title={`Scale ${handle.id.replace('scale-', '').toUpperCase()}`}
+                      className={`nexus-transform-handle nexus-transform-handle-scale ${
+                        transformMode === 'scale' ? 'is-active' : ''
+                      }`}
+                      style={{
+                        left: `${handle.point.x}px`,
+                        top: `${handle.point.y}px`,
+                        cursor: handle.cursor,
+                      }}
+                      onMouseDown={(event) => {
+                        if (!selectedEntity) {
+                          return;
+                        }
+                        setTransformMode('scale');
+                        beginTransformDrag(event, selectedEntity, 'scale', {scaleHandle: handle});
+                      }}
+                    />
+                  ))}
+
+                  <button
+                    type="button"
+                    data-transform-handle="rotate"
+                    title="Rotate"
+                    className={`nexus-transform-handle nexus-transform-handle-rotate ${
+                      transformMode === 'rotate' ? 'is-active' : ''
+                    }`}
+                    style={{
+                      left: `${selectedTransformGizmo.rotateHandle.x}px`,
+                      top: `${selectedTransformGizmo.rotateHandle.y}px`,
+                      cursor: 'grab',
+                    }}
+                    onMouseDown={(event) => {
+                      if (!selectedEntity) {
+                        return;
+                      }
+                      setTransformMode('rotate');
+                      beginTransformDrag(event, selectedEntity, 'rotate');
+                    }}
+                  />
+                </div>
+              )}
 
               {!isPlaying && activeScene.entities.length === 0 && (
                 <div className="nexus-stage-empty">
@@ -3077,7 +3338,7 @@ export default function App() {
         <div className="nexus-status-line">
           {isPlaying
             ? 'Runtime active. Grid controls stay available: Mouse Wheel zoom, Middle/Right Mouse pan.'
-            : 'Editor ready. Shortcuts: W/E/R, Delete, Mouse Wheel zoom, Middle/Right Mouse pan, Ctrl/Cmd+Drag inside camera frame to move camera start, Ctrl/Cmd+S, Ctrl/Cmd+Z.'}
+            : 'Editor ready. Drag selected actors to move, use corner handles to scale, use the top handle to rotate. Shortcuts: W/E/R, Delete, Mouse Wheel zoom, Middle/Right Mouse pan, Ctrl/Cmd+Drag inside camera frame to move camera start, Ctrl/Cmd+S, Ctrl/Cmd+Z.'}
         </div>
       </footer>
 

@@ -112,6 +112,10 @@ export class GameEngine {
     return this.scene.screenToWorld(screenX, screenY);
   }
 
+  worldToScreen(worldX: number, worldY: number) {
+    return this.scene.worldToScreen(worldX, worldY);
+  }
+
   panEditor(screenDeltaX: number, screenDeltaY: number) {
     if (this.destroyed) {
       return;
@@ -320,6 +324,18 @@ class MainScene extends Phaser.Scene {
     }
 
     return this.cameras.main.getWorldPoint(screenX, screenY);
+  }
+
+  worldToScreen(worldX: number, worldY: number) {
+    if (!this.cameras?.main) {
+      return {x: worldX, y: worldY};
+    }
+
+    const view = this.cameras.main.worldView;
+    return {
+      x: (worldX - view.x) * this.cameras.main.zoom,
+      y: (worldY - view.y) * this.cameras.main.zoom,
+    };
   }
 
   panEditor(screenDeltaX: number, screenDeltaY: number) {
@@ -1147,31 +1163,6 @@ class MainScene extends Phaser.Scene {
             colliderMetrics.width,
             colliderMetrics.height,
           );
-        }
-      }
-    }
-
-    if (this.selectedEntityId && !this.isPlaying) {
-      const instance = this.entityMap.get(this.selectedEntityId);
-
-      if (instance && instance.sprite.visible) {
-        const bounds = instance.sprite.getBounds();
-        this.overlayGraphics.lineStyle(2, 0xe1e4e8, 0.68);
-        this.overlayGraphics.strokeRect(bounds.x - 4, bounds.y - 4, bounds.width + 8, bounds.height + 8);
-
-        if (this.transformMode === 'move') {
-          this.overlayGraphics.lineStyle(3, 0xc58a57, 1);
-          this.overlayGraphics.lineBetween(instance.sprite.x, instance.sprite.y, instance.sprite.x + 72, instance.sprite.y);
-          this.overlayGraphics.lineStyle(3, 0xbfc6cf, 1);
-          this.overlayGraphics.lineBetween(instance.sprite.x, instance.sprite.y, instance.sprite.x, instance.sprite.y - 72);
-        } else if (this.transformMode === 'rotate') {
-          this.overlayGraphics.lineStyle(2, 0xc58a57, 1);
-          this.overlayGraphics.strokeCircle(instance.sprite.x, instance.sprite.y, Math.max(bounds.width, bounds.height) * 0.7);
-        } else {
-          this.overlayGraphics.fillStyle(0xbfc6cf, 1);
-          const handle = 10;
-          this.overlayGraphics.fillRect(bounds.right - handle / 2, bounds.bottom - handle / 2, handle, handle);
-          this.overlayGraphics.fillRect(bounds.x - handle / 2, bounds.y - handle / 2, handle, handle);
         }
       }
     }
