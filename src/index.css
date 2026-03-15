@@ -577,7 +577,7 @@ img {
 
 .nexus-prefab-card {
   display: flex;
-  min-height: 36px;
+  min-height: 31px;
   align-items: flex-start;
   gap: 5px;
   border: 1px solid var(--border);
@@ -596,10 +596,11 @@ img {
 .nexus-prefab-card-title {
   font-size: 10px;
   font-weight: 700;
-  line-height: 1.05;
+  line-height: 1.5;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-transform: uppercase;
   color: var(--text);
 }
 
@@ -634,14 +635,53 @@ img {
   color: #c7ced8;
 }
 
-.nexus-prefab-card-icon.prefab-player { color: #d1c09a; border-color: rgba(209, 192, 154, 0.18); background: rgba(209, 192, 154, 0.08); }
-.nexus-prefab-card-icon.prefab-platform { color: #9ba5b4; border-color: rgba(155, 165, 180, 0.18); background: rgba(155, 165, 180, 0.08); }
-.nexus-prefab-card-icon.prefab-enemy { color: #c79396; border-color: rgba(199, 147, 150, 0.18); background: rgba(199, 147, 150, 0.08); }
-.nexus-prefab-card-icon.prefab-collectible { color: #d7c076; border-color: rgba(215, 192, 118, 0.18); background: rgba(215, 192, 118, 0.08); }
-.nexus-prefab-card-icon.prefab-goal { color: #98bf8a; border-color: rgba(152, 191, 138, 0.18); background: rgba(152, 191, 138, 0.08); }
-.nexus-prefab-card-icon.prefab-hazard { color: #d28c86; border-color: rgba(210, 140, 134, 0.18); background: rgba(210, 140, 134, 0.08); }
-.nexus-prefab-card-icon.prefab-decoration { color: #8cb2cb; border-color: rgba(140, 178, 203, 0.18); background: rgba(140, 178, 203, 0.08); }
-.nexus-prefab-card-icon.prefab-custom { color: #bfabd4; border-color: rgba(191, 171, 212, 0.18); background: rgba(191, 171, 212, 0.08); }
+.nexus-prefab-card-icon.prefab-player {
+  color: #d1c09a;
+  border-color: rgba(209, 192, 154, 0.18);
+  background: rgba(209, 192, 154, 0.08);
+}
+
+.nexus-prefab-card-icon.prefab-platform {
+  color: #9ba5b4;
+  border-color: rgba(155, 165, 180, 0.18);
+  background: rgba(155, 165, 180, 0.08);
+}
+
+.nexus-prefab-card-icon.prefab-enemy {
+  color: #c79396;
+  border-color: rgba(199, 147, 150, 0.18);
+  background: rgba(199, 147, 150, 0.08);
+}
+
+.nexus-prefab-card-icon.prefab-collectible {
+  color: #d7c076;
+  border-color: rgba(215, 192, 118, 0.18);
+  background: rgba(215, 192, 118, 0.08);
+}
+
+.nexus-prefab-card-icon.prefab-goal {
+  color: #98bf8a;
+  border-color: rgba(152, 191, 138, 0.18);
+  background: rgba(152, 191, 138, 0.08);
+}
+
+.nexus-prefab-card-icon.prefab-hazard {
+  color: #d28c86;
+  border-color: rgba(210, 140, 134, 0.18);
+  background: rgba(210, 140, 134, 0.08);
+}
+
+.nexus-prefab-card-icon.prefab-decoration {
+  color: #8cb2cb;
+  border-color: rgba(140, 178, 203, 0.18);
+  background: rgba(140, 178, 203, 0.08);
+}
+
+.nexus-prefab-card-icon.prefab-custom {
+  color: #bfabd4;
+  border-color: rgba(191, 171, 212, 0.18);
+  background: rgba(191, 171, 212, 0.08);
+}
 
 .nexus-workspace-resize-handle {
   position: absolute;
@@ -834,14 +874,37 @@ img {
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.03);
 }
 
-.nexus-outliner-tree-bullet.prefab-player { background: #d1c09a; }
-.nexus-outliner-tree-bullet.prefab-platform { background: #808894; }
-.nexus-outliner-tree-bullet.prefab-enemy { background: #ad7b7f; }
-.nexus-outliner-tree-bullet.prefab-collectible { background: #b6a071; }
-.nexus-outliner-tree-bullet.prefab-goal { background: #8aa871; }
-.nexus-outliner-tree-bullet.prefab-hazard { background: #b26b66; }
-.nexus-outliner-tree-bullet.prefab-decoration { background: #6f8ca0; }
-.nexus-outliner-tree-bullet.prefab-custom { background: #9a8db0; }
+.nexus-outliner-tree-bullet.prefab-player {
+  background: #d1c09a;
+}
+
+.nexus-outliner-tree-bullet.prefab-platform {
+  background: #808894;
+}
+
+.nexus-outliner-tree-bullet.prefab-enemy {
+  background: #ad7b7f;
+}
+
+.nexus-outliner-tree-bullet.prefab-collectible {
+  background: #b6a071;
+}
+
+.nexus-outliner-tree-bullet.prefab-goal {
+  background: #8aa871;
+}
+
+.nexus-outliner-tree-bullet.prefab-hazard {
+  background: #b26b66;
+}
+
+.nexus-outliner-tree-bullet.prefab-decoration {
+  background: #6f8ca0;
+}
+
+.nexus-outliner-tree-bullet.prefab-custom {
+  background: #9a8db0;
+}
 
 .nexus-outliner-tree-action {
   display: inline-flex;
@@ -878,7 +941,7 @@ img {
   gap: 1px;
 }
 
-.nexus-outliner-tree-node-component + .nexus-outliner-tree-node-component {
+.nexus-outliner-tree-node-component+.nexus-outliner-tree-node-component {
   margin-top: -1px;
 }
 
