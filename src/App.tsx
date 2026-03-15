@@ -1223,21 +1223,53 @@ function ProjectLauncher({
   return (
     <div className={onClose ? 'nexus-launcher-overlay' : 'nexus-launcher-shell'}>
       <div className="nexus-launcher">
-        <div className="nexus-launcher-side">
-          <div className="nexus-brand">
-            <div className="nexus-brand-icon">
-              <Gamepad2 size={14} />
+        <div className="nexus-launcher-hero">
+          <div className="nexus-launcher-hero-copy">
+            <div className="nexus-brand nexus-brand-launcher">
+              <div className="nexus-brand-icon nexus-brand-icon-launcher">
+                <Gamepad2 size={18} />
+              </div>
+              <div className="leading-tight">
+                <p className="nexus-launcher-eyebrow">Nexus 2D Engine</p>
+                <p className="nexus-launcher-brand-title">Project Launcher</p>
+              </div>
             </div>
-            <div className="leading-tight">
-              <p className="text-[10px] uppercase tracking-[0.24em] text-[var(--muted)]">Nexus 2D</p>
-              <p className="text-xs font-semibold text-[var(--text)]">Project Launcher</p>
+
+            <div>
+              <h1 className="nexus-launcher-hero-title">Enter the editor from a clean, deliberate starting point.</h1>
+              <p className="nexus-launcher-hero-text">
+                Start blank, import an existing project, or open a sample workspace. Every path lands in the same editor, with the same runtime and
+                scene workflow.
+              </p>
             </div>
           </div>
+
+          <div className="nexus-launcher-hero-panel">
+            <div className="nexus-launcher-panel-label">Session Flow</div>
+            <div className="nexus-launcher-hero-points">
+              <div className="nexus-launcher-hero-point">
+                <span>01</span>
+                <p>Blank projects open with a neutral world and no demo residue.</p>
+              </div>
+              <div className="nexus-launcher-hero-point">
+                <span>02</span>
+                <p>Sample projects are optional references, not a different workflow.</p>
+              </div>
+              <div className="nexus-launcher-hero-point">
+                <span>03</span>
+                <p>You can reopen this launcher later from the top bar at any time.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="nexus-launcher-side">
           <div className="space-y-3">
             <div>
-              <h1 className="text-[22px] font-semibold tracking-tight text-[var(--text)]">Start from an empty workspace.</h1>
-              <p className="mt-2 max-w-[38ch] text-[12px] leading-6 text-[var(--muted)]">
-                Open an existing project, load a sample, or begin with a blank world so the editor behaves like a real engine instead of dropping you into a demo scene.
+              <div className="nexus-launcher-panel-label">Workspace Notes</div>
+              <h2 className="mt-3 text-[19px] font-semibold tracking-[-0.03em] text-[var(--text)]">Choose the right entry path, then stay in flow.</h2>
+              <p className="mt-2 max-w-[34ch] text-[12px] leading-6 text-[var(--muted)]">
+                The launcher is meant to get out of the way quickly. Pick a starting point once, then continue building inside the same editor layout and runtime loop.
               </p>
             </div>
             <div className="space-y-2 text-[11px] text-[var(--muted)]">
