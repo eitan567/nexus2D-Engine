@@ -685,6 +685,7 @@ function SceneInspector({
   mutateActiveScene: (mutator: (scene: Scene) => void, options?: {replace?: boolean}) => void;
   mutateProject: (mutator: (draft: Project) => void, options?: {replace?: boolean}) => void;
 }) {
+  const showProjectSection = matchesFilterQuery(filterText, 'project', project.name, project.description, 'name description');
   const showSceneSettings = matchesFilterQuery(
     filterText,
     'scene settings',
@@ -694,10 +695,42 @@ function SceneInspector({
   const showControls = matchesFilterQuery(filterText, 'controls', Object.keys(project.controls).join(' '), Object.values(project.controls).join(' '));
   const showAssistant = matchesFilterQuery(filterText, 'assistant ai status summary', aiSummary);
 
-  const hasVisibleSections = showSceneSettings || showControls || showAssistant;
+  const hasVisibleSections = showProjectSection || showSceneSettings || showControls || showAssistant;
 
   return (
     <div className="space-y-2">
+      {showProjectSection && (
+        <SectionCard title="Project" subtitle="Project identity and export metadata">
+          <div className="space-y-3">
+            <LabeledField label="Project Name">
+              <input
+                value={project.name}
+                onChange={(event) =>
+                  mutateProject((draft) => {
+                    draft.name = event.target.value;
+                  })
+                }
+                className="nexus-input"
+              />
+            </LabeledField>
+            <LabeledField label="Project Description">
+              <textarea
+                value={project.description}
+                onChange={(event) =>
+                  mutateProject((draft) => {
+                    draft.description = event.target.value;
+                  })
+                }
+                className="nexus-textarea h-24"
+              />
+            </LabeledField>
+            <div className="rounded-sm border border-[var(--border)] bg-[#202226] px-2.5 py-2 text-[11px] text-[var(--muted)]">
+              The project name appears in the top bar and is used as the default filename when exporting `.nexus2d.json`.
+            </div>
+          </div>
+        </SectionCard>
+      )}
+
       {showSceneSettings && (
         <SectionCard title="Scene Settings" subtitle="World, camera, gravity and grid">
           <div className="grid grid-cols-2 gap-3">
@@ -1214,12 +1247,17 @@ function ProjectLauncher({
 }: {
   hasSavedProject: boolean;
   onClose?: () => void;
-  onCreateBlank: () => void;
+  onCreateBlank: (projectName: string) => void;
   onResumeSaved: () => void;
   onLoadPlatformer: () => void;
   onLoadTopDown: () => void;
   onImportProject: () => void;
 }) {
+  const [blankProjectName, setBlankProjectName] = useState('Untitled Project');
+  const handleCreateBlank = () => {
+    onCreateBlank(blankProjectName.trim() || 'Untitled Project');
+  };
+
   return (
     <div className={onClose ? 'nexus-launcher-overlay' : 'nexus-launcher-shell'}>
       <div className="nexus-launcher">
@@ -1293,12 +1331,30 @@ function ProjectLauncher({
             )}
           </div>
 
+          <div className="nexus-launcher-name-row">
+            <LabeledField label="New Blank Project Name">
+              <input
+                value={blankProjectName}
+                onChange={(event) => setBlankProjectName(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault();
+                    handleCreateBlank();
+                  }
+                }}
+                placeholder="Untitled Project"
+                className="nexus-input"
+              />
+            </LabeledField>
+            <div className="nexus-launcher-name-hint">Used when creating a fresh blank project. You can rename it later from the Details panel.</div>
+          </div>
+
           <div className="nexus-launcher-grid">
             <LauncherCard
               title="New Blank Project"
               subtitle="Start with an empty scene, neutral grey viewport defaults and no demo objects."
               badge="Recommended"
-              onClick={onCreateBlank}
+              onClick={handleCreateBlank}
             />
             <LauncherCard
               title="Import Project JSON"
@@ -1344,7 +1400,7 @@ export default function App() {
   const activeScene = getActiveScene(project);
   const stats = projectStats(project);
 
-  const [sessionStarted, setSessionStarted] = useState(false);
+  const [sessionStarted, setSessionStarted] = useState(true);
   const [launcherOpen, setLauncherOpen] = useState(true);
   const [activeMenu, setActiveMenu] = useState<TopMenuKey | null>(null);
   const [storedProject, setStoredProject] = useState<Project | null>(() => readStoredProject());
@@ -2941,32 +2997,6 @@ export default function App() {
     void readHealth();
   }, []);
 
-  if (!sessionStarted) {
-    return (
-      <>
-        <input
-          ref={importProjectInputRef}
-          type="file"
-          accept="application/json"
-          className="hidden"
-          onChange={importProjectFile}
-        />
-        <ProjectLauncher
-          hasSavedProject={Boolean(storedProject)}
-          onCreateBlank={() => launchProject(createBlankProject())}
-          onResumeSaved={() => {
-            if (storedProject) {
-              launchProject(storedProject);
-            }
-          }}
-          onLoadPlatformer={() => launchProject(createSampleProject('platformer'))}
-          onLoadTopDown={() => launchProject(createSampleProject('topdown'))}
-          onImportProject={() => importProjectInputRef.current?.click()}
-        />
-      </>
-    );
-  }
-
   const closeMenu = () => setActiveMenu(null);
   const selectionLabel = selectionCount > 1 ? `${selectionCount} actors` : selectedEntity?.name ?? 'none';
   const deleteActionLabel =
@@ -3843,7 +3873,7 @@ export default function App() {
         <ProjectLauncher
           hasSavedProject={Boolean(storedProject)}
           onClose={() => setLauncherOpen(false)}
-          onCreateBlank={() => launchProject(createBlankProject())}
+          onCreateBlank={(projectName) => launchProject(createBlankProject(projectName))}
           onResumeSaved={() => {
             if (storedProject) {
               launchProject(storedProject);
