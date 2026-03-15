@@ -635,6 +635,7 @@ class MainScene extends Phaser.Scene {
     body.setCollideWorldBounds(true);
     body.moves = true;
     const colliderMetrics = collider ? this.resolveColliderMetrics(collider, sprite) : null;
+    const bodyColliderMetrics = collider ? this.resolveBodyColliderMetrics(collider, sprite) : null;
     const isSolidCollider = Boolean(colliderMetrics && !colliderMetrics.isTrigger);
 
     if (isSolidCollider) {
@@ -666,20 +667,21 @@ class MainScene extends Phaser.Scene {
       body.gravity.set(0, 0);
     }
 
-    if (colliderMetrics) {
+    if (colliderMetrics && bodyColliderMetrics) {
       if (colliderMetrics.shape === 'circle') {
-        body.setCircle(colliderMetrics.radius);
+        body.setCircle(bodyColliderMetrics.radius);
         body.setOffset(
-          sprite.displayWidth / 2 - colliderMetrics.radius + colliderMetrics.offsetX,
-          sprite.displayHeight / 2 - colliderMetrics.radius + colliderMetrics.offsetY,
+          sprite.width / 2 - bodyColliderMetrics.radius + bodyColliderMetrics.offsetX,
+          sprite.height / 2 - bodyColliderMetrics.radius + bodyColliderMetrics.offsetY,
         );
       } else {
-        body.setSize(colliderMetrics.width, colliderMetrics.height);
+        body.setSize(bodyColliderMetrics.width, bodyColliderMetrics.height);
         body.setOffset(
-          sprite.displayWidth / 2 - colliderMetrics.width / 2 + colliderMetrics.offsetX,
-          sprite.displayHeight / 2 - colliderMetrics.height / 2 + colliderMetrics.offsetY,
+          sprite.width / 2 - bodyColliderMetrics.width / 2 + bodyColliderMetrics.offsetX,
+          sprite.height / 2 - bodyColliderMetrics.height / 2 + bodyColliderMetrics.offsetY,
         );
       }
+      body.updateFromGameObject();
 
       body.checkCollision.none = colliderMetrics.isTrigger;
       body.checkCollision.up = !colliderMetrics.isTrigger;
@@ -1284,6 +1286,24 @@ class MainScene extends Phaser.Scene {
       offsetY: collider.offsetY,
       isTrigger: collider.isTrigger,
       isPassThrough: collider.isPassThrough,
+    };
+  }
+
+  private resolveBodyColliderMetrics(collider: ColliderComponent, sprite: Phaser.GameObjects.Sprite) {
+    const colliderMetrics = this.resolveColliderMetrics(collider, sprite);
+    const scaleX = Math.max(0.0001, Math.abs(sprite.scaleX) || 1);
+    const scaleY = Math.max(0.0001, Math.abs(sprite.scaleY) || 1);
+    const minScale = Math.max(0.0001, Math.min(scaleX, scaleY));
+
+    return {
+      shape: colliderMetrics.shape,
+      width: colliderMetrics.width / scaleX,
+      height: colliderMetrics.height / scaleY,
+      radius: colliderMetrics.radius / minScale,
+      offsetX: colliderMetrics.offsetX / scaleX,
+      offsetY: colliderMetrics.offsetY / scaleY,
+      isTrigger: colliderMetrics.isTrigger,
+      isPassThrough: colliderMetrics.isPassThrough,
     };
   }
 

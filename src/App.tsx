@@ -1330,6 +1330,7 @@ export default function App() {
   const [dragState, setDragState] = useState<DragState>(null);
   const [panState, setPanState] = useState<PanState>(null);
   const [boxSelectionState, setBoxSelectionState] = useState<BoxSelectionState>(null);
+  const [hoveredCanvasEntityId, setHoveredCanvasEntityId] = useState<string | null>(null);
   const [aiMode, setAiMode] = useState<'create' | 'extend'>('extend');
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiSummary, setAiSummary] = useState('');
@@ -1541,6 +1542,39 @@ export default function App() {
       width,
       height,
       rotationRadians,
+    };
+  };
+
+  const getEntityPlacementExtents = (entity: Entity) => {
+    const visual = getEntityVisual(entity);
+    if (!visual) {
+      return null;
+    }
+
+    const collider = getComponent<ColliderComponent>(entity, ComponentType.Collider);
+    if (!collider || collider.isTrigger) {
+      return {
+        halfWidth: visual.width / 2,
+        halfHeight: visual.height / 2,
+      };
+    }
+
+    if (collider.shape === 'circle') {
+      const radius = collider.autoSize ? Math.max(4, Math.min(visual.width, visual.height) / 2) : collider.radius;
+      return {
+        halfWidth: radius + Math.abs(collider.offsetX),
+        halfHeight: radius + Math.abs(collider.offsetY),
+      };
+    }
+
+    const baseWidth = collider.autoSize ? visual.width : collider.width;
+    const baseHeight = collider.autoSize ? visual.height : collider.height;
+    const cos = Math.abs(Math.cos(visual.rotationRadians));
+    const sin = Math.abs(Math.sin(visual.rotationRadians));
+
+    return {
+      halfWidth: Math.max(8, baseWidth * cos + baseHeight * sin) / 2 + Math.abs(collider.offsetX),
+      halfHeight: Math.max(8, baseWidth * sin + baseHeight * cos) / 2 + Math.abs(collider.offsetY),
     };
   };
 
@@ -1766,6 +1800,8 @@ export default function App() {
     !isPlaying && selectionCount === 1 && !boxSelectionState && selectedEntity && selectedTransform && selectedSprite
       ? getSelectedTransformGizmo()
       : null;
+  const isCanvasDragging = Boolean(panState || dragState || boxSelectionState);
+  const isCanvasHoveringEntity = !isCanvasDragging && !isPlaying && hoveredCanvasEntityId !== null;
 
   const focusStageViewport = () => {
     const canvas = canvasRef.current;
@@ -1967,6 +2003,7 @@ export default function App() {
 
   const handleCanvasPointerMove = useEffectEvent((clientX: number, clientY: number) => {
     if (panState?.mode === 'editor-pan') {
+      setHoveredCanvasEntityId((current) => (current === null ? current : null));
       const screenPoint = getCanvasScreenPointFromClient(clientX, clientY);
       if (!screenPoint) {
         return;
@@ -1978,6 +2015,7 @@ export default function App() {
     }
 
     if (panState?.mode === 'camera-drag' || panState?.mode === 'camera-drag-with-entities') {
+      setHoveredCanvasEntityId((current) => (current === null ? current : null));
       const screenPoint = getCanvasScreenPointFromClient(clientX, clientY, {clampToCanvas: true});
       if (!screenPoint) {
         return;
@@ -2038,6 +2076,7 @@ export default function App() {
     }
 
     if (boxSelectionState) {
+      setHoveredCanvasEntityId((current) => (current === null ? current : null));
       const screenPoint = getCanvasScreenPointFromClient(clientX, clientY, {clampToCanvas: true});
       if (!screenPoint) {
         return;
@@ -2050,6 +2089,19 @@ export default function App() {
         worldCurrent: point,
       });
       return;
+    }
+
+    if (!dragState) {
+      if (isPlaying) {
+        setHoveredCanvasEntityId((current) => (current === null ? current : null));
+      } else {
+        const screenPoint = getCanvasScreenPointFromClient(clientX, clientY, {clampToCanvas: true});
+        const point = screenPoint ? (engineRef.current?.screenToWorld(screenPoint.x, screenPoint.y) ?? screenPoint) : null;
+        const hoveredEntityId = point ? findEntityAtPoint(point)?.id ?? null : null;
+        setHoveredCanvasEntityId((current) => (current === hoveredEntityId ? current : hoveredEntityId));
+      }
+    } else {
+      setHoveredCanvasEntityId((current) => (current === null ? current : null));
     }
 
     if (!dragState || !selectedEntity || dragState.entityId !== selectedEntity.id) {
@@ -2201,6 +2253,10 @@ export default function App() {
     handleCanvasPointerMove(event.clientX, event.clientY);
   };
 
+  const handleCanvasMouseLeave = () => {
+    setHoveredCanvasEntityId(null);
+  };
+
   const handleCanvasMouseUp = () => {
     clearPendingDragFrame();
     setDragState(null);
@@ -2257,6 +2313,25 @@ export default function App() {
     const entity = createEntityFromPrefab(prefab, position);
     const entityTransform = getComponent<TransformComponent>(entity, ComponentType.Transform);
     if (entityTransform) {
+      const selectedPlacementExtents = selectedEntity ? getEntityPlacementExtents(selectedEntity) : null;
+      const entityPlacementExtents = getEntityPlacementExtents(entity);
+      if (selectedAnchor && selectedPlacementExtents && entityPlacementExtents) {
+        const dx = entityTransform.position.x - selectedAnchor.x;
+        const dy = entityTransform.position.y - selectedAnchor.y;
+        const overlapX = selectedPlacementExtents.halfWidth + entityPlacementExtents.halfWidth - Math.abs(dx);
+        const overlapY = selectedPlacementExtents.halfHeight + entityPlacementExtents.halfHeight - Math.abs(dy);
+
+        if (overlapX > 0 && overlapY > 0) {
+          if (overlapY <= overlapX) {
+            entityTransform.position.y =
+              selectedAnchor.y + (dy <= 0 ? -1 : 1) * (selectedPlacementExtents.halfHeight + entityPlacementExtents.halfHeight);
+          } else {
+            entityTransform.position.x =
+              selectedAnchor.x + (dx <= 0 ? -1 : 1) * (selectedPlacementExtents.halfWidth + entityPlacementExtents.halfWidth);
+          }
+        }
+      }
+
       const entitySprite = getComponent<SpriteComponent>(entity, ComponentType.Sprite);
       const halfWidth = Math.max(
         8,
@@ -3357,7 +3432,9 @@ export default function App() {
 
           <div ref={stageShellRef} className="nexus-stage-shell" onPointerDownCapture={focusStageViewport}>
             <motion.div
-              className={`nexus-canvas-frame ${panState ? 'is-panning' : ''} ${viewportMode === 'mobile' ? 'nexus-canvas-mobile' : 'nexus-canvas-desktop'}`}
+              className={`nexus-canvas-frame ${isCanvasDragging ? 'is-dragging' : ''} ${isCanvasHoveringEntity ? 'is-hovering-entity' : ''} ${
+                viewportMode === 'mobile' ? 'nexus-canvas-mobile' : 'nexus-canvas-desktop'
+              }`}
               style={
                 stageCanvasSize
                   ? {
@@ -3372,10 +3449,11 @@ export default function App() {
                 tabIndex={0}
                 width={viewportMode === 'mobile' ? 390 : Math.max(1, Math.round(stageCanvasSize?.width ?? 1280))}
                 height={viewportMode === 'mobile' ? 844 : Math.max(1, Math.round(stageCanvasSize?.height ?? 820))}
-                className={`h-full w-full rounded-[inherit] ${panState ? 'cursor-grabbing' : 'cursor-pointer'}`}
+                className="h-full w-full rounded-[inherit]"
                 onContextMenu={handleCanvasContextMenu}
                 onMouseDown={handleCanvasMouseDown}
                 onMouseMove={handleCanvasMouseMove}
+                onMouseLeave={handleCanvasMouseLeave}
                 onMouseUp={handleCanvasMouseUp}
               />
 
@@ -3466,7 +3544,7 @@ export default function App() {
                     style={{
                       left: `${selectedTransformGizmo.rotateHandle.x}px`,
                       top: `${selectedTransformGizmo.rotateHandle.y}px`,
-                      cursor: 'grab',
+                      cursor: 'var(--cursor-rotate)',
                     }}
                     onMouseDown={(event) => {
                       if (!selectedEntity) {

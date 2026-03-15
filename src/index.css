@@ -19,6 +19,10 @@
   --shadow: none;
   --font-display: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --font-mono: "Consolas", "IBM Plex Mono", monospace;
+  --cursor-rotate:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='%23f2efe9' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8.2 6.1A7 7 0 0 1 19 12'/%3E%3Cpath d='M15.8 17.9A7 7 0 0 1 5 12'/%3E%3Cpath d='M18.8 12H15.6V8.8'/%3E%3Cpath d='M5.2 12h3.2v3.2'/%3E%3C/g%3E%3C/svg%3E")
+      12 12,
+    grab;
 }
 
 * {
@@ -199,7 +203,7 @@ img {
   overflow: hidden;
   border: 1px solid #1b1d21;
   background: #111214;
-  cursor: pointer;
+  cursor: default;
 }
 
 .nexus-canvas-frame:focus-within {
@@ -275,8 +279,18 @@ img {
   border-radius: 999px;
 }
 
-.nexus-canvas-frame.is-panning {
+.nexus-canvas-frame.is-hovering-entity,
+.nexus-canvas-frame.is-hovering-entity canvas {
+  cursor: grab;
+}
+
+.nexus-canvas-frame.is-dragging,
+.nexus-canvas-frame.is-dragging canvas {
   cursor: grabbing;
+}
+
+.nexus-canvas-frame.is-dragging .nexus-transform-handle {
+  cursor: grabbing !important;
 }
 
 .nexus-selection-box {
