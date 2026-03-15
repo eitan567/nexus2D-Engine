@@ -1828,6 +1828,9 @@ export default function App() {
   };
 
   const toggleSimulation = () => {
+    if (!isPlaying) {
+      setStageViewportMode('camera');
+    }
     setIsPlaying((playing) => !playing);
     window.requestAnimationFrame(() => {
       focusStageViewport();
