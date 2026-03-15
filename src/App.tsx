@@ -300,6 +300,49 @@ function LauncherCard({
   );
 }
 
+function BlankProjectLauncherCard({
+  projectName,
+  setProjectName,
+  onCreate,
+}: {
+  projectName: string;
+  setProjectName: (value: string) => void;
+  onCreate: () => void;
+}) {
+  return (
+    <div className="nexus-launcher-card nexus-launcher-blank-card">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-[13px] font-semibold text-[var(--text)]">New Blank Project</div>
+          <div className="mt-1 text-[11px] leading-5 text-[var(--muted)]">
+            Empty scene with neutral viewport defaults.
+          </div>
+        </div>
+        <span className="nexus-launcher-badge">Recommended</span>
+      </div>
+
+      <div className="nexus-launcher-blank-row">
+        <input
+          value={projectName}
+          onChange={(event) => setProjectName(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              onCreate();
+            }
+          }}
+          aria-label="New Blank Project Name"
+          placeholder="Project name"
+          className="nexus-input"
+        />
+        <button type="button" onClick={onCreate} className="nexus-launcher-create-button">
+          Create
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function SectionCard({
   title,
   subtitle,
@@ -1331,31 +1374,8 @@ function ProjectLauncher({
             )}
           </div>
 
-          <div className="nexus-launcher-name-row">
-            <LabeledField label="New Blank Project Name">
-              <input
-                value={blankProjectName}
-                onChange={(event) => setBlankProjectName(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
-                    event.preventDefault();
-                    handleCreateBlank();
-                  }
-                }}
-                placeholder="Untitled Project"
-                className="nexus-input"
-              />
-            </LabeledField>
-            <div className="nexus-launcher-name-hint">Used when creating a fresh blank project. You can rename it later from the Details panel.</div>
-          </div>
-
           <div className="nexus-launcher-grid">
-            <LauncherCard
-              title="New Blank Project"
-              subtitle="Start with an empty scene, neutral grey viewport defaults and no demo objects."
-              badge="Recommended"
-              onClick={handleCreateBlank}
-            />
+            <BlankProjectLauncherCard projectName={blankProjectName} setProjectName={setBlankProjectName} onCreate={handleCreateBlank} />
             <LauncherCard
               title="Import Project JSON"
               subtitle="Open an existing `.nexus2d.json` project exported from the editor."

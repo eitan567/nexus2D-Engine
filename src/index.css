@@ -843,21 +843,6 @@ img {
   padding: 20px;
 }
 
-.nexus-launcher-name-row {
-  display: grid;
-  gap: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 6px;
-  background: rgba(18, 20, 24, 0.26);
-  padding: 12px;
-}
-
-.nexus-launcher-name-hint {
-  font-size: 11px;
-  line-height: 1.6;
-  color: var(--muted);
-}
-
 .nexus-launcher-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -878,6 +863,51 @@ img {
   border-color: var(--border-strong);
   background: #32363d;
   transform: translateY(-1px);
+}
+
+.nexus-launcher-blank-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.nexus-launcher-blank-card:focus-within {
+  border-color: var(--border-strong);
+  background: #32363d;
+}
+
+.nexus-launcher-blank-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.nexus-launcher-blank-row .nexus-input,
+.nexus-launcher-blank-row .nexus-launcher-create-button {
+  height: 30px;
+}
+
+.nexus-launcher-create-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(198, 138, 73, 0.32);
+  border-radius: 6px;
+  background: rgba(198, 138, 73, 0.1);
+  padding: 0 14px;
+  color: #e2bf95;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
+}
+
+.nexus-launcher-create-button:hover {
+  border-color: rgba(198, 138, 73, 0.48);
+  background: rgba(198, 138, 73, 0.16);
+  color: #f1d4b2;
 }
 
 .nexus-launcher-badge {
@@ -969,6 +999,14 @@ img {
 
   .nexus-launcher-grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .nexus-launcher-blank-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .nexus-launcher-create-button {
+    width: 100%;
   }
 
   .nexus-launcher-hero-title {
