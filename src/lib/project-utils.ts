@@ -22,7 +22,7 @@ export const PROJECT_VERSION = 2;
 export const STORAGE_KEY = 'nexus2d.editor.project';
 
 const DEFAULT_SCENE_SETTINGS: SceneSettings = {
-  worldSize: { x: 3000, y: 1350 },
+  worldSize: { x: 3000, y: 1393 },
   cameraStart: { x: 0, y: 0 },
   gravity: { x: 0, y: 980 },
   gridSize: 32,
@@ -807,10 +807,27 @@ export function buildAiPromptContext(project: Project) {
 
 export function normalizeAiResponse(input: unknown, fallbackProject: Project): AIResponsePayload {
   const source = input && typeof input === 'object' ? (input as Partial<AIResponsePayload>) : {};
+  const summaryObject =
+    source.summary && typeof source.summary === 'object'
+      ? (source.summary as Record<string, unknown>)
+      : null;
+  const notes =
+    typeof source.notes === 'string'
+      ? [source.notes]
+      : Array.isArray(source.notes)
+        ? source.notes.filter((note): note is string => typeof note === 'string')
+        : [];
+  const projectSource =
+    source.project ??
+    (input && typeof input === 'object' && Array.isArray((input as Project).scenes) ? (input as Project) : fallbackProject);
 
   return {
-    summary: stringOr(source.summary, 'AI updated the project structure.'),
-    notes: Array.isArray(source.notes) ? source.notes.filter((note) => typeof note === 'string') : [],
-    project: normalizeProject(source.project, fallbackProject),
+    summary:
+      stringOr(source.summary, '') ||
+      stringOr(summaryObject?.text, '') ||
+      stringOr(summaryObject?.description, '') ||
+      stringOr(summaryObject?.title, 'AI updated the project structure.'),
+    notes,
+    project: normalizeProject(projectSource, fallbackProject),
   };
 }

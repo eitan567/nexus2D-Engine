@@ -44,6 +44,9 @@ export function buildAiSystemInstruction(mode: 'create' | 'extend') {
     'Use scene settings to define world size, gravity, grid visibility and background colors.',
     'Script components may be used for engine-specific custom interactions, doors, switches, counters, win logic or animation helpers.',
     'Prefer compact but playable scenes with clear objectives.',
+    'Keep summary to one short sentence and notes to a few short strings.',
+    'Use the minimum number of entities, scenes and scripts required for a solid playable result.',
+    'If the request is too broad, simplify scope instead of returning incomplete JSON.',
   ].join(' ');
 }
 
