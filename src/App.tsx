@@ -121,8 +121,24 @@ type DragState = {
   pointerStart: Vector2;
   transformStart: TransformComponent;
   spriteSize: Vector2;
+  groupTransforms?: Array<{
+    id: string;
+    position: Vector2;
+  }>;
   rotationPointerOffset?: number;
   scaleHandle?: ScaleHandleDirection;
+} | null;
+
+type CameraDragEntitySnapshot = {
+  id: string;
+  position: Vector2;
+};
+
+type BoxSelectionState = {
+  screenStart: Vector2;
+  screenCurrent: Vector2;
+  worldStart: Vector2;
+  worldCurrent: Vector2;
 } | null;
 
 type PanState =
@@ -136,6 +152,14 @@ type PanState =
       cameraStart: Vector2;
       frameSize: Vector2;
       zoomStart: number;
+    }
+  | {
+      mode: 'camera-drag-with-entities';
+      screenStart: Vector2;
+      cameraStart: Vector2;
+      frameSize: Vector2;
+      zoomStart: number;
+      entities: CameraDragEntitySnapshot[];
     }
   | null;
 
@@ -401,10 +425,11 @@ function RuntimeBadge({
   label: string;
   children: ReactNode;
 }) {
+  const title = typeof children === 'string' || typeof children === 'number' ? String(children) : undefined;
   return (
-    <div className="rounded-sm border border-[var(--border)] bg-[#26282c] px-2 py-1 text-[11px] text-[var(--muted)]">
-      <span className="mr-2 uppercase tracking-[0.14em] text-[var(--muted)]">{label}</span>
-      <span className="font-semibold text-[var(--text)]">{children}</span>
+    <div className="nexus-runtime-badge" title={title}>
+      <span className="nexus-runtime-badge-label">{label}</span>
+      <span className="nexus-runtime-badge-value">{children}</span>
     </div>
   );
 }
@@ -1292,6 +1317,7 @@ export default function App() {
   const [activeMenu, setActiveMenu] = useState<TopMenuKey | null>(null);
   const [storedProject, setStoredProject] = useState<Project | null>(() => readStoredProject());
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(activeScene.entities[0]?.id ?? null);
+  const [selectedEntityIds, setSelectedEntityIds] = useState<string[]>(() => (activeScene.entities[0]?.id ? [activeScene.entities[0].id] : []));
   const [transformMode, setTransformMode] = useState<TransformMode>('move');
   const [viewportMode, setViewportMode] = useState<ViewportMode>('desktop');
   const [stageViewportMode, setStageViewportMode] = useState<StageViewportMode>('world');
@@ -1303,6 +1329,7 @@ export default function App() {
   const [runtimeSnapshot, setRuntimeSnapshot] = useState<RuntimeSnapshot | null>(null);
   const [dragState, setDragState] = useState<DragState>(null);
   const [panState, setPanState] = useState<PanState>(null);
+  const [boxSelectionState, setBoxSelectionState] = useState<BoxSelectionState>(null);
   const [aiMode, setAiMode] = useState<'create' | 'extend'>('extend');
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiSummary, setAiSummary] = useState('');
@@ -1326,7 +1353,13 @@ export default function App() {
   const dragPointerRef = useRef<Vector2 | null>(null);
   const dragFrameRef = useRef<number | null>(null);
 
-  const selectedEntity = activeScene.entities.find((entity) => entity.id === selectedEntityId) ?? null;
+  const activeSceneEntityIds = new globalThis.Set(activeScene.entities.map((entity) => entity.id));
+  const selectedEntityIdsInScene = selectedEntityIds.filter((entityId) => activeSceneEntityIds.has(entityId));
+  const primarySelectedEntityId =
+    selectedEntityId && selectedEntityIdsInScene.includes(selectedEntityId) ? selectedEntityId : selectedEntityIdsInScene[0] ?? null;
+  const selectedEntities = activeScene.entities.filter((entity) => selectedEntityIdsInScene.includes(entity.id));
+  const selectionCount = selectedEntityIdsInScene.length;
+  const selectedEntity = primarySelectedEntityId ? activeScene.entities.find((entity) => entity.id === primarySelectedEntityId) ?? null : null;
   const selectedTransform = selectedEntity ? getComponent<TransformComponent>(selectedEntity, ComponentType.Transform) : null;
   const selectedSprite = selectedEntity ? getComponent<SpriteComponent>(selectedEntity, ComponentType.Sprite) : null;
   const filteredScenes = project.scenes.filter((scene) => matchesFilterQuery(outlinerFilter, scene.name, scene.notes));
@@ -1338,13 +1371,17 @@ export default function App() {
   const detailsPlaceholder =
     rightTab === 'ai'
       ? 'Assistant prompt and summary live here'
-      : selectedEntity
-        ? `Filter ${selectedEntity.name} details`
+      : selectionCount > 1
+        ? `Filter ${selectionCount} selected actors`
+        : selectedEntity
+          ? `Filter ${selectedEntity.name} details`
         : `Filter ${activeScene.name} settings`;
 
   const launchProject = (nextProject: Project) => {
     history.reset(touchProject(nextProject));
-    setSelectedEntityId(getActiveScene(nextProject).entities[0]?.id ?? null);
+    const nextSelectedId = getActiveScene(nextProject).entities[0]?.id ?? null;
+    setSelectedEntityId(nextSelectedId);
+    setSelectedEntityIds(nextSelectedId ? [nextSelectedId] : []);
     setIsPlaying(false);
     setLauncherOpen(false);
     setSessionStarted(true);
@@ -1381,13 +1418,21 @@ export default function App() {
     }, options);
   };
 
+  const selectEntities = (entityIds: string[], options?: {primaryId?: string | null}) => {
+    const uniqueIds = [...new globalThis.Set(entityIds)].filter((entityId) => activeSceneEntityIds.has(entityId));
+    const nextPrimary =
+      options?.primaryId && uniqueIds.includes(options.primaryId) ? options.primaryId : uniqueIds[0] ?? null;
+    setSelectedEntityIds(uniqueIds);
+    setSelectedEntityId(nextPrimary);
+  };
+
   const mutateSelectedEntity = (mutator: (entity: Entity) => void, options?: {replace?: boolean}) => {
-    if (!selectedEntityId) {
+    if (!primarySelectedEntityId) {
       return;
     }
 
     mutateActiveScene((scene) => {
-      const entity = scene.entities.find((entry) => entry.id === selectedEntityId);
+      const entity = scene.entities.find((entry) => entry.id === primarySelectedEntityId);
       if (entity) {
         mutator(entity);
       }
@@ -1499,34 +1544,74 @@ export default function App() {
     };
   };
 
-  const worldToCanvasPoint = (point: Vector2): Vector2 | null => {
-    const screenPoint = engineRef.current?.worldToScreen(point.x, point.y);
-    if (!screenPoint) {
-      return null;
+  const doesEntityIntersectFrame = (entity: Entity, frame: {x: number; y: number; width: number; height: number}) => {
+    const visual = getEntityVisual(entity);
+    if (!visual) {
+      return false;
     }
 
-    return screenPoint;
+    const halfWidth = visual.width / 2;
+    const halfHeight = visual.height / 2;
+    const corners = [
+      {x: -halfWidth, y: -halfHeight},
+      {x: halfWidth, y: -halfHeight},
+      {x: halfWidth, y: halfHeight},
+      {x: -halfWidth, y: halfHeight},
+    ].map((corner) => {
+      const rotated = rotateVector(corner, visual.rotationRadians);
+      return {
+        x: visual.transform.position.x + rotated.x,
+        y: visual.transform.position.y + rotated.y,
+      };
+    });
+
+    const xs = corners.map((corner) => corner.x);
+    const ys = corners.map((corner) => corner.y);
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+
+    return (
+      maxX >= frame.x &&
+      minX <= frame.x + frame.width &&
+      maxY >= frame.y &&
+      minY <= frame.y + frame.height
+    );
   };
 
-  const getSelectedTransformGizmo = () => {
-    if (!selectedEntity) {
-      return null;
-    }
+  const getEntitiesInsideCameraFrame = (frame: {x: number; y: number; width: number; height: number}): CameraDragEntitySnapshot[] =>
+    activeScene.entities.flatMap((entity) => {
+      const transform = getComponent<TransformComponent>(entity, ComponentType.Transform);
+      if (!transform || !doesEntityIntersectFrame(entity, frame)) {
+        return [];
+      }
 
-    const visual = getEntityVisual(selectedEntity);
+      return [
+        {
+          id: entity.id,
+          position: {
+            x: transform.position.x,
+            y: transform.position.y,
+          },
+        },
+      ];
+    });
+
+  const getEntitySelectionOutline = (entity: Entity) => {
+    const visual = getEntityVisual(entity);
     if (!visual) {
       return null;
     }
 
     const halfWidth = visual.width / 2;
     const halfHeight = visual.height / 2;
-    const localCorners = [
+    const corners = [
       {x: -halfWidth, y: -halfHeight},
       {x: halfWidth, y: -halfHeight},
       {x: halfWidth, y: halfHeight},
       {x: -halfWidth, y: halfHeight},
-    ];
-    const corners = localCorners
+    ]
       .map((corner) => {
         const rotated = rotateVector(corner, visual.rotationRadians);
         return {
@@ -1541,38 +1626,64 @@ export default function App() {
     }
 
     const [northWest, northEast, southEast, southWest] = corners as [Vector2, Vector2, Vector2, Vector2];
-    const topCenter = midpoint(northWest, northEast);
+
+    return {
+      entityId: entity.id,
+      corners: {northWest, northEast, southEast, southWest},
+      topCenter: midpoint(northWest, northEast),
+    };
+  };
+
+  const worldToCanvasPoint = (point: Vector2): Vector2 | null => {
+    const screenPoint = engineRef.current?.worldToScreen(point.x, point.y);
+    if (!screenPoint) {
+      return null;
+    }
+
+    return screenPoint;
+  };
+
+  const getSelectedTransformGizmo = () => {
+    if (!selectedEntity) {
+      return null;
+    }
+
+    const outline = getEntitySelectionOutline(selectedEntity);
+    const visual = getEntityVisual(selectedEntity);
+    if (!outline || !visual) {
+      return null;
+    }
     const centerScreen = worldToCanvasPoint(visual.transform.position);
     if (!centerScreen) {
       return null;
     }
 
-    const outwardX = topCenter.x - centerScreen.x;
-    const outwardY = topCenter.y - centerScreen.y;
+    const outwardX = outline.topCenter.x - centerScreen.x;
+    const outwardY = outline.topCenter.y - centerScreen.y;
     const outwardLength = Math.hypot(outwardX, outwardY);
     const outwardNormal =
       outwardLength > 0.0001
         ? {x: outwardX / outwardLength, y: outwardY / outwardLength}
         : {x: 0, y: -1};
     const rotateHandle = {
-      x: topCenter.x + outwardNormal.x * 30,
-      y: topCenter.y + outwardNormal.y * 30,
+      x: outline.topCenter.x + outwardNormal.x * 30,
+      y: outline.topCenter.y + outwardNormal.y * 30,
     };
 
     return {
-      corners: {northWest, northEast, southEast, southWest},
-      topCenter,
+      corners: outline.corners,
+      topCenter: outline.topCenter,
       rotateHandle,
       scaleHandles: SCALE_HANDLE_DIRECTIONS.map((handle) => ({
         ...handle,
         point:
           handle.id === 'scale-nw'
-            ? northWest
+            ? outline.corners.northWest
             : handle.id === 'scale-ne'
-              ? northEast
+              ? outline.corners.northEast
               : handle.id === 'scale-se'
-                ? southEast
-                : southWest,
+                ? outline.corners.southEast
+                : outline.corners.southWest,
       })),
     };
   };
@@ -1581,7 +1692,7 @@ export default function App() {
     event: {clientX: number; clientY: number; preventDefault: () => void; stopPropagation: () => void},
     entity: Entity,
     interaction: TransformInteraction,
-    options?: {scaleHandle?: ScaleHandleDirection},
+    options?: {scaleHandle?: ScaleHandleDirection; groupSelectionIds?: string[]},
   ) => {
     event.preventDefault();
     event.stopPropagation();
@@ -1618,10 +1729,43 @@ export default function App() {
       nextDragState.scaleHandle = options.scaleHandle;
     }
 
+    if (interaction === 'move' && options?.groupSelectionIds && options.groupSelectionIds.length > 1) {
+      nextDragState.groupTransforms = activeScene.entities.flatMap((entry) => {
+        if (!options.groupSelectionIds?.includes(entry.id)) {
+          return [];
+        }
+
+        const entryTransform = getComponent<TransformComponent>(entry, ComponentType.Transform);
+        if (!entryTransform) {
+          return [];
+        }
+
+        return [
+          {
+            id: entry.id,
+            position: {
+              x: entryTransform.position.x,
+              y: entryTransform.position.y,
+            },
+          },
+        ];
+      });
+    }
+
     setDragState(nextDragState);
   };
 
-  const selectedTransformGizmo = !isPlaying && selectedEntity && selectedTransform && selectedSprite ? getSelectedTransformGizmo() : null;
+  const selectedEntityOutlines =
+    !isPlaying && selectionCount > 1 && !boxSelectionState
+      ? selectedEntities.flatMap((entity) => {
+          const outline = getEntitySelectionOutline(entity);
+          return outline ? [outline] : [];
+        })
+      : [];
+  const selectedTransformGizmo =
+    !isPlaying && selectionCount === 1 && !boxSelectionState && selectedEntity && selectedTransform && selectedSprite
+      ? getSelectedTransformGizmo()
+      : null;
 
   const focusStageViewport = () => {
     const canvas = canvasRef.current;
@@ -1662,6 +1806,41 @@ export default function App() {
     }
   };
 
+  const getNormalizedRect = (start: Vector2, end: Vector2) => ({
+    x: Math.min(start.x, end.x),
+    y: Math.min(start.y, end.y),
+    width: Math.abs(end.x - start.x),
+    height: Math.abs(end.y - start.y),
+  });
+
+  const finalizeBoxSelection = useEffectEvent(() => {
+    if (!boxSelectionState) {
+      return;
+    }
+
+    const screenRect = getNormalizedRect(boxSelectionState.screenStart, boxSelectionState.screenCurrent);
+    const draggedEnough = screenRect.width >= 4 || screenRect.height >= 4;
+    if (!draggedEnough) {
+      selectEntities([]);
+      setBoxSelectionState(null);
+      return;
+    }
+
+    const worldRect = getNormalizedRect(boxSelectionState.worldStart, boxSelectionState.worldCurrent);
+    const nextSelection = activeScene.entities
+      .filter((entity) => doesEntityIntersectFrame(entity, worldRect))
+      .map((entity) => entity.id);
+
+    selectEntities(nextSelection);
+    if (nextSelection.length > 0) {
+      setRightTab('inspector');
+      if (isCompact) {
+        setRightSidebarOpen(true);
+      }
+    }
+    setBoxSelectionState(null);
+  });
+
   const findEntityAtPoint = (point: Vector2) =>
     [...activeScene.entities]
       .sort((left, right) => right.layer - left.layer)
@@ -1678,6 +1857,11 @@ export default function App() {
         const localPoint = rotateVector(offset, -visual.rotationRadians);
         return Math.abs(localPoint.x) <= visual.width / 2 && Math.abs(localPoint.y) <= visual.height / 2;
       });
+
+  const boxSelectionScreenRect = boxSelectionState ? getNormalizedRect(boxSelectionState.screenStart, boxSelectionState.screenCurrent) : null;
+  const footerStatusText = isPlaying
+    ? 'Runtime active. Grid controls stay available: Mouse Wheel zoom, Middle/Right Mouse pan.'
+    : 'Editor ready. Drag actors from their body to move, use corner handles to scale, use the top handle to rotate, or drag empty grid space to box-select multiple actors. Shortcuts: W/E/R, Delete, Mouse Wheel zoom, Middle/Right Mouse pan, Ctrl/Cmd+Drag camera, Ctrl/Cmd+Shift+Drag camera and contents, Ctrl/Cmd+S, Ctrl/Cmd+Z.';
 
   const handleCanvasMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
     const primaryModifier = event.ctrlKey || event.metaKey;
@@ -1702,8 +1886,9 @@ export default function App() {
           event.preventDefault();
           engineRef.current?.panEditor(0, 0);
           const editorFrame = engineRef.current?.getEditorCameraFrame();
+          const moveEntitiesWithCamera = event.shiftKey;
           setPanState({
-            mode: 'camera-drag',
+            mode: moveEntitiesWithCamera ? 'camera-drag-with-entities' : 'camera-drag',
             screenStart: screenPoint,
             cameraStart: {
               x: activeScene.settings.cameraStart.x,
@@ -1714,6 +1899,7 @@ export default function App() {
               y: cameraFrame.height,
             },
             zoomStart: Math.max(0.0001, editorFrame?.zoom ?? 1),
+            ...(moveEntitiesWithCamera ? {entities: getEntitiesInsideCameraFrame(cameraFrame)} : {}),
           });
           return;
         }
@@ -1746,19 +1932,37 @@ export default function App() {
     }
 
     const hit = findEntityAtPoint(point);
-    setSelectedEntityId(hit?.id ?? null);
-    if (hit) {
-      setRightTab('inspector');
-      if (isCompact) {
-        setRightSidebarOpen(true);
+    if (!hit) {
+      const screenPoint = getCanvasScreenPoint(event);
+      if (screenPoint) {
+        setBoxSelectionState({
+          screenStart: screenPoint,
+          screenCurrent: screenPoint,
+          worldStart: point,
+          worldCurrent: point,
+        });
+      } else {
+        selectEntities([]);
       }
-    }
-
-    if (!hit || hit.locked) {
       return;
     }
 
-    beginTransformDrag(event, hit, 'move');
+    const multiDragSelection = selectionCount > 1 && selectedEntityIdsInScene.includes(hit.id) ? selectedEntityIdsInScene : null;
+    if (multiDragSelection) {
+      selectEntities(multiDragSelection, {primaryId: hit.id});
+    } else {
+      selectEntities([hit.id], {primaryId: hit.id});
+    }
+    setRightTab('inspector');
+    if (isCompact) {
+      setRightSidebarOpen(true);
+    }
+
+    if (hit.locked) {
+      return;
+    }
+
+    beginTransformDrag(event, hit, 'move', {groupSelectionIds: multiDragSelection ?? undefined});
   };
 
   const handleCanvasPointerMove = useEffectEvent((clientX: number, clientY: number) => {
@@ -1773,7 +1977,7 @@ export default function App() {
       return;
     }
 
-    if (panState?.mode === 'camera-drag') {
+    if (panState?.mode === 'camera-drag' || panState?.mode === 'camera-drag-with-entities') {
       const screenPoint = getCanvasScreenPointFromClient(clientX, clientY, {clampToCanvas: true});
       if (!screenPoint) {
         return;
@@ -1790,14 +1994,61 @@ export default function App() {
         nextCameraStartX !== activeScene.settings.cameraStart.x ||
         nextCameraStartY !== activeScene.settings.cameraStart.y
       ) {
-        mutateActiveScene(
-          (scene) => {
-            scene.settings.cameraStart.x = nextCameraStartX;
-            scene.settings.cameraStart.y = nextCameraStartY;
-          },
-          {replace: true},
-        );
+        if (panState.mode === 'camera-drag-with-entities') {
+          const deltaX = nextCameraStartX - panState.cameraStart.x;
+          const deltaY = nextCameraStartY - panState.cameraStart.y;
+          const entityPositions = new globalThis.Map(panState.entities.map((entry) => [entry.id, entry.position]));
+
+          mutateActiveScene(
+            (scene) => {
+              scene.settings.cameraStart.x = nextCameraStartX;
+              scene.settings.cameraStart.y = nextCameraStartY;
+              scene.entities.forEach((entity) => {
+                const startPosition = entityPositions.get(entity.id);
+                if (!startPosition) {
+                  return;
+                }
+
+                entity.components = entity.components.map((component) =>
+                  component.type === ComponentType.Transform
+                    ? {
+                        ...component,
+                        position: {
+                          x: startPosition.x + deltaX,
+                          y: startPosition.y + deltaY,
+                        },
+                      }
+                    : component,
+                );
+              });
+            },
+            {replace: true},
+          );
+        } else {
+          mutateActiveScene(
+            (scene) => {
+              scene.settings.cameraStart.x = nextCameraStartX;
+              scene.settings.cameraStart.y = nextCameraStartY;
+            },
+            {replace: true},
+          );
+        }
       }
+      return;
+    }
+
+    if (boxSelectionState) {
+      const screenPoint = getCanvasScreenPointFromClient(clientX, clientY, {clampToCanvas: true});
+      if (!screenPoint) {
+        return;
+      }
+
+      const point = engineRef.current?.screenToWorld(screenPoint.x, screenPoint.y) ?? screenPoint;
+      setBoxSelectionState({
+        ...boxSelectionState,
+        screenCurrent: screenPoint,
+        worldCurrent: point,
+      });
       return;
     }
 
@@ -1834,14 +2085,55 @@ export default function App() {
       const dy = point.y - dragState.pointerStart.y;
 
       if (dragState.interaction === 'move') {
-        let position = {
-          x: dragState.transformStart.position.x + dx,
-          y: dragState.transformStart.position.y + dy,
-        };
+        let deltaX = dx;
+        let deltaY = dy;
 
         if (activeScene.settings.snapToGrid) {
-          position = snapPoint(position, activeScene.settings.gridSize);
+          const snappedLeadPosition = snapPoint(
+            {
+              x: dragState.transformStart.position.x + dx,
+              y: dragState.transformStart.position.y + dy,
+            },
+            activeScene.settings.gridSize,
+          );
+          deltaX = snappedLeadPosition.x - dragState.transformStart.position.x;
+          deltaY = snappedLeadPosition.y - dragState.transformStart.position.y;
         }
+
+        if (dragState.groupTransforms && dragState.groupTransforms.length > 1) {
+          if (Math.abs(deltaX) < 0.01 && Math.abs(deltaY) < 0.01) {
+            return;
+          }
+
+          const groupPositions = new globalThis.Map(
+            dragState.groupTransforms.map((entry) => [
+              entry.id,
+              {
+                x: entry.position.x + deltaX,
+                y: entry.position.y + deltaY,
+              },
+            ]),
+          );
+
+          mutateActiveScene((scene) => {
+            scene.entities.forEach((entity) => {
+              const nextPosition = groupPositions.get(entity.id);
+              if (!nextPosition) {
+                return;
+              }
+
+              entity.components = entity.components.map((component) =>
+                component.type === ComponentType.Transform ? {...component, position: nextPosition} : component,
+              );
+            });
+          }, {replace: true});
+          return;
+        }
+
+        const position = {
+          x: dragState.transformStart.position.x + deltaX,
+          y: dragState.transformStart.position.y + deltaY,
+        };
 
         if (
           Math.abs(position.x - selectedTransform.position.x) < 0.01 &&
@@ -1913,6 +2205,7 @@ export default function App() {
     clearPendingDragFrame();
     setDragState(null);
     setPanState(null);
+    finalizeBoxSelection();
   };
 
   const handleCanvasContextMenu = (event: React.MouseEvent<HTMLCanvasElement>) => {
@@ -1989,30 +2282,32 @@ export default function App() {
       scene.entities.push(entity);
     });
     setSelectedEntityId(entity.id);
+    setSelectedEntityIds([entity.id]);
     setRightTab('inspector');
   };
 
   const duplicateSelection = () => {
-    if (!selectedEntity) {
+    if (selectedEntities.length === 0) {
       return;
     }
 
-    const copy = duplicateEntity(selectedEntity);
+    const duplicates = selectedEntities.map((entity) => duplicateEntity(entity));
     mutateActiveScene((scene) => {
-      scene.entities.push(copy);
+      scene.entities.push(...duplicates);
     });
-    setSelectedEntityId(copy.id);
+    setSelectedEntityId(duplicates[0]?.id ?? null);
+    setSelectedEntityIds(duplicates.map((entity) => entity.id));
   };
 
   const deleteSelection = () => {
-    if (!selectedEntity) {
+    if (selectedEntityIdsInScene.length === 0) {
       return;
     }
 
     mutateActiveScene((scene) => {
-      scene.entities = scene.entities.filter((entity) => entity.id !== selectedEntity.id);
+      scene.entities = scene.entities.filter((entity) => !selectedEntityIdsInScene.includes(entity.id));
     });
-    setSelectedEntityId(null);
+    selectEntities([]);
   };
 
   const createSceneFromTemplate = (template: 'blank' | 'platformer' | 'topdown') => {
@@ -2035,6 +2330,7 @@ export default function App() {
       draft.activeSceneId = scene.id;
     });
     setSelectedEntityId(scene.entities[0]?.id ?? null);
+    setSelectedEntityIds(scene.entities[0]?.id ? [scene.entities[0].id] : []);
     setIsPlaying(false);
   };
 
@@ -2052,6 +2348,7 @@ export default function App() {
     });
     const nextScene = project.scenes.find((scene) => scene.id === sceneId);
     setSelectedEntityId(nextScene?.entities[0]?.id ?? null);
+    setSelectedEntityIds(nextScene?.entities[0]?.id ? [nextScene.entities[0].id] : []);
     setIsPlaying(false);
   };
 
@@ -2075,6 +2372,7 @@ export default function App() {
     });
 
     setSelectedEntityId(nextScene.entities[0]?.id ?? null);
+    setSelectedEntityIds(nextScene.entities[0]?.id ? [nextScene.entities[0].id] : []);
     setIsPlaying(false);
   };
 
@@ -2168,7 +2466,9 @@ export default function App() {
 
       startTransition(() => {
         history.setProject(touchProject(normalized.project));
-        setSelectedEntityId(getActiveScene(normalized.project).entities[0]?.id ?? null);
+        const nextSelectedId = getActiveScene(normalized.project).entities[0]?.id ?? null;
+        setSelectedEntityId(nextSelectedId);
+        setSelectedEntityIds(nextSelectedId ? [nextSelectedId] : []);
         setIsPlaying(false);
       });
 
@@ -2324,7 +2624,7 @@ export default function App() {
   }, [sessionStarted]);
 
   useEffect(() => {
-    if (!dragState && !panState) {
+    if (!dragState && !panState && !boxSelectionState) {
       return;
     }
 
@@ -2335,6 +2635,7 @@ export default function App() {
       clearPendingDragFrame();
       setDragState(null);
       setPanState(null);
+      finalizeBoxSelection();
     };
 
     window.addEventListener('mousemove', handleWindowMouseMove);
@@ -2346,7 +2647,7 @@ export default function App() {
       window.removeEventListener('mouseup', handleWindowMouseUp);
       window.removeEventListener('blur', handleWindowMouseUp);
     };
-  }, [dragState, panState]);
+  }, [boxSelectionState, dragState, finalizeBoxSelection, panState]);
 
   useEffect(() => {
     const handlePointerDown = (event: PointerEvent) => {
@@ -2401,8 +2702,8 @@ export default function App() {
       return;
     }
 
-    engine.setSelectedEntity(selectedEntityId, transformMode);
-  }, [selectedEntityId, transformMode, sessionStarted]);
+    engine.setSelectedEntity(primarySelectedEntityId, transformMode);
+  }, [primarySelectedEntityId, transformMode, sessionStarted]);
 
   useEffect(() => {
     if (!sessionStarted) {
@@ -2482,10 +2783,20 @@ export default function App() {
   }, [sessionStarted, viewportMode]);
 
   useEffect(() => {
-    if (selectedEntityId && !activeScene.entities.some((entity) => entity.id === selectedEntityId)) {
-      setSelectedEntityId(activeScene.entities[0]?.id ?? null);
+    const nextSelectedIds = selectedEntityIds.filter((entityId) => activeSceneEntityIds.has(entityId));
+    const nextPrimary =
+      selectedEntityId && nextSelectedIds.includes(selectedEntityId) ? selectedEntityId : nextSelectedIds[0] ?? null;
+    const shouldSyncIds =
+      nextSelectedIds.length !== selectedEntityIds.length ||
+      nextSelectedIds.some((entityId, index) => entityId !== selectedEntityIds[index]);
+
+    if (shouldSyncIds) {
+      setSelectedEntityIds(nextSelectedIds);
     }
-  }, [activeScene, selectedEntityId]);
+    if (nextPrimary !== selectedEntityId) {
+      setSelectedEntityId(nextPrimary);
+    }
+  }, [activeScene, selectedEntityId, selectedEntityIds]);
 
   useEffect(() => {
     const readHealth = async () => {
@@ -2528,7 +2839,9 @@ export default function App() {
   }
 
   const closeMenu = () => setActiveMenu(null);
-  const deleteActionLabel = selectedEntity ? 'Delete Actor' : project.scenes.length > 1 ? 'Delete Scene' : 'Reset Scene';
+  const selectionLabel = selectionCount > 1 ? `${selectionCount} actors` : selectedEntity?.name ?? 'none';
+  const deleteActionLabel =
+    selectionCount > 1 ? 'Delete Actors' : selectedEntity ? 'Delete Actor' : project.scenes.length > 1 ? 'Delete Scene' : 'Reset Scene';
   const menuActions: Record<TopMenuKey, MenuAction[]> = {
     file: [
       {
@@ -2597,8 +2910,8 @@ export default function App() {
       },
       {
         label: 'Duplicate Selection',
-        hint: 'Create a copy of the selected entity.',
-        disabled: !selectedEntity,
+        hint: 'Create a copy of the selected actor or current multi-selection.',
+        disabled: selectionCount === 0,
         onSelect: () => {
           closeMenu();
           duplicateSelection();
@@ -2606,8 +2919,8 @@ export default function App() {
       },
       {
         label: 'Delete Selection',
-        hint: 'Remove the selected entity from the active scene.',
-        disabled: !selectedEntity,
+        hint: 'Remove the selected actor or current multi-selection from the active scene.',
+        disabled: selectionCount === 0,
         onSelect: () => {
           closeMenu();
           deleteSelection();
@@ -2901,6 +3214,7 @@ export default function App() {
 
                           if (project.activeSceneId === scene.id) {
                             setSelectedEntityId(nextScene.entities[0]?.id ?? null);
+                            setSelectedEntityIds(nextScene.entities[0]?.id ? [nextScene.entities[0].id] : []);
                             setIsPlaying(false);
                           }
                         }}
@@ -2936,12 +3250,12 @@ export default function App() {
                       <div
                         key={entity.id}
                         onClick={() => {
-                          setSelectedEntityId(entity.id);
+                          selectEntities([entity.id], {primaryId: entity.id});
                           setRightTab('inspector');
                           if (isCompact) setRightSidebarOpen(true);
                         }}
                         className={`flex w-full items-center justify-between rounded-sm border px-2.5 py-2 text-left ${
-                          entity.id === selectedEntityId
+                          selectedEntityIdsInScene.includes(entity.id)
                             ? 'border-[#5b6068] bg-[#393d44] text-[var(--text)]'
                             : 'border-[var(--border)] bg-[#26282c] text-[var(--muted)]'
                         }`}
@@ -2958,8 +3272,11 @@ export default function App() {
                             mutateActiveScene((scene) => {
                               scene.entities = scene.entities.filter((entry) => entry.id !== entity.id);
                             });
-                            if (selectedEntityId === entity.id) {
-                              setSelectedEntityId(null);
+                            if (selectedEntityIdsInScene.includes(entity.id)) {
+                              selectEntities(
+                                selectedEntityIdsInScene.filter((selectedId) => selectedId !== entity.id),
+                                {primaryId: primarySelectedEntityId === entity.id ? null : primarySelectedEntityId},
+                              );
                             }
                           }}
                           className="rounded-sm p-1.5 text-[var(--muted)]"
@@ -3061,6 +3378,38 @@ export default function App() {
                 onMouseMove={handleCanvasMouseMove}
                 onMouseUp={handleCanvasMouseUp}
               />
+
+              {selectedEntityOutlines.length > 0 && (
+                <div className="nexus-transform-gizmo" aria-hidden="true">
+                  <svg className="nexus-transform-gizmo-svg" viewBox={`0 0 ${stageCanvasSize?.width ?? 0} ${stageCanvasSize?.height ?? 0}`}>
+                    {selectedEntityOutlines.map((outline) => (
+                      <polygon
+                        key={outline.entityId}
+                        className="nexus-transform-gizmo-outline nexus-transform-gizmo-outline-secondary"
+                        points={[
+                          `${outline.corners.northWest.x},${outline.corners.northWest.y}`,
+                          `${outline.corners.northEast.x},${outline.corners.northEast.y}`,
+                          `${outline.corners.southEast.x},${outline.corners.southEast.y}`,
+                          `${outline.corners.southWest.x},${outline.corners.southWest.y}`,
+                        ].join(' ')}
+                      />
+                    ))}
+                  </svg>
+                </div>
+              )}
+
+              {boxSelectionScreenRect && (
+                <div
+                  className="nexus-selection-box"
+                  aria-hidden="true"
+                  style={{
+                    left: `${boxSelectionScreenRect.x}px`,
+                    top: `${boxSelectionScreenRect.y}px`,
+                    width: `${boxSelectionScreenRect.width}px`,
+                    height: `${boxSelectionScreenRect.height}px`,
+                  }}
+                />
+              )}
 
               {selectedTransformGizmo && (
                 <div className="nexus-transform-gizmo" aria-hidden="true">
@@ -3168,7 +3517,7 @@ export default function App() {
                 {runtimeSnapshot ? `${runtimeSnapshot.camera.x}, ${runtimeSnapshot.camera.y}` : '0, 0'}
               </RuntimeBadge>
               <RuntimeBadge label="Zoom">{runtimeSnapshot?.camera.zoom ?? 1}</RuntimeBadge>
-              <RuntimeBadge label="Selection">{selectedEntity?.name ?? 'none'}</RuntimeBadge>
+              <RuntimeBadge label="Selection">{selectionLabel}</RuntimeBadge>
               <RuntimeBadge label="Sim">{isPlaying ? 'running' : 'stopped'}</RuntimeBadge>
             </div>
             <div className="text-xs text-[var(--muted)]">
@@ -3231,6 +3580,22 @@ export default function App() {
                   aiNotes={aiNotes}
                   onRun={() => void runAiGeneration()}
                 />
+              ) : selectionCount > 1 ? (
+                <div className="rounded-sm border border-[var(--border)] bg-[#26292e] p-3">
+                  <div className="text-[11px] uppercase tracking-[0.16em] text-[var(--muted)]">Multi Selection</div>
+                  <div className="mt-2 text-[14px] font-semibold text-[var(--text)]">{selectionCount} actors selected</div>
+                  <div className="mt-2 text-[12px] leading-5 text-[var(--muted)]">
+                    Drag on empty grid space to update the batch, or use Duplicate/Delete to act on the full selection. Component editing
+                    stays on single-actor selection.
+                  </div>
+                  <div className="mt-3 text-[11px] text-[var(--muted)]">
+                    {selectedEntities
+                      .slice(0, 6)
+                      .map((entity) => entity.name)
+                      .join(', ')}
+                    {selectedEntities.length > 6 ? ` +${selectedEntities.length - 6} more` : ''}
+                  </div>
+                </div>
               ) : selectedEntity ? (
                 <ComponentInspector
                   selectedEntity={selectedEntity}
@@ -3324,7 +3689,7 @@ export default function App() {
       </section>
 
       <footer className="nexus-footer">
-        <div className="flex min-w-0 items-center gap-2">
+        <div className="nexus-footer-meta">
           <button
             onClick={() => setContentDrawerOpen((open) => !open)}
             className={`nexus-status-button ${contentDrawerOpen ? 'is-active' : ''}`}
@@ -3334,13 +3699,11 @@ export default function App() {
           </button>
           <div className="nexus-divider" />
           <RuntimeBadge label="Scene">{activeScene.name}</RuntimeBadge>
-          <RuntimeBadge label="Selection">{selectedEntity?.name ?? 'none'}</RuntimeBadge>
+          <RuntimeBadge label="Selection">{selectionLabel}</RuntimeBadge>
           <RuntimeBadge label="AI">{aiHealth?.vertexAiConfigured ? 'ready' : 'check config'}</RuntimeBadge>
         </div>
-        <div className="nexus-status-line">
-          {isPlaying
-            ? 'Runtime active. Grid controls stay available: Mouse Wheel zoom, Middle/Right Mouse pan.'
-            : 'Editor ready. Drag actors directly from their body to move, use corner handles to scale, use the top handle to rotate. Shortcuts: W/E/R, Delete, Mouse Wheel zoom, Middle/Right Mouse pan, Ctrl/Cmd+Drag inside camera frame to move camera start, Ctrl/Cmd+S, Ctrl/Cmd+Z.'}
+        <div className="nexus-status-line" title={footerStatusText}>
+          {footerStatusText}
         </div>
       </footer>
 
