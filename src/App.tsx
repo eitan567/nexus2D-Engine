@@ -3414,13 +3414,13 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!sessionStarted) {
+    if (!sessionStarted || launcherOpen) {
       return;
     }
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(project));
     setStoredProject(project);
-  }, [project, sessionStarted]);
+  }, [launcherOpen, project, sessionStarted]);
 
   useLayoutEffect(() => {
     if (!sessionStarted) {

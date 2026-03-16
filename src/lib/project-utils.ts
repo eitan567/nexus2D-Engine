@@ -69,6 +69,10 @@ function booleanOr(value: unknown, fallback: boolean) {
   return typeof value === 'boolean' ? value : fallback;
 }
 
+function maybeNumber(value: unknown) {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
 function vectorOr(value: unknown, fallback: Vector2): Vector2 {
   if (!value || typeof value !== 'object') {
     return { ...fallback };
@@ -79,6 +83,22 @@ function vectorOr(value: unknown, fallback: Vector2): Vector2 {
     x: numberOr(maybeVector.x, fallback.x),
     y: numberOr(maybeVector.y, fallback.y),
   };
+}
+
+function maybeVector(value: unknown) {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+
+  const maybe = value as Partial<Vector2>;
+  const x = maybeNumber(maybe.x);
+  const y = maybeNumber(maybe.y);
+
+  if (x === null || y === null) {
+    return null;
+  }
+
+  return { x, y } satisfies Vector2;
 }
 
 export function createTransform(position: Vector2, scale: Vector2 = { x: 1, y: 1 }): TransformComponent {
@@ -626,12 +646,19 @@ function normalizeSceneSettings(input: unknown, fallback: SceneSettings): SceneS
 }
 
 function normalizeEntity(input: unknown, fallback?: Entity): Entity {
-  const base = fallback ?? createEntityFromPrefab('custom', { x: 240, y: 240 });
   const source = input && typeof input === 'object' ? (input as Partial<Entity>) : {};
+  const inferredPrefab = isPrefab(source.prefab) ? source.prefab : fallback?.prefab ?? 'custom';
+  const base = fallback ?? createEntityFromPrefab(inferredPrefab, { x: 240, y: 240 });
   const prefab = isPrefab(source.prefab) ? source.prefab : base.prefab;
+  const legacyHints = resolveLegacyEntityHints(source.components);
+  const fallbackComponentsByType = new Map(base.components.map((component) => [component.type, component] as const));
   const components = Array.isArray(source.components)
     ? source.components
-      .map((component, index) => normalizeComponent(component, base.components[index]))
+      .map((component) => {
+        const componentType =
+          component && typeof component === 'object' && 'type' in component ? (component.type as ComponentType | undefined) : undefined;
+        return normalizeComponent(component, componentType ? fallbackComponentsByType.get(componentType) : undefined, legacyHints);
+      })
       .filter(Boolean)
     : base.components;
 
@@ -662,12 +689,54 @@ function isPrefab(value: unknown): value is EntityPrefab {
   );
 }
 
-function normalizeComponent(input: unknown, fallback?: Component) {
+type LegacyEntityHints = {
+  spriteSizeFromTransform: Vector2 | null;
+};
+
+function resolveLegacyEntityHints(components: unknown): LegacyEntityHints {
+  if (!Array.isArray(components)) {
+    return { spriteSizeFromTransform: null };
+  }
+
+  const transform = components.find(
+    (component) => component && typeof component === 'object' && 'type' in component && component.type === ComponentType.Transform,
+  ) as (Partial<TransformComponent> & Record<string, unknown>) | undefined;
+  const sprite = components.find(
+    (component) => component && typeof component === 'object' && 'type' in component && component.type === ComponentType.Sprite,
+  ) as (Partial<SpriteComponent> & Record<string, unknown>) | undefined;
+
+  if (!transform || !sprite) {
+    return { spriteSizeFromTransform: null };
+  }
+
+  const hasExplicitSpriteSize = maybeNumber(sprite.width) !== null || maybeNumber(sprite.height) !== null;
+  const legacyScale = maybeVector(transform.scale);
+
+  if (!legacyScale || hasExplicitSpriteSize) {
+    return { spriteSizeFromTransform: null };
+  }
+
+  const width = Math.abs(legacyScale.x);
+  const height = Math.abs(legacyScale.y);
+
+  if (width < 8 || height < 8) {
+    return { spriteSizeFromTransform: null };
+  }
+
+  return {
+    spriteSizeFromTransform: {
+      x: width,
+      y: height,
+    },
+  };
+}
+
+function normalizeComponent(input: unknown, fallback?: Component, legacyHints?: LegacyEntityHints) {
   if (!input || typeof input !== 'object') {
     return fallback;
   }
 
-  const source = input as Partial<Component>;
+  const source = input as Partial<Component> & Record<string, unknown>;
   const type = source.type ?? fallback?.type;
 
   switch (type) {
@@ -678,18 +747,33 @@ function normalizeComponent(input: unknown, fallback?: Component) {
         enabled: booleanOr(source.enabled, true),
         position: vectorOr((source as Partial<TransformComponent>).position, fallback && fallback.type === ComponentType.Transform ? fallback.position : { x: 0, y: 0 }),
         rotation: numberOr((source as Partial<TransformComponent>).rotation, fallback && fallback.type === ComponentType.Transform ? fallback.rotation : 0),
-        scale: vectorOr((source as Partial<TransformComponent>).scale, fallback && fallback.type === ComponentType.Transform ? fallback.scale : { x: 1, y: 1 }),
+        scale:
+          legacyHints?.spriteSizeFromTransform
+            ? { x: 1, y: 1 }
+            : vectorOr((source as Partial<TransformComponent>).scale, fallback && fallback.type === ComponentType.Transform ? fallback.scale : { x: 1, y: 1 }),
       } satisfies TransformComponent;
     case ComponentType.Sprite:
       return {
         id: stringOr(source.id, generateId('sprite')),
         type: ComponentType.Sprite,
-        enabled: booleanOr(source.enabled, true),
+        enabled: booleanOr(source.enabled, booleanOr(source.visible, true)),
         assetId: stringOr((source as Partial<SpriteComponent>).assetId, fallback && fallback.type === ComponentType.Sprite ? fallback.assetId : ''),
         color: stringOr((source as Partial<SpriteComponent>).color, fallback && fallback.type === ComponentType.Sprite ? fallback.color : '#4cc9f0'),
         opacity: Math.min(1, Math.max(0, numberOr((source as Partial<SpriteComponent>).opacity, fallback && fallback.type === ComponentType.Sprite ? fallback.opacity : 1))),
-        width: Math.max(8, numberOr((source as Partial<SpriteComponent>).width, fallback && fallback.type === ComponentType.Sprite ? fallback.width : 96)),
-        height: Math.max(8, numberOr((source as Partial<SpriteComponent>).height, fallback && fallback.type === ComponentType.Sprite ? fallback.height : 96)),
+        width: Math.max(
+          8,
+          numberOr(
+            (source as Partial<SpriteComponent>).width,
+            legacyHints?.spriteSizeFromTransform?.x ?? (fallback && fallback.type === ComponentType.Sprite ? fallback.width : 96),
+          ),
+        ),
+        height: Math.max(
+          8,
+          numberOr(
+            (source as Partial<SpriteComponent>).height,
+            legacyHints?.spriteSizeFromTransform?.y ?? (fallback && fallback.type === ComponentType.Sprite ? fallback.height : 96),
+          ),
+        ),
         shape:
           (source as Partial<SpriteComponent>).shape === 'ellipse' || (source as Partial<SpriteComponent>).shape === 'diamond'
             ? (source as Partial<SpriteComponent>).shape
@@ -706,21 +790,65 @@ function normalizeComponent(input: unknown, fallback?: Component) {
         enabled: booleanOr(source.enabled, true),
         velocity: vectorOr((source as Partial<RigidBodyComponent>).velocity, fallback && fallback.type === ComponentType.RigidBody ? fallback.velocity : { x: 0, y: 0 }),
         mass: Math.max(0.1, numberOr((source as Partial<RigidBodyComponent>).mass, fallback && fallback.type === ComponentType.RigidBody ? fallback.mass : 1)),
-        isStatic: booleanOr((source as Partial<RigidBodyComponent>).isStatic, fallback && fallback.type === ComponentType.RigidBody ? fallback.isStatic : false),
-        gravityScale: numberOr((source as Partial<RigidBodyComponent>).gravityScale, fallback && fallback.type === ComponentType.RigidBody ? fallback.gravityScale : 1),
+        isStatic:
+          typeof source.isStatic === 'boolean'
+            ? source.isStatic
+            : source.bodyType === 'static'
+              ? true
+              : source.bodyType === 'dynamic'
+                ? false
+                : fallback && fallback.type === ComponentType.RigidBody
+                  ? fallback.isStatic
+                  : false,
+        gravityScale:
+          maybeNumber((source as Partial<RigidBodyComponent>).gravityScale) ??
+          (source.bodyType === 'static' ? 0 : fallback && fallback.type === ComponentType.RigidBody ? fallback.gravityScale : 1),
         drag: vectorOr((source as Partial<RigidBodyComponent>).drag, fallback && fallback.type === ComponentType.RigidBody ? fallback.drag : { x: 0, y: 0 }),
         bounce: vectorOr((source as Partial<RigidBodyComponent>).bounce, fallback && fallback.type === ComponentType.RigidBody ? fallback.bounce : { x: 0, y: 0 }),
         maxVelocity: vectorOr((source as Partial<RigidBodyComponent>).maxVelocity, fallback && fallback.type === ComponentType.RigidBody ? fallback.maxVelocity : { x: 450, y: 1400 }),
       } satisfies RigidBodyComponent;
     case ComponentType.Collider:
+      const legacyColliderSize = maybeVector(source.size);
+      const hasManualColliderMetrics =
+        typeof source.autoSize === 'boolean'
+          ? false
+          : legacyColliderSize !== null ||
+            maybeNumber((source as Partial<ColliderComponent>).width) !== null ||
+            maybeNumber((source as Partial<ColliderComponent>).height) !== null ||
+            maybeNumber((source as Partial<ColliderComponent>).radius) !== null;
+
       return {
         id: stringOr(source.id, generateId('collider')),
         type: ComponentType.Collider,
         enabled: booleanOr(source.enabled, true),
-        shape: (source as Partial<ColliderComponent>).shape === 'circle' ? 'circle' : 'box',
-        autoSize: booleanOr((source as Partial<ColliderComponent>).autoSize, fallback && fallback.type === ComponentType.Collider ? fallback.autoSize : true),
-        width: Math.max(8, numberOr((source as Partial<ColliderComponent>).width, fallback && fallback.type === ComponentType.Collider ? fallback.width : 96)),
-        height: Math.max(8, numberOr((source as Partial<ColliderComponent>).height, fallback && fallback.type === ComponentType.Collider ? fallback.height : 96)),
+        shape:
+          (source as Partial<ColliderComponent>).shape === 'circle'
+            ? 'circle'
+            : source.shape === 'rectangle'
+              ? 'box'
+              : 'box',
+        autoSize:
+          typeof source.autoSize === 'boolean'
+            ? source.autoSize
+            : hasManualColliderMetrics
+              ? false
+              : fallback && fallback.type === ComponentType.Collider
+                ? fallback.autoSize
+                : true,
+        width: Math.max(
+          8,
+          numberOr(
+            (source as Partial<ColliderComponent>).width,
+            legacyColliderSize?.x ?? (fallback && fallback.type === ComponentType.Collider ? fallback.width : 96),
+          ),
+        ),
+        height: Math.max(
+          8,
+          numberOr(
+            (source as Partial<ColliderComponent>).height,
+            legacyColliderSize?.y ?? (fallback && fallback.type === ComponentType.Collider ? fallback.height : 96),
+          ),
+        ),
         radius: Math.max(4, numberOr((source as Partial<ColliderComponent>).radius, fallback && fallback.type === ComponentType.Collider ? fallback.radius : 48)),
         offsetX: numberOr((source as Partial<ColliderComponent>).offsetX, fallback && fallback.type === ComponentType.Collider ? fallback.offsetX : 0),
         offsetY: numberOr((source as Partial<ColliderComponent>).offsetY, fallback && fallback.type === ComponentType.Collider ? fallback.offsetY : 0),
@@ -739,7 +867,10 @@ function normalizeComponent(input: unknown, fallback?: Component) {
         id: stringOr(source.id, generateId('behavior')),
         type: ComponentType.Behavior,
         enabled: booleanOr(source.enabled, true),
-        kind: isBehaviorKind((source as Partial<BehaviorComponent>).kind) ? (source as Partial<BehaviorComponent>).kind : fallback && fallback.type === ComponentType.Behavior ? fallback.kind : 'none',
+        kind: (() => {
+          const rawKind = source.kind ?? source.behaviorType;
+          return isBehaviorKind(rawKind) ? rawKind : fallback && fallback.type === ComponentType.Behavior ? fallback.kind : 'none';
+        })(),
         moveSpeed: Math.max(0, numberOr((source as Partial<BehaviorComponent>).moveSpeed, fallback && fallback.type === ComponentType.Behavior ? fallback.moveSpeed : 220)),
         jumpForce: Math.max(0, numberOr((source as Partial<BehaviorComponent>).jumpForce, fallback && fallback.type === ComponentType.Behavior ? fallback.jumpForce : 560)),
         patrolDistance: Math.max(0, numberOr((source as Partial<BehaviorComponent>).patrolDistance, fallback && fallback.type === ComponentType.Behavior ? fallback.patrolDistance : 180)),
@@ -797,6 +928,8 @@ export function buildAiPromptContext(project: Project) {
       guidance: [
         'Return a complete project JSON that keeps IDs stable when extending an existing project.',
         'Every gameplay entity should include Transform and Sprite.',
+        'Use Sprite.width/height for authored size. Keep Transform.scale near 1 unless you intentionally need a multiplier.',
+        'Behavior uses kind. RigidBody uses isStatic. Collider shape uses box/circle.',
         'Player entities should include RigidBody, Collider and a player behavior.',
         'Scene settings must include worldSize, cameraSize, gravity, gridSize and background colors.',
         'Use Script components when the request requires custom engine functionality beyond the built-in behaviors.',

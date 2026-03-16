@@ -482,3 +482,23 @@ pm run lint עדיין נכשל, אבל על שגיאות TypeScript ישנות 
   - תוקן artifact של עובי שונה למסגרת במצב camera: גבול העולם כבר לא מצויר מתחת למסגרת המצלמה במצב זה, וה-frame של המצלמה נמשך עם inset זהה למסגרת העולם.
   - בוצע ב-Core.ts דרך suppression של world bounds border ב-drawSceneBackground() עבור ditorViewportMode === 'camera', וב-drawOverlay() frame המצלמה עובר ל-x+1/y+1 עם width-2/height-2.
 
+- 2026-03-17
+  - תוקן normalize של פלט AI "legacy/generic" שלא תאם בדיוק את סכמת Nexus ולכן נשבר ב-editor/runtime.
+  - `src/lib/project-utils.ts` ממפה עכשיו גם:
+    - `Behavior.behaviorType -> kind`
+    - `RigidBody.bodyType -> isStatic` (וגם `gravityScale=0` ל-static אם לא סופק)
+    - `Collider.shape: "rectangle" -> "box"`
+    - `Collider.size.{x,y} -> width/height`
+    - `Transform.scale` שמשמש בטעות כגודל authored ל-`Sprite.width/height`, ואז scale מתאפס ל-`1,1`
+  - normalization בוחר fallback components לפי `type` במקום רק לפי index, ומשתמש ב-prefab של ה-entity כבסיס כשאין fallback קיים. זה מקטין אובדן מידע כשסדר הקומפוננטות משתנה.
+  - `src/lib/ai-contract.ts` וה-guidance של `buildAiPromptContext()` חוזקו כדי להבהיר למודל:
+    - `Transform.scale` הוא multiplier ולא שדה size.
+    - להשתמש ב-`kind`, `isStatic`, ו-`box/circle` במקום `behaviorType`, `bodyType`, `rectangle`.
+  - אימות ממוקד על ה-trace `output/ai-debug/2026-03-16T23-11-14-018Z-ai-mmtsryaq-np8y26.json`:
+    - אחרי normalize: `behaviorCount=6`, הפלטפורמות static, ואין entities עם scale ענק.
+    - import של הפרויקט המנורמל דרך ה-UI טען scene תקין (`Level 1`, `2000x800`) עם widths/heights שפויים לשחקן/פלטפורמות/collectibles.
+    - `Simulate` + input קצר ב-Playwright החזירו `runtimeMode=play`, `runtimePlayer` בתזוזה, וללא console/page errors.
+  - תוקן גם ה-resume/localStorage race:
+    - `src/App.tsx`: autosave ל-`STORAGE_KEY` לא רץ יותר כשה-launcher עדיין פתוח, ולכן blank project לא דורס session שממתין ל-Resume.
+    - אימות Playwright: `setItem -> reload` שומר עכשיו על `Mini Platformer with Boss`, ו-`Resume` טוען scene עם `10` entities וללא errors.
+
