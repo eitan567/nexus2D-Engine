@@ -1799,18 +1799,16 @@ function ProjectLauncher({
   return (
     <div className={onClose ? 'nexus-launcher-overlay' : 'nexus-launcher-shell'}>
       <div className="nexus-launcher">
+        <div className="nexus-launcher-header">
+          <div className="nexus-launcher-wordmark" aria-label="Nexus 2D Engine">
+            <span className="nexus-launcher-wordmark-main">Nexus</span>
+            <span className="nexus-launcher-wordmark-accent">2D</span>
+            <span className="nexus-launcher-wordmark-tail">Engine</span>
+          </div>
+        </div>
+
         <div className="nexus-launcher-hero">
           <div className="nexus-launcher-hero-copy">
-            <div className="nexus-brand nexus-brand-launcher">
-              <div className="nexus-brand-icon nexus-brand-icon-launcher">
-                <Gamepad2 size={18} />
-              </div>
-              <div className="leading-tight">
-                <p className="nexus-launcher-eyebrow">Nexus 2D Engine</p>
-                <p className="nexus-launcher-brand-title">Project Launcher</p>
-              </div>
-            </div>
-
             <div>
               <h1 className="nexus-launcher-hero-title">Enter the editor from a clean, deliberate starting point.</h1>
               <p className="nexus-launcher-hero-text">

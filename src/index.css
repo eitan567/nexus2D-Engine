@@ -1134,9 +1134,10 @@ img {
   display: grid;
   grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
   grid-template-areas:
+    "header header"
     "hero hero"
     "side main";
-  gap: 14px;
+  gap: 0;
   width: min(1180px, 100%);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -1145,13 +1146,26 @@ img {
   overflow: hidden;
 }
 
+.nexus-launcher-header {
+  grid-area: header;
+  display: flex;
+  align-items: center;
+  min-height: 72px;
+  padding: 18px 28px 16px;
+  background:
+    linear-gradient(180deg, rgba(48, 41, 35, 0.34) 0%, rgba(35, 38, 44, 0.96) 100%),
+    #24272d;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.03);
+}
+
 .nexus-launcher-hero {
   grid-area: hero;
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1.45fr) minmax(280px, 360px);
   gap: 18px;
-  padding: 26px 28px;
+  padding: 22px 28px 26px;
   background:
     radial-gradient(circle at top left, rgba(198, 138, 73, 0.12), transparent 32%),
     linear-gradient(135deg, #262a31 0%, #1f2329 58%, #1b1f25 100%);
@@ -1180,18 +1194,47 @@ img {
   gap: 18px;
 }
 
-.nexus-brand-launcher {
+.nexus-launcher-wordmark {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
   width: fit-content;
-  border-color: rgba(198, 138, 73, 0.24);
-  background: rgba(19, 21, 24, 0.5);
-  padding: 7px 10px;
+  flex-wrap: wrap;
+  position: relative;
 }
 
-.nexus-brand-icon-launcher {
-  height: 28px;
-  width: 28px;
-  border: 1px solid rgba(198, 138, 73, 0.24);
-  background: linear-gradient(180deg, #2f3338, #26292e);
+.nexus-launcher-wordmark-main,
+.nexus-launcher-wordmark-accent {
+  margin: 0;
+  font-size: clamp(32px, 3.2vw, 46px);
+  font-weight: 800;
+  line-height: 0.96;
+  letter-spacing: -0.05em;
+}
+
+.nexus-launcher-wordmark-main {
+  background: linear-gradient(180deg, #f6f7f8 0%, #ddd4ca 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 16px 30px rgba(0, 0, 0, 0.18);
+}
+
+.nexus-launcher-wordmark-accent {
+  position: relative;
+  background: linear-gradient(180deg, #f0c89d 0%, #d6975f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.nexus-launcher-wordmark-tail {
+  margin: 0 0 2px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #bda58a;
 }
 
 .nexus-launcher-eyebrow,
@@ -1202,13 +1245,6 @@ img {
   text-transform: uppercase;
   letter-spacing: 0.24em;
   color: #aeb4bf;
-}
-
-.nexus-launcher-brand-title {
-  margin: 2px 0 0;
-  font-size: 15px;
-  font-weight: 700;
-  color: #eef1f6;
 }
 
 .nexus-launcher-hero-title {
