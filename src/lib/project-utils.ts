@@ -101,6 +101,17 @@ function maybeVector(value: unknown) {
   return { x, y } satisfies Vector2;
 }
 
+function maybeVectorFromAxes(xValue: unknown, yValue: unknown) {
+  const x = maybeNumber(xValue);
+  const y = maybeNumber(yValue);
+
+  if (x === null || y === null) {
+    return null;
+  }
+
+  return { x, y } satisfies Vector2;
+}
+
 export function createTransform(position: Vector2, scale: Vector2 = { x: 1, y: 1 }): TransformComponent {
   return {
     id: generateId('transform'),
@@ -650,10 +661,11 @@ function normalizeEntity(input: unknown, fallback?: Entity): Entity {
   const inferredPrefab = isPrefab(source.prefab) ? source.prefab : fallback?.prefab ?? 'custom';
   const base = fallback ?? createEntityFromPrefab(inferredPrefab, { x: 240, y: 240 });
   const prefab = isPrefab(source.prefab) ? source.prefab : base.prefab;
+  const normalizedInputComponents = normalizeComponentInputList(source.components);
   const legacyHints = resolveLegacyEntityHints(source.components);
   const fallbackComponentsByType = new Map(base.components.map((component) => [component.type, component] as const));
-  const components = Array.isArray(source.components)
-    ? source.components
+  const components = normalizedInputComponents.length > 0
+    ? normalizedInputComponents
       .map((component) => {
         const componentType =
           component && typeof component === 'object' && 'type' in component ? (component.type as ComponentType | undefined) : undefined;
@@ -693,15 +705,94 @@ type LegacyEntityHints = {
   spriteSizeFromTransform: Vector2 | null;
 };
 
+function normalizeComponentInputList(components: unknown): Array<Record<string, unknown>> {
+  if (Array.isArray(components)) {
+    return components.filter((component): component is Record<string, unknown> => !!component && typeof component === 'object');
+  }
+
+  if (!components || typeof components !== 'object') {
+    return [];
+  }
+
+  const componentMap = components as Record<string, unknown>;
+  const orderedTypes = [
+    ComponentType.Transform,
+    ComponentType.Sprite,
+    ComponentType.RigidBody,
+    ComponentType.Collider,
+    ComponentType.Behavior,
+    ComponentType.Script,
+  ] as const;
+  const normalizedComponents: Array<Record<string, unknown>> = [];
+  const seenTypes = new Set<ComponentType>();
+
+  for (const componentType of orderedTypes) {
+    const component = componentMap[componentType];
+    if (!component || typeof component !== 'object') {
+      continue;
+    }
+
+    normalizedComponents.push({
+      type: componentType,
+      ...(component as Record<string, unknown>),
+    });
+    seenTypes.add(componentType);
+  }
+
+  for (const [rawType, component] of Object.entries(componentMap)) {
+    if (!component || typeof component !== 'object') {
+      continue;
+    }
+
+    const componentType = parseComponentType(rawType);
+    if (!componentType || seenTypes.has(componentType)) {
+      continue;
+    }
+
+    normalizedComponents.push({
+      type: componentType,
+      ...(component as Record<string, unknown>),
+    });
+    seenTypes.add(componentType);
+  }
+
+  return normalizedComponents;
+}
+
+function parseComponentType(value: unknown): ComponentType | null {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  switch (value.trim().toLowerCase()) {
+    case 'transform':
+      return ComponentType.Transform;
+    case 'sprite':
+      return ComponentType.Sprite;
+    case 'rigidbody':
+    case 'rigid-body':
+      return ComponentType.RigidBody;
+    case 'collider':
+      return ComponentType.Collider;
+    case 'behavior':
+      return ComponentType.Behavior;
+    case 'script':
+      return ComponentType.Script;
+    default:
+      return null;
+  }
+}
+
 function resolveLegacyEntityHints(components: unknown): LegacyEntityHints {
-  if (!Array.isArray(components)) {
+  const normalizedComponents = normalizeComponentInputList(components);
+  if (normalizedComponents.length === 0) {
     return { spriteSizeFromTransform: null };
   }
 
-  const transform = components.find(
+  const transform = normalizedComponents.find(
     (component) => component && typeof component === 'object' && 'type' in component && component.type === ComponentType.Transform,
   ) as (Partial<TransformComponent> & Record<string, unknown>) | undefined;
-  const sprite = components.find(
+  const sprite = normalizedComponents.find(
     (component) => component && typeof component === 'object' && 'type' in component && component.type === ComponentType.Sprite,
   ) as (Partial<SpriteComponent> & Record<string, unknown>) | undefined;
 
@@ -711,13 +802,20 @@ function resolveLegacyEntityHints(components: unknown): LegacyEntityHints {
 
   const hasExplicitSpriteSize = maybeNumber(sprite.width) !== null || maybeNumber(sprite.height) !== null;
   const legacyScale = maybeVector(transform.scale);
+  const legacyTransformSize = maybeVectorFromAxes(transform.width, transform.height);
 
-  if (!legacyScale || hasExplicitSpriteSize) {
+  if (hasExplicitSpriteSize) {
     return { spriteSizeFromTransform: null };
   }
 
-  const width = Math.abs(legacyScale.x);
-  const height = Math.abs(legacyScale.y);
+  const legacySize = legacyTransformSize ?? legacyScale;
+
+  if (!legacySize) {
+    return { spriteSizeFromTransform: null };
+  }
+
+  const width = Math.abs(legacySize.x);
+  const height = Math.abs(legacySize.y);
 
   if (width < 8 || height < 8) {
     return { spriteSizeFromTransform: null };
@@ -741,11 +839,14 @@ function normalizeComponent(input: unknown, fallback?: Component, legacyHints?: 
 
   switch (type) {
     case ComponentType.Transform:
+      const legacyPosition = maybeVectorFromAxes(source.x, source.y);
       return {
         id: stringOr(source.id, generateId('transform')),
         type: ComponentType.Transform,
         enabled: booleanOr(source.enabled, true),
-        position: vectorOr((source as Partial<TransformComponent>).position, fallback && fallback.type === ComponentType.Transform ? fallback.position : { x: 0, y: 0 }),
+        position:
+          legacyPosition ??
+          vectorOr((source as Partial<TransformComponent>).position, fallback && fallback.type === ComponentType.Transform ? fallback.position : { x: 0, y: 0 }),
         rotation: numberOr((source as Partial<TransformComponent>).rotation, fallback && fallback.type === ComponentType.Transform ? fallback.rotation : 0),
         scale:
           legacyHints?.spriteSizeFromTransform
@@ -757,8 +858,14 @@ function normalizeComponent(input: unknown, fallback?: Component, legacyHints?: 
         id: stringOr(source.id, generateId('sprite')),
         type: ComponentType.Sprite,
         enabled: booleanOr(source.enabled, booleanOr(source.visible, true)),
-        assetId: stringOr((source as Partial<SpriteComponent>).assetId, fallback && fallback.type === ComponentType.Sprite ? fallback.assetId : ''),
-        color: stringOr((source as Partial<SpriteComponent>).color, fallback && fallback.type === ComponentType.Sprite ? fallback.color : '#4cc9f0'),
+        assetId: stringOr(
+          (source as Partial<SpriteComponent>).assetId,
+          stringOr(source.image, stringOr(source.texture, fallback && fallback.type === ComponentType.Sprite ? fallback.assetId : '')),
+        ),
+        color: stringOr(
+          (source as Partial<SpriteComponent>).color,
+          stringOr(source.tint, fallback && fallback.type === ComponentType.Sprite ? fallback.color : '#4cc9f0'),
+        ),
         opacity: Math.min(1, Math.max(0, numberOr((source as Partial<SpriteComponent>).opacity, fallback && fallback.type === ComponentType.Sprite ? fallback.opacity : 1))),
         width: Math.max(
           8,
@@ -852,7 +959,10 @@ function normalizeComponent(input: unknown, fallback?: Component, legacyHints?: 
         radius: Math.max(4, numberOr((source as Partial<ColliderComponent>).radius, fallback && fallback.type === ComponentType.Collider ? fallback.radius : 48)),
         offsetX: numberOr((source as Partial<ColliderComponent>).offsetX, fallback && fallback.type === ComponentType.Collider ? fallback.offsetX : 0),
         offsetY: numberOr((source as Partial<ColliderComponent>).offsetY, fallback && fallback.type === ComponentType.Collider ? fallback.offsetY : 0),
-        isTrigger: booleanOr((source as Partial<ColliderComponent>).isTrigger, fallback && fallback.type === ComponentType.Collider ? fallback.isTrigger : false),
+        isTrigger: booleanOr(
+          (source as Partial<ColliderComponent>).isTrigger,
+          booleanOr(source.isSensor, fallback && fallback.type === ComponentType.Collider ? fallback.isTrigger : false),
+        ),
         isPassThrough: booleanOr((source as Partial<ColliderComponent>).isPassThrough, fallback && fallback.type === ComponentType.Collider ? fallback.isPassThrough : false),
       } satisfies ColliderComponent;
     case ComponentType.Script:
@@ -860,7 +970,10 @@ function normalizeComponent(input: unknown, fallback?: Component, legacyHints?: 
         id: stringOr(source.id, generateId('script')),
         type: ComponentType.Script,
         enabled: booleanOr(source.enabled, true),
-        code: stringOr((source as Partial<ScriptComponent>).code, fallback && fallback.type === ComponentType.Script ? fallback.code : ''),
+        code: stringOr(
+          (source as Partial<ScriptComponent>).code,
+          stringOr(source.source, stringOr(source.content, fallback && fallback.type === ComponentType.Script ? fallback.code : '')),
+        ),
       } satisfies ScriptComponent;
     case ComponentType.Behavior:
       return {
@@ -918,6 +1031,186 @@ export function summarizeProject(project: Project) {
   };
 }
 
+function clampNumber(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function roundSize(value: number) {
+  return Math.max(8, Math.round(value));
+}
+
+function isProjectileLikeEntity(entity: Entity) {
+  const script = getComponent<ScriptComponent>(entity, ComponentType.Script);
+  const text = [entity.name, ...entity.tags, script?.code ?? ''].join(' ').toLowerCase();
+  return /\b(projectile|bullet|shot|missile|orb|fireball|laser)\b/.test(text);
+}
+
+function isGroundLikeEntity(entity: Entity) {
+  return /\b(ground|floor|base|arena)\b/i.test(entity.name);
+}
+
+function isWallLikeEntity(entity: Entity) {
+  return /\b(wall|barrier|blocker|gate)\b/i.test(entity.name);
+}
+
+function applyTargetSpriteSize(
+  sprite: SpriteComponent,
+  config: {
+    minWidth: number;
+    maxWidth: number;
+    minHeight: number;
+    maxHeight: number;
+    targetWidth: number;
+    targetHeight: number;
+  },
+) {
+  const widthOutOfRange = sprite.width < config.minWidth || sprite.width > config.maxWidth;
+  const heightOutOfRange = sprite.height < config.minHeight || sprite.height > config.maxHeight;
+
+  if (!widthOutOfRange && !heightOutOfRange) {
+    return;
+  }
+
+  sprite.width = roundSize(config.targetWidth);
+  sprite.height = roundSize(config.targetHeight);
+}
+
+function rebalanceColliderToSprite(
+  collider: ColliderComponent | undefined,
+  sprite: SpriteComponent,
+  projectileLike: boolean,
+) {
+  if (!collider || collider.autoSize) {
+    return;
+  }
+
+  if (projectileLike && collider.isTrigger) {
+    const diameter = Math.max(8, Math.round(Math.min(sprite.width, sprite.height) * 0.65));
+    collider.width = diameter;
+    collider.height = diameter;
+    collider.radius = Math.max(4, Math.round(diameter / 2));
+    return;
+  }
+
+  if (collider.shape === 'circle') {
+    const idealRadius = Math.max(4, Math.round(Math.min(sprite.width, sprite.height) * 0.4));
+    if (collider.radius < idealRadius * 0.5 || collider.radius > idealRadius * 1.6) {
+      collider.radius = idealRadius;
+      collider.width = idealRadius * 2;
+      collider.height = idealRadius * 2;
+    }
+    return;
+  }
+
+  if (collider.width < sprite.width * 0.35 || collider.width > sprite.width * 1.5) {
+    collider.width = roundSize(sprite.width);
+  }
+
+  if (collider.height < sprite.height * 0.35 || collider.height > sprite.height * 1.5) {
+    collider.height = roundSize(sprite.height);
+  }
+}
+
+function rebalanceAiEntity(entity: Entity, scene: Scene) {
+  const transform = getComponent<TransformComponent>(entity, ComponentType.Transform);
+  const sprite = getComponent<SpriteComponent>(entity, ComponentType.Sprite);
+  const collider = getComponent<ColliderComponent>(entity, ComponentType.Collider);
+
+  if (!transform || !sprite) {
+    return entity;
+  }
+
+  const nextEntity = structuredClone(entity);
+  const nextTransform = getComponent<TransformComponent>(nextEntity, ComponentType.Transform);
+  const nextSprite = getComponent<SpriteComponent>(nextEntity, ComponentType.Sprite);
+  const nextCollider = getComponent<ColliderComponent>(nextEntity, ComponentType.Collider);
+
+  if (!nextTransform || !nextSprite) {
+    return nextEntity;
+  }
+
+  if (
+    nextTransform.scale.x <= 0 ||
+    nextTransform.scale.y <= 0 ||
+    nextTransform.scale.x > 4 ||
+    nextTransform.scale.y > 4 ||
+    nextTransform.scale.x < 0.25 ||
+    nextTransform.scale.y < 0.25
+  ) {
+    nextTransform.scale = {x: 1, y: 1};
+  }
+
+  const cameraWidth = Math.max(320, scene.settings.cameraSize.x);
+  const cameraHeight = Math.max(240, scene.settings.cameraSize.y);
+  const projectileLike = entity.prefab === 'hazard' && isProjectileLikeEntity(entity);
+  const bossLike = entity.prefab === 'enemy' && /\bboss\b/i.test(entity.name);
+
+  if (entity.prefab === 'player') {
+    applyTargetSpriteSize(nextSprite, {
+      minWidth: 24,
+      maxWidth: Math.max(96, Math.round(cameraWidth * 0.14)),
+      minHeight: 32,
+      maxHeight: Math.max(128, Math.round(cameraHeight * 0.22)),
+      targetWidth: 72,
+      targetHeight: 96,
+    });
+  } else if (entity.prefab === 'collectible') {
+    applyTargetSpriteSize(nextSprite, {
+      minWidth: 12,
+      maxWidth: Math.max(40, Math.round(cameraWidth * 0.06)),
+      minHeight: 12,
+      maxHeight: Math.max(40, Math.round(cameraHeight * 0.06)),
+      targetWidth: 24,
+      targetHeight: 24,
+    });
+  } else if (entity.prefab === 'goal') {
+    applyTargetSpriteSize(nextSprite, {
+      minWidth: 24,
+      maxWidth: Math.max(80, Math.round(cameraWidth * 0.1)),
+      minHeight: 32,
+      maxHeight: Math.max(128, Math.round(cameraHeight * 0.22)),
+      targetWidth: 48,
+      targetHeight: 96,
+    });
+  } else if (entity.prefab === 'enemy') {
+    applyTargetSpriteSize(nextSprite, {
+      minWidth: 28,
+      maxWidth: bossLike ? Math.max(112, Math.round(cameraWidth * 0.14)) : Math.max(88, Math.round(cameraWidth * 0.1)),
+      minHeight: 28,
+      maxHeight: bossLike ? Math.max(112, Math.round(cameraHeight * 0.18)) : Math.max(88, Math.round(cameraHeight * 0.14)),
+      targetWidth: bossLike ? 64 : 56,
+      targetHeight: bossLike ? 64 : 56,
+    });
+  } else if (projectileLike) {
+    applyTargetSpriteSize(nextSprite, {
+      minWidth: 8,
+      maxWidth: Math.min(32, Math.max(18, Math.round(cameraWidth * 0.03))),
+      minHeight: 8,
+      maxHeight: Math.min(24, Math.max(12, Math.round(cameraHeight * 0.035))),
+      targetWidth: 20,
+      targetHeight: 12,
+    });
+  } else if (entity.prefab === 'platform' && !isGroundLikeEntity(entity) && !isWallLikeEntity(entity)) {
+    nextSprite.height = clampNumber(nextSprite.height, 16, Math.max(40, Math.round(cameraHeight * 0.07)));
+    if (nextSprite.width < 48 || nextSprite.width > Math.max(280, Math.round(cameraWidth * 0.45))) {
+      nextSprite.width = clampNumber(nextSprite.width, 96, Math.max(220, Math.round(cameraWidth * 0.22)));
+    }
+  }
+
+  rebalanceColliderToSprite(nextCollider, nextSprite, projectileLike);
+  return nextEntity;
+}
+
+function rebalanceAiProject(project: Project): Project {
+  return {
+    ...project,
+    scenes: project.scenes.map((scene) => ({
+      ...scene,
+      entities: scene.entities.map((entity) => rebalanceAiEntity(entity, scene)),
+    })),
+  };
+}
+
 export function buildAiPromptContext(project: Project) {
   return JSON.stringify(
     {
@@ -930,9 +1223,17 @@ export function buildAiPromptContext(project: Project) {
         'Every gameplay entity should include Transform and Sprite.',
         'Use Sprite.width/height for authored size. Keep Transform.scale near 1 unless you intentionally need a multiplier.',
         'Behavior uses kind. RigidBody uses isStatic. Collider shape uses box/circle.',
+        'Keep gameplay proportions practical: player about 6-14% of camera height, collectibles about 2-6%, small bosses about 8-18%, projectiles about 1-3% of camera width.',
+        'Regular platforms should usually be much thinner than actors; avoid giant projectiles, oversized collectibles, or bosses that dominate the whole camera.',
+        'Spread actors across the stage instead of stacking many entities at the same coordinates.',
+        'Keep hitboxes close to visible sprites. Avoid giant invisible colliders.',
+        'Projectile scripts should despawn only after the projectile is fully outside the world bounds, not when it first touches the edge.',
         'Player entities should include RigidBody, Collider and a player behavior.',
         'Scene settings must include worldSize, cameraSize, gravity, gridSize and background colors.',
         'Use Script components when the request requires custom engine functionality beyond the built-in behaviors.',
+        'Preferred Script formats: export default class MyLogic { init(entity, scene) {} update(dt) {} } or function update(entity, dt, scene) { ... }.',
+        "Script facades expose entity.transform, entity.body, entity.rigidBody, entity.state, scene.entities and entity.getComponent('RigidBody').",
+        'Set motion with body.setVelocity(x, y) or body.velocity.x/body.velocity.y.',
       ],
     },
     null,
@@ -963,6 +1264,6 @@ export function normalizeAiResponse(input: unknown, fallbackProject: Project): A
       stringOr(summaryObject?.description, '') ||
       stringOr(summaryObject?.title, 'AI updated the project structure.'),
     notes,
-    project: normalizeProject(projectSource, fallbackProject),
+    project: rebalanceAiProject(normalizeProject(projectSource, fallbackProject)),
   };
 }

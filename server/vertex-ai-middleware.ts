@@ -12,6 +12,7 @@ import {
   type AIDebugPayload,
   type AIDebugStats,
   type AIResponsePayload,
+  type Entity,
   type Project,
   type RigidBodyComponent,
   type ScriptComponent,
@@ -278,6 +279,12 @@ function collectProjectDebugStats(inputProject: Project, outputProject?: Project
   };
 }
 
+function isProjectileLikeEntity(entity: Entity) {
+  const script = getComponent<ScriptComponent>(entity, ComponentType.Script);
+  const text = [entity.name, ...entity.tags, script?.code ?? ''].join(' ').toLowerCase();
+  return /\b(projectile|bullet|shot|missile|orb|fireball|laser)\b/.test(text);
+}
+
 function buildAiDebugIssues(params: {
   mode: 'create' | 'extend';
   parseMode: AIDebugPayload['parseMode'];
@@ -405,6 +412,43 @@ function buildAiDebugIssues(params: {
           level: 'warning',
           message: `Entity "${entity.name}" has a Script component with empty code.`,
         });
+      }
+
+      if (sprite) {
+        const cameraWidth = Math.max(320, scene.settings.cameraSize.x);
+        const cameraHeight = Math.max(240, scene.settings.cameraSize.y);
+
+        if (entity.prefab === 'player' && (sprite.height > cameraHeight * 0.3 || sprite.width > cameraWidth * 0.18)) {
+          issues.push({
+            code: 'oversized-player',
+            level: 'warning',
+            message: `Entity "${entity.name}" is unusually large relative to the camera and may feel impractical in play.`,
+          });
+        }
+
+        if (entity.prefab === 'collectible' && (sprite.height > cameraHeight * 0.08 || sprite.width > cameraWidth * 0.08)) {
+          issues.push({
+            code: 'oversized-collectible',
+            level: 'warning',
+            message: `Entity "${entity.name}" is unusually large for a collectible and may read poorly in gameplay.`,
+          });
+        }
+
+        if (entity.prefab === 'enemy' && /\bboss\b/i.test(entity.name) && (sprite.height > cameraHeight * 0.22 || sprite.width > cameraWidth * 0.18)) {
+          issues.push({
+            code: 'oversized-boss',
+            level: 'warning',
+            message: `Entity "${entity.name}" is unusually large for a small boss relative to the camera.`,
+          });
+        }
+
+        if (entity.prefab === 'hazard' && isProjectileLikeEntity(entity) && (sprite.width > cameraWidth * 0.05 || sprite.height > cameraHeight * 0.06)) {
+          issues.push({
+            code: 'oversized-projectile',
+            level: 'warning',
+            message: `Entity "${entity.name}" looks oversized for a projectile and may feel impractical in play.`,
+          });
+        }
       }
     }
   }

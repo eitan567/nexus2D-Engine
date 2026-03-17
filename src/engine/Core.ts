@@ -33,6 +33,74 @@ type EntityInstance = {
   patrolOrigin: Vector2;
   triggerConsumed: boolean;
   lastDirection: 1 | -1;
+  scriptState: unknown;
+  scriptRuntime?: {
+    source: string;
+    executor: ScriptExecutor | null | undefined;
+    context: Record<string, unknown>;
+    hooks: ScriptHooks | null;
+    classInstance: Record<string, unknown> | null;
+    initialized: boolean;
+    lastError: string | null;
+  };
+};
+
+type ScriptHooks = {
+  init?: (...args: unknown[]) => void;
+  update?: (...args: unknown[]) => void;
+  onCollect?: (...args: unknown[]) => void;
+};
+
+type ScriptInlineRunner = (
+  entity: unknown,
+  sprite: Phaser.GameObjects.Sprite,
+  body: unknown,
+  scene: unknown,
+  inputs: Record<VirtualInput, boolean>,
+  deltaSeconds: number,
+  runtime: RuntimeSnapshot | null,
+  Input: unknown,
+  Time: unknown,
+  transform: unknown,
+  components: unknown,
+) => unknown;
+
+type ScriptHooksFactory = (
+  entity: unknown,
+  sprite: Phaser.GameObjects.Sprite,
+  body: unknown,
+  scene: unknown,
+  inputs: Record<VirtualInput, boolean>,
+  runtime: RuntimeSnapshot | null,
+  Input: unknown,
+  Time: unknown,
+  transform: unknown,
+  components: unknown,
+) => ScriptHooks;
+
+type ScriptExecutor =
+  | {
+      mode: 'class';
+      instantiate: () => Record<string, unknown>;
+    }
+  | {
+      mode: 'hooks';
+      createHooks: ScriptHooksFactory;
+    }
+  | {
+      mode: 'inline';
+      run: ScriptInlineRunner;
+    };
+
+type ScriptBindings = {
+  entity: Record<string, unknown>;
+  scene: Record<string, unknown>;
+  transform: Record<string, unknown>;
+  body: Record<string, unknown> | null;
+  components: Record<string, unknown>;
+  Input: Record<string, unknown>;
+  Time: {deltaTime: number};
+  inputs: Record<VirtualInput, boolean>;
 };
 
 const VIRTUAL_INPUTS: Record<VirtualInput, boolean> = {
@@ -342,6 +410,9 @@ class MainScene extends Phaser.Scene {
     if (!this.project || !this.cameras?.main) {
       return;
     }
+    if (!this.isPlaying && this.editorViewportMode === 'camera') {
+      return;
+    }
 
     const scene = getActiveScene(this.project);
     if (this.isPlaying && scene.settings.cameraFollowPlayer) {
@@ -368,6 +439,9 @@ class MainScene extends Phaser.Scene {
 
   adjustEditorZoom(deltaY: number, screenX: number, screenY: number) {
     if (!this.project || !this.cameras?.main) {
+      return;
+    }
+    if (!this.isPlaying && this.editorViewportMode === 'camera') {
       return;
     }
 
@@ -544,6 +618,17 @@ class MainScene extends Phaser.Scene {
     this.cameras.main.stopFollow();
     this.cameras.main.setDeadzone();
 
+    if (!this.isPlaying && this.editorViewportMode === 'camera') {
+      this.cameras.main.setZoom(cameraBaseZoom);
+      this.cameras.main.setScroll(previewFrame.x, previewFrame.y);
+      this.editorCameraCenter = {
+        x: previewFrame.x + previewFrame.width / 2,
+        y: previewFrame.y + previewFrame.height / 2,
+      };
+      this.clampCameraToScene(scene);
+      return;
+    }
+
     const zoom = this.getEditorZoom(scene);
     this.cameras.main.setZoom(zoom);
     const visibleWidth = this.cameras.main.width / zoom;
@@ -586,6 +671,7 @@ class MainScene extends Phaser.Scene {
     const rigidBody = getComponent<RigidBodyComponent>(entity, ComponentType.RigidBody);
     const collider = getComponent<ColliderComponent>(entity, ComponentType.Collider);
     const behavior = getComponent<BehaviorComponent>(entity, ComponentType.Behavior);
+    const script = getComponent<ScriptComponent>(entity, ComponentType.Script);
 
     if (!transform || !spriteComponent || entity.hidden) {
       const existing = this.entityMap.get(entity.id);
@@ -608,6 +694,7 @@ class MainScene extends Phaser.Scene {
         patrolOrigin: {...transform.position},
         triggerConsumed: false,
         lastDirection: 1,
+        scriptState: undefined,
       };
       this.entityMap.set(entity.id, instance);
     }
@@ -616,6 +703,21 @@ class MainScene extends Phaser.Scene {
     instance.authoredPosition = {...transform.position};
     instance.patrolOrigin = {...transform.position};
     instance.triggerConsumed = false;
+    const scriptSource = script?.enabled ? script.code.trim() : '';
+    if (!scriptSource) {
+      instance.scriptRuntime = undefined;
+    } else if (instance.scriptRuntime?.source !== scriptSource) {
+      instance.scriptState = undefined;
+      instance.scriptRuntime = {
+        source: scriptSource,
+        executor: undefined,
+        context: {},
+        hooks: null,
+        classInstance: null,
+        initialized: false,
+        lastError: null,
+      };
+    }
 
     if (!sprite.body) {
       this.physics.add.existing(sprite);
@@ -658,7 +760,7 @@ class MainScene extends Phaser.Scene {
     }
 
     body.setEnable(Boolean(rigidBody || collider));
-    body.setCollideWorldBounds(true);
+    body.setCollideWorldBounds(Boolean(rigidBody && !rigidBody.isStatic && !collider?.isTrigger));
     body.moves = true;
     const colliderMetrics = collider ? this.resolveColliderMetrics(collider, sprite) : null;
     const bodyColliderMetrics = collider ? this.resolveBodyColliderMetrics(collider, sprite) : null;
@@ -771,7 +873,7 @@ class MainScene extends Phaser.Scene {
         }
       }
 
-      this.runEntityScript(entity, instance, deltaSeconds);
+      this.runEntityScript(entity, scene, instance, deltaSeconds);
     }
 
     if (player) {
@@ -883,17 +985,452 @@ class MainScene extends Phaser.Scene {
     body.updateFromGameObject();
   }
 
-  private runEntityScript(entity: Entity, instance: EntityInstance, deltaSeconds: number) {
-    const script = getComponent<ScriptComponent>(entity, ComponentType.Script);
+  private buildScriptBindings(entity: Entity, scene: Scene, instance: EntityInstance, deltaSeconds: number): ScriptBindings {
+    const entityFacadeCache = new Map<string, Record<string, unknown>>();
+    const createEntityFacade = (target: Entity) => {
+      const existing = entityFacadeCache.get(target.id);
+      if (existing) {
+        return existing;
+      }
 
-    if (!script?.enabled || !script.code.trim()) {
-      return;
+      const targetInstance = this.entityMap.get(target.id);
+      const targetBody = targetInstance?.sprite.body as Phaser.Physics.Arcade.Body | undefined;
+      const transformFacade = this.createScriptTransformFacade(target, targetInstance, targetBody);
+      const bodyFacade = this.createScriptBodyFacade(target, targetBody);
+      const componentFacades = this.createScriptComponentFacadeMap(target, targetInstance, transformFacade, bodyFacade);
+      let persistentState = targetInstance?.scriptState;
+
+      const facade: Record<string, unknown> = {
+        id: target.id,
+        name: target.name,
+        prefab: target.prefab,
+        tags: [...target.tags],
+        hidden: Boolean(target.hidden || (targetInstance ? !targetInstance.sprite.visible : false)),
+        transform: transformFacade,
+        sprite: targetInstance?.sprite ?? null,
+        body: bodyFacade,
+        rigidBody: bodyFacade,
+        getComponent: (name: unknown) => {
+          if (typeof name !== 'string') {
+            return null;
+          }
+
+          const normalizedName = name.trim();
+          const directMatch = componentFacades[normalizedName];
+          if (directMatch) {
+            return directMatch;
+          }
+
+          const camelCaseName = normalizedName.charAt(0).toUpperCase() + normalizedName.slice(1);
+          return (
+            componentFacades[normalizedName.toLowerCase()] ??
+            componentFacades[camelCaseName] ??
+            null
+          );
+        },
+      };
+      Object.defineProperty(facade, 'state', {
+        get: () => (targetInstance ? targetInstance.scriptState : persistentState),
+        set: (value: unknown) => {
+          if (targetInstance) {
+            targetInstance.scriptState = value;
+          } else {
+            persistentState = value;
+          }
+        },
+        enumerable: true,
+      });
+
+      entityFacadeCache.set(target.id, facade);
+      return facade;
+    };
+
+    const left = this.virtualInputs.left || Boolean(this.inputManager?.isLeftDown());
+    const right = this.virtualInputs.right || Boolean(this.inputManager?.isRightDown());
+    const up = this.virtualInputs.up || Boolean(this.inputManager?.isUpDown());
+    const down = this.virtualInputs.down || Boolean(this.inputManager?.isDownDown());
+    const jump = this.virtualInputs.jump || Boolean(this.inputManager?.isJumpDown());
+    const action = this.virtualInputs.action;
+    const altAction = this.virtualInputs.altAction;
+    const inputs = {left, right, up, down, jump, action, altAction} satisfies Record<VirtualInput, boolean>;
+    const Input: Record<string, unknown> = {
+      left,
+      right,
+      up,
+      down,
+      jump,
+      action,
+      altAction,
+      keys: {
+        ArrowLeft: left,
+        ArrowRight: right,
+        ArrowUp: up,
+        ArrowDown: down,
+        Space: jump,
+        KeyE: action,
+        ShiftLeft: altAction,
+        [this.project?.controls.left ?? 'ArrowLeft']: left,
+        [this.project?.controls.right ?? 'ArrowRight']: right,
+        [this.project?.controls.up ?? 'ArrowUp']: up,
+        [this.project?.controls.down ?? 'ArrowDown']: down,
+        [this.project?.controls.jump ?? 'Space']: jump,
+        [this.project?.controls.action ?? 'KeyE']: action,
+        [this.project?.controls.altAction ?? 'ShiftLeft']: altAction,
+      },
+    };
+    const Time = {deltaTime: deltaSeconds};
+    const entityFacade = createEntityFacade(entity);
+    const transformFacade = this.createScriptTransformFacade(entity, instance, instance.sprite.body as Phaser.Physics.Arcade.Body | undefined);
+    const bodyFacade = this.createScriptBodyFacade(entity, instance.sprite.body as Phaser.Physics.Arcade.Body | undefined);
+    const components = this.createScriptComponentFacadeMap(entity, instance, transformFacade, bodyFacade);
+    const sceneFacade: Record<string, unknown> = {
+      id: scene.id,
+      name: scene.name,
+      notes: scene.notes,
+      settings: scene.settings,
+      entities: scene.entities.map((sceneEntity) => createEntityFacade(sceneEntity)),
+      getEntityById: (id: unknown) => (typeof id === 'string' ? createEntityFacade(scene.entities.find((sceneEntity) => sceneEntity.id === id) ?? entity) : null),
+    };
+
+    return {
+      entity: entityFacade,
+      scene: sceneFacade,
+      transform: transformFacade,
+      body: bodyFacade,
+      components,
+      Input,
+      Time,
+      inputs,
+    };
+  }
+
+  private createScriptTransformFacade(
+    entity: Entity,
+    instance?: EntityInstance,
+    body?: Phaser.Physics.Arcade.Body,
+  ) {
+    const transform = getComponent<TransformComponent>(entity, ComponentType.Transform);
+    const rigidBody = getComponent<RigidBodyComponent>(entity, ComponentType.RigidBody);
+    const sprite = instance?.sprite;
+    const setAxis = (axis: 'x' | 'y', value: unknown) => {
+      const numeric = Number(value);
+      if (!Number.isFinite(numeric)) {
+        return;
+      }
+
+      if (transform) {
+        transform.position[axis] = numeric;
+      }
+
+      if (sprite) {
+        if (axis === 'x') {
+          sprite.x = numeric;
+        } else {
+          sprite.y = numeric;
+        }
+      }
+
+      if (body && sprite) {
+        if (!rigidBody || rigidBody.isStatic) {
+          body.reset(sprite.x, sprite.y);
+          body.setVelocity(0, 0);
+        } else {
+          body.updateFromGameObject();
+        }
+      }
+    };
+
+    const positionFacade: Record<string, unknown> = {};
+    Object.defineProperties(positionFacade, {
+      x: {
+        get: () => sprite?.x ?? transform?.position.x ?? 0,
+        set: (value: unknown) => setAxis('x', value),
+        enumerable: true,
+      },
+      y: {
+        get: () => sprite?.y ?? transform?.position.y ?? 0,
+        set: (value: unknown) => setAxis('y', value),
+        enumerable: true,
+      },
+    });
+
+    const facade: Record<string, unknown> = {
+      position: positionFacade,
+      scale: transform?.scale ?? {x: 1, y: 1},
+    };
+    Object.defineProperties(facade, {
+      x: {
+        get: () => sprite?.x ?? transform?.position.x ?? 0,
+        set: (value: unknown) => setAxis('x', value),
+        enumerable: true,
+      },
+      y: {
+        get: () => sprite?.y ?? transform?.position.y ?? 0,
+        set: (value: unknown) => setAxis('y', value),
+        enumerable: true,
+      },
+      rotation: {
+        get: () => sprite?.angle ?? transform?.rotation ?? 0,
+        set: (value: unknown) => {
+          const numeric = Number(value);
+          if (!Number.isFinite(numeric)) {
+            return;
+          }
+          if (transform) {
+            transform.rotation = numeric;
+          }
+          if (sprite) {
+            sprite.setAngle(numeric);
+            body?.updateFromGameObject();
+          }
+        },
+        enumerable: true,
+      },
+    });
+
+    return facade;
+  }
+
+  private createScriptBodyFacade(entity: Entity, body?: Phaser.Physics.Arcade.Body) {
+    const rigidBody = getComponent<RigidBodyComponent>(entity, ComponentType.RigidBody);
+    if (!rigidBody && !body) {
+      return null;
     }
 
-    try {
-      const body = instance.sprite.body as Phaser.Physics.Arcade.Body | undefined;
+    const setVelocity = (nextX: unknown, nextY: unknown) => {
+      const x = Number(nextX);
+      const y = Number(nextY);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) {
+        return;
+      }
+      if (rigidBody) {
+        rigidBody.velocity.x = x;
+        rigidBody.velocity.y = y;
+      }
+      body?.setVelocity(x, y);
+    };
+    const velocityFacade: Record<string, unknown> = {};
+    Object.defineProperties(velocityFacade, {
+      x: {
+        get: () => body?.velocity.x ?? rigidBody?.velocity.x ?? 0,
+        set: (value: unknown) => {
+          const nextX = Number(value);
+          if (!Number.isFinite(nextX)) {
+            return;
+          }
+          if (rigidBody) {
+            rigidBody.velocity.x = nextX;
+          }
+          body?.setVelocityX(nextX);
+        },
+        enumerable: true,
+      },
+      y: {
+        get: () => body?.velocity.y ?? rigidBody?.velocity.y ?? 0,
+        set: (value: unknown) => {
+          const nextY = Number(value);
+          if (!Number.isFinite(nextY)) {
+            return;
+          }
+          if (rigidBody) {
+            rigidBody.velocity.y = nextY;
+          }
+          body?.setVelocityY(nextY);
+        },
+        enumerable: true,
+      },
+    });
+    const gravityFacade: Record<string, unknown> = {};
+    Object.defineProperties(gravityFacade, {
+      x: {
+        get: () => body?.gravity.x ?? 0,
+        set: (value: unknown) => {
+          const nextX = Number(value);
+          if (Number.isFinite(nextX) && body) {
+            body.gravity.x = nextX;
+          }
+        },
+        enumerable: true,
+      },
+      y: {
+        get: () => body?.gravity.y ?? 0,
+        set: (value: unknown) => {
+          const nextY = Number(value);
+          if (Number.isFinite(nextY) && body) {
+            body.gravity.y = nextY;
+          }
+        },
+        enumerable: true,
+      },
+    });
+    const facade: Record<string, unknown> = {
+      setVelocity,
+      setVelocityX: (x: unknown) => {
+        const nextX = Number(x);
+        if (!Number.isFinite(nextX)) {
+          return;
+        }
+        if (rigidBody) {
+          rigidBody.velocity.x = nextX;
+        }
+        body?.setVelocityX(nextX);
+      },
+      setVelocityY: (y: unknown) => {
+        const nextY = Number(y);
+        if (!Number.isFinite(nextY)) {
+          return;
+        }
+        if (rigidBody) {
+          rigidBody.velocity.y = nextY;
+        }
+        body?.setVelocityY(nextY);
+      },
+    };
 
-      new Function(
+    Object.defineProperties(facade, {
+      velocity: {
+        get: () => velocityFacade,
+        set: (value: unknown) => {
+          if (!value || typeof value !== 'object') {
+            return;
+          }
+          const source = value as Partial<Vector2>;
+          setVelocity(source.x, source.y);
+        },
+        enumerable: true,
+      },
+      gravity: {
+        get: () => gravityFacade,
+        set: (value: unknown) => {
+          if (!value || typeof value !== 'object' || !body) {
+            return;
+          }
+          const source = value as Partial<Vector2>;
+          if (Number.isFinite(Number(source.x))) {
+            body.gravity.x = Number(source.x);
+          }
+          if (Number.isFinite(Number(source.y))) {
+            body.gravity.y = Number(source.y);
+          }
+        },
+        enumerable: true,
+      },
+      isStatic: {
+        get: () => rigidBody?.isStatic ?? false,
+        set: (value: unknown) => {
+          const next = Boolean(value);
+          if (rigidBody) {
+            rigidBody.isStatic = next;
+          }
+          if (body) {
+            body.setImmovable(next);
+            body.setAllowGravity(!next);
+            if (next) {
+              body.setVelocity(0, 0);
+            }
+          }
+        },
+        enumerable: true,
+      },
+      type: {
+        get: () => (rigidBody?.isStatic ? 'static' : 'dynamic'),
+        set: (value: unknown) => {
+          if (value === 'static' || value === 'kinematic') {
+            if (rigidBody) {
+              rigidBody.isStatic = true;
+            }
+            if (body) {
+              body.setImmovable(true);
+              body.setAllowGravity(false);
+              body.setVelocity(0, 0);
+            }
+          } else if (value === 'dynamic') {
+            if (rigidBody) {
+              rigidBody.isStatic = false;
+            }
+            if (body) {
+              body.setImmovable(false);
+              body.setAllowGravity(true);
+            }
+          }
+        },
+        enumerable: true,
+      },
+    });
+
+    return facade;
+  }
+
+  private createScriptComponentFacadeMap(
+    entity: Entity,
+    instance: EntityInstance | undefined,
+    transformFacade: Record<string, unknown>,
+    bodyFacade: Record<string, unknown> | null,
+  ) {
+    const sprite = getComponent<SpriteComponent>(entity, ComponentType.Sprite);
+    const collider = getComponent<ColliderComponent>(entity, ComponentType.Collider);
+    const behavior = getComponent<BehaviorComponent>(entity, ComponentType.Behavior);
+    const script = getComponent<ScriptComponent>(entity, ComponentType.Script);
+
+    return {
+      Transform: transformFacade,
+      transform: transformFacade,
+      Sprite: instance?.sprite ?? sprite ?? null,
+      sprite: instance?.sprite ?? sprite ?? null,
+      RigidBody: bodyFacade,
+      rigidBody: bodyFacade,
+      body: bodyFacade,
+      Collider: collider ?? null,
+      collider: collider ?? null,
+      Behavior: behavior ?? null,
+      behavior: behavior ?? null,
+      Script: script ?? null,
+      script: script ?? null,
+    } satisfies Record<string, unknown>;
+  }
+
+  private compileScript(source: string): ScriptExecutor {
+    const trimmed = source.trim();
+    const normalizedHookSource = trimmed.replace(/\bexport\s+(?=function\b)/g, '');
+
+    if (/export\s+default\s+class\b/.test(trimmed)) {
+      const instantiate = new Function(trimmed.replace(/export\s+default\s+class\b/, 'return class')) as () => new () => Record<string, unknown>;
+      return {
+        mode: 'class',
+        instantiate: () => {
+          const ScriptClass = instantiate();
+          return new ScriptClass() as Record<string, unknown>;
+        },
+      };
+    }
+
+    if (/\bfunction\s+(?:init|update|onCollect)\s*\(/.test(normalizedHookSource)) {
+      return {
+        mode: 'hooks',
+        createHooks: new Function(
+          'entity',
+          'sprite',
+          'body',
+          'scene',
+          'inputs',
+          'runtime',
+          'Input',
+          'Time',
+          'transform',
+          'components',
+          `${normalizedHookSource}
+return {
+  init: typeof init === 'function' ? init : undefined,
+  update: typeof update === 'function' ? update : undefined,
+  onCollect: typeof onCollect === 'function' ? onCollect : undefined,
+};`,
+        ) as ScriptHooksFactory,
+      };
+    }
+
+    return {
+      mode: 'inline',
+      run: new Function(
         'entity',
         'sprite',
         'body',
@@ -901,18 +1438,236 @@ class MainScene extends Phaser.Scene {
         'inputs',
         'deltaSeconds',
         'runtime',
-        script.code,
-      )(
-        entity,
-        instance.sprite,
-        body,
-        this,
-        this.virtualInputs,
-        deltaSeconds,
+        'Input',
+        'Time',
+        'transform',
+        'components',
+        trimmed,
+      ) as ScriptInlineRunner,
+    };
+  }
+
+  private getScriptHookParameterNames(hook: (...args: unknown[]) => unknown) {
+    const match = hook.toString().match(/^[^(]*\(([^)]*)\)/);
+    if (!match) {
+      return [];
+    }
+
+    return match[1]
+      .split(',')
+      .map((parameter) => parameter.trim().replace(/^\.\.\./, '').split('=')[0]?.trim() ?? '')
+      .filter(Boolean);
+  }
+
+  private resolveSingleScriptHookArgument(
+    parameterName: string,
+    bindings: ScriptBindings,
+    deltaSeconds: number,
+    phase: 'init' | 'update',
+  ) {
+    const normalizedName = parameterName.trim().toLowerCase();
+
+    if (phase === 'update' && /^(dt|delta|deltatime|deltaseconds|time|seconds|elapsed)$/.test(normalizedName)) {
+      return deltaSeconds;
+    }
+    if (/^(scene|world|level)$/.test(normalizedName)) {
+      return bindings.scene;
+    }
+    if (/^(input|inputs|controls)$/.test(normalizedName)) {
+      return bindings.Input;
+    }
+    if (/^(runtime|snapshot)$/.test(normalizedName)) {
+      return this.runtimeSnapshot;
+    }
+    if (/^(time|clock)$/.test(normalizedName)) {
+      return bindings.Time;
+    }
+    if (/^(body|rigidbody|physics)$/.test(normalizedName)) {
+      return bindings.body;
+    }
+    if (/^(transform|position)$/.test(normalizedName)) {
+      return bindings.transform;
+    }
+    if (/^(components|componentmap)$/.test(normalizedName)) {
+      return bindings.components;
+    }
+    return bindings.entity;
+  }
+
+  private buildScriptHookArguments(
+    phase: 'init' | 'update',
+    hook: (...args: unknown[]) => unknown,
+    bindings: ScriptBindings,
+    deltaSeconds: number,
+  ) {
+    const parameters = this.getScriptHookParameterNames(hook);
+    if (parameters.length === 0) {
+      return [];
+    }
+    if (parameters.length === 1) {
+      return [this.resolveSingleScriptHookArgument(parameters[0], bindings, deltaSeconds, phase)];
+    }
+    if (phase === 'init') {
+      return [
+        bindings.entity,
+        bindings.scene,
+        bindings.inputs,
         this.runtimeSnapshot,
-      );
+        bindings.Input,
+        bindings.Time,
+        bindings.components,
+        bindings.body,
+        bindings.transform,
+      ];
+    }
+    return [
+      bindings.entity,
+      deltaSeconds,
+      bindings.scene,
+      bindings.inputs,
+      this.runtimeSnapshot,
+      bindings.Input,
+      bindings.Time,
+      bindings.components,
+      bindings.body,
+      bindings.transform,
+    ];
+  }
+
+  private callScriptHook(
+    phase: 'init' | 'update',
+    hook: ((...args: unknown[]) => unknown) | undefined,
+    context: Record<string, unknown>,
+    bindings: ScriptBindings,
+    deltaSeconds: number,
+    shouldRun: boolean,
+  ) {
+    if (!shouldRun || typeof hook !== 'function') {
+      return;
+    }
+
+    hook.call(context, ...this.buildScriptHookArguments(phase, hook, bindings, deltaSeconds));
+  }
+
+  private reportScriptError(entity: Entity, instance: EntityInstance, error: unknown) {
+    const message = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+    if (instance.scriptRuntime?.lastError === message) {
+      return;
+    }
+    if (instance.scriptRuntime) {
+      instance.scriptRuntime.lastError = message;
+    }
+    console.error(`Script error in entity ${entity.name}`, error);
+  }
+
+  private runEntityScript(entity: Entity, scene: Scene, instance: EntityInstance, deltaSeconds: number) {
+    const script = getComponent<ScriptComponent>(entity, ComponentType.Script);
+
+    if (!script?.enabled || !script.code.trim()) {
+      return;
+    }
+
+    try {
+      const runtime = instance.scriptRuntime;
+      if (!runtime) {
+        return;
+      }
+
+      if (runtime.executor === undefined) {
+        try {
+          runtime.executor = this.compileScript(runtime.source);
+        } catch (error) {
+          runtime.executor = null;
+          throw error;
+        }
+      }
+
+      if (!runtime.executor) {
+        return;
+      }
+
+      const bindings = this.buildScriptBindings(entity, scene, instance, deltaSeconds);
+      runtime.context.entity = bindings.entity;
+      runtime.context.scene = bindings.scene;
+      runtime.context.sprite = instance.sprite;
+      runtime.context.body = bindings.body;
+      runtime.context.transform = bindings.transform;
+      runtime.context.components = bindings.components;
+      runtime.context.Input = bindings.Input;
+      runtime.context.Time = bindings.Time;
+      runtime.context.world = bindings.scene;
+      runtime.context.runtime = this.runtimeSnapshot;
+
+      switch (runtime.executor.mode) {
+        case 'class': {
+          if (!runtime.classInstance) {
+            runtime.classInstance = runtime.executor.instantiate();
+          }
+
+          runtime.classInstance.entity = bindings.entity;
+          runtime.classInstance.scene = bindings.scene;
+          runtime.classInstance.sprite = instance.sprite;
+          runtime.classInstance.body = bindings.body;
+          runtime.classInstance.transform = bindings.transform;
+          runtime.classInstance.Input = bindings.Input;
+          runtime.classInstance.Time = bindings.Time;
+          runtime.classInstance.world = bindings.scene;
+          runtime.classInstance.runtime = this.runtimeSnapshot;
+
+          if (!runtime.initialized && typeof runtime.classInstance.init === 'function') {
+            (runtime.classInstance.init as (entityFacade: unknown, sceneFacade: unknown) => void)(bindings.entity, bindings.scene);
+          }
+
+          runtime.initialized = true;
+          if (typeof runtime.classInstance.update === 'function') {
+            (runtime.classInstance.update as (delta: number) => void)(deltaSeconds);
+          }
+          break;
+        }
+        case 'hooks': {
+          if (!runtime.hooks) {
+            runtime.hooks = runtime.executor.createHooks(
+              bindings.entity,
+              instance.sprite,
+              bindings.body,
+              bindings.scene,
+              bindings.inputs,
+              this.runtimeSnapshot,
+              bindings.Input,
+              bindings.Time,
+              bindings.transform,
+              bindings.components,
+            );
+          }
+
+          this.callScriptHook('init', runtime.hooks.init, runtime.context, bindings, deltaSeconds, !runtime.initialized);
+
+          runtime.initialized = true;
+          this.callScriptHook('update', runtime.hooks.update, runtime.context, bindings, deltaSeconds, true);
+          break;
+        }
+        case 'inline':
+          runtime.executor.run.call(
+            runtime.context,
+            bindings.entity,
+            instance.sprite,
+            bindings.body,
+            bindings.scene,
+            bindings.inputs,
+            deltaSeconds,
+            this.runtimeSnapshot,
+            bindings.Input,
+            bindings.Time,
+            bindings.transform,
+            bindings.components,
+          );
+          runtime.initialized = true;
+          break;
+        default:
+          break;
+      }
     } catch (error) {
-      console.error(`Script error in entity ${entity.name}`, error);
+      this.reportScriptError(entity, instance, error);
     }
   }
 
