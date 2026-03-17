@@ -125,6 +125,17 @@ type AiHealth = {
   location?: string | null;
 };
 
+type RecentProjectEntry = {
+  id: string;
+  project: Project;
+  name: string;
+  description: string;
+  updatedAt: string;
+  sceneCount: number;
+  entityCount: number;
+  activeSceneName: string;
+};
+
 type OutlinerComponentTone = 'transform' | 'visual' | 'physics' | 'logic' | 'script';
 
 type OutlinerComponentDescriptor = {
@@ -215,6 +226,9 @@ type OutlinerEntityTreeNode = {
   children: OutlinerEntityTreeNode[];
 };
 
+const RECENT_PROJECTS_KEY = 'nexus2d.editor.recent-projects';
+const MAX_RECENT_PROJECTS = 6;
+
 const OUTLINER_COMPONENT_ORDER: ComponentType[] = [
   ComponentType.Transform,
   ComponentType.Sprite,
@@ -255,6 +269,113 @@ function readStoredProject() {
   } catch {
     return null;
   }
+}
+
+function getRecentProjectId(project: Project) {
+  const sceneSignature = project.scenes
+    .map((scene) => scene.name.trim().toLowerCase())
+    .filter(Boolean)
+    .join('|');
+  return `${project.name.trim().toLowerCase() || 'untitled-project'}::${sceneSignature || 'scene'}`;
+}
+
+function createRecentProjectEntry(project: Project): RecentProjectEntry {
+  const normalizedProject = normalizeProject(project, createDefaultProject());
+  const stats = projectStats(normalizedProject);
+  const activeScene = getActiveScene(normalizedProject);
+
+  return {
+    id: getRecentProjectId(normalizedProject),
+    project: normalizedProject,
+    name: normalizedProject.name.trim() || 'Untitled Project',
+    description: normalizedProject.description.trim() || 'Local project snapshot',
+    updatedAt: normalizedProject.updatedAt || new Date().toISOString(),
+    sceneCount: stats.sceneCount,
+    entityCount: stats.entityCount,
+    activeSceneName: activeScene.name.trim() || 'Scene 1',
+  };
+}
+
+function normalizeRecentProjectEntry(input: unknown): RecentProjectEntry | null {
+  if (!input || typeof input !== 'object') {
+    return null;
+  }
+
+  try {
+    const value = input as {
+      id?: unknown;
+      name?: unknown;
+      description?: unknown;
+      updatedAt?: unknown;
+      project?: unknown;
+    };
+    const project = normalizeProject(value.project ?? input, createDefaultProject());
+    const entry = createRecentProjectEntry(project);
+
+    return {
+      ...entry,
+      id: typeof value.id === 'string' && value.id.trim() ? value.id : entry.id,
+      name: typeof value.name === 'string' && value.name.trim() ? value.name : entry.name,
+      description: typeof value.description === 'string' && value.description.trim() ? value.description : entry.description,
+      updatedAt: typeof value.updatedAt === 'string' && value.updatedAt ? value.updatedAt : entry.updatedAt,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function readRecentProjects() {
+  const saved = localStorage.getItem(RECENT_PROJECTS_KEY);
+  if (!saved) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(saved);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed
+      .map((entry) => normalizeRecentProjectEntry(entry))
+      .filter((entry): entry is RecentProjectEntry => Boolean(entry))
+      .sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt))
+      .slice(0, MAX_RECENT_PROJECTS);
+  } catch {
+    return [];
+  }
+}
+
+function writeRecentProjects(entries: RecentProjectEntry[]) {
+  const cappedEntries = entries.slice(0, MAX_RECENT_PROJECTS);
+
+  for (let count = cappedEntries.length; count >= 0; count -= 1) {
+    try {
+      localStorage.setItem(RECENT_PROJECTS_KEY, JSON.stringify(cappedEntries.slice(0, count)));
+      return;
+    } catch {
+      continue;
+    }
+  }
+}
+
+function upsertRecentProject(entries: RecentProjectEntry[], project: Project) {
+  const nextEntry = createRecentProjectEntry(project);
+  return [nextEntry, ...entries.filter((entry) => entry.id !== nextEntry.id)].slice(0, MAX_RECENT_PROJECTS);
+}
+
+function formatRecentProjectTimestamp(value: string) {
+  const timestamp = Date.parse(value);
+  if (Number.isNaN(timestamp)) {
+    return 'Saved recently';
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(timestamp));
 }
 
 function matchesFilterQuery(filterText: string, ...values: Array<string | number | null | undefined>) {
@@ -1651,16 +1772,20 @@ function AddComponentCard({
 
 function ProjectLauncher({
   hasSavedProject,
+  recentProjects,
   onClose,
   onCreateBlank,
+  onLoadRecentProject,
   onResumeSaved,
   onLoadPlatformer,
   onLoadTopDown,
   onImportProject,
 }: {
   hasSavedProject: boolean;
+  recentProjects: RecentProjectEntry[];
   onClose?: () => void;
   onCreateBlank: (projectName: string) => void;
+  onLoadRecentProject: (project: Project) => void;
   onResumeSaved: () => void;
   onLoadPlatformer: () => void;
   onLoadTopDown: () => void;
@@ -1717,17 +1842,44 @@ function ProjectLauncher({
         <div className="nexus-launcher-side">
           <div className="space-y-3">
             <div>
-              <div className="nexus-launcher-panel-label">Workspace Notes</div>
-              <h2 className="mt-3 text-[19px] font-semibold tracking-[-0.03em] text-[var(--text)]">Choose the right entry path, then stay in flow.</h2>
+              <div className="nexus-launcher-panel-label">Recent Projects</div>
+              <h2 className="mt-3 text-[19px] font-semibold tracking-[-0.03em] text-[var(--text)]">Reopen a local workspace without hunting for the last JSON.</h2>
               <p className="mt-2 max-w-[34ch] text-[12px] leading-6 text-[var(--muted)]">
-                The launcher is meant to get out of the way quickly. Pick a starting point once, then continue building inside the same editor layout and runtime loop.
+                Recent projects are captured from blank starts, imports, sample loads, and autosave. Pick one entry and jump straight back into the editor.
               </p>
             </div>
-            <div className="space-y-2 text-[11px] text-[var(--muted)]">
-              <div className="nexus-launcher-fact">Blank projects open with an empty scene and neutral grey defaults.</div>
-              <div className="nexus-launcher-fact">Sample projects are optional and load into the same editor workflow.</div>
-              <div className="nexus-launcher-fact">You can reopen this launcher later from the top bar.</div>
-            </div>
+            {recentProjects.length > 0 ? (
+              <div className="nexus-launcher-recent-list">
+                {recentProjects.map((recentProject, index) => (
+                  <button
+                    key={recentProject.id}
+                    type="button"
+                    onClick={() => onLoadRecentProject(recentProject.project)}
+                    className="nexus-launcher-recent-item"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="nexus-launcher-recent-title">{recentProject.name}</div>
+                        <div className="nexus-launcher-recent-subtitle">
+                          {recentProject.activeSceneName} • {recentProject.sceneCount} scene{recentProject.sceneCount === 1 ? '' : 's'} •{' '}
+                          {recentProject.entityCount} entit{recentProject.entityCount === 1 ? 'y' : 'ies'}
+                        </div>
+                      </div>
+                      {index === 0 && <span className="nexus-launcher-badge">Latest</span>}
+                    </div>
+                    <p className="nexus-launcher-recent-description">{recentProject.description}</p>
+                    <div className="nexus-launcher-recent-meta">
+                      <span>{formatRecentProjectTimestamp(recentProject.updatedAt)}</span>
+                      <span>Load project</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="nexus-launcher-recent-empty">
+                Recent local projects will appear here after you create, import, or open one.
+              </div>
+            )}
           </div>
         </div>
 
@@ -1795,6 +1947,15 @@ export default function App() {
   const [launcherOpen, setLauncherOpen] = useState(true);
   const [activeMenu, setActiveMenu] = useState<TopMenuKey | null>(null);
   const [storedProject, setStoredProject] = useState<Project | null>(() => readStoredProject());
+  const [recentProjects, setRecentProjects] = useState<RecentProjectEntry[]>(() => {
+    const recent = readRecentProjects();
+    if (recent.length > 0) {
+      return recent;
+    }
+
+    const stored = readStoredProject();
+    return stored ? [createRecentProjectEntry(stored)] : [];
+  });
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(activeScene.entities[0]?.id ?? null);
   const [selectedEntityIds, setSelectedEntityIds] = useState<string[]>(() => (activeScene.entities[0]?.id ? [activeScene.entities[0].id] : []));
   const [transformMode, setTransformMode] = useState<TransformMode>('move');
@@ -1919,15 +2080,21 @@ export default function App() {
   }, [isCompact, leftSidebarResizeState]);
 
   const launchProject = (nextProject: Project) => {
-    history.reset(touchProject(nextProject));
-    const nextSelectedId = getActiveScene(nextProject).entities[0]?.id ?? null;
+    const launchedProject = touchProject(nextProject);
+    history.reset(launchedProject);
+    const nextSelectedId = getActiveScene(launchedProject).entities[0]?.id ?? null;
     setSelectedEntityId(nextSelectedId);
     setSelectedEntityIds(nextSelectedId ? [nextSelectedId] : []);
     stopSimulation({restoreStageViewport: false});
     setLauncherOpen(false);
     setSessionStarted(true);
     setStageViewportMode('world');
-    setStoredProject(nextProject);
+    setStoredProject(launchedProject);
+    setRecentProjects((current) => {
+      const next = upsertRecentProject(current, launchedProject);
+      writeRecentProjects(next);
+      return next;
+    });
     setContentDrawerOpen(false);
     setOutlinerFilter('');
     setDetailsFilter('');
@@ -1942,8 +2109,14 @@ export default function App() {
   });
 
   const saveLocalSnapshot = () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(project));
-    setStoredProject(project);
+    const snapshot = touchProject(project);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+    setStoredProject(snapshot);
+    setRecentProjects((current) => {
+      const next = upsertRecentProject(current, snapshot);
+      writeRecentProjects(next);
+      return next;
+    });
   };
 
   const mutateProject = (mutator: (draft: Project) => void, options?: {replace?: boolean}) => {
@@ -3420,6 +3593,11 @@ export default function App() {
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(project));
     setStoredProject(project);
+    setRecentProjects((current) => {
+      const next = upsertRecentProject(current, project);
+      writeRecentProjects(next);
+      return next;
+    });
   }, [launcherOpen, project, sessionStarted]);
 
   useLayoutEffect(() => {
@@ -3962,7 +4140,7 @@ export default function App() {
           <IconButton onClick={exportProject} title="Export project">
             <Download size={16} />
           </IconButton>
-          <IconButton onClick={() => localStorage.setItem(STORAGE_KEY, JSON.stringify(project))} title="Save local snapshot">
+          <IconButton onClick={saveLocalSnapshot} title="Save local snapshot">
             <Save size={16} />
           </IconButton>
           <div className="flex items-center gap-1 rounded-sm border border-[var(--border)] bg-[var(--chrome-panel)] p-0.5">
@@ -4619,11 +4797,13 @@ export default function App() {
       {launcherOpen && (
         <ProjectLauncher
           hasSavedProject={Boolean(storedProject)}
+          recentProjects={recentProjects}
           onClose={() => setLauncherOpen(false)}
           onCreateBlank={(projectName) => launchProject(createBlankProject(projectName))}
+          onLoadRecentProject={(nextProject) => launchProject(cloneProject(nextProject))}
           onResumeSaved={() => {
             if (storedProject) {
-              launchProject(storedProject);
+              launchProject(cloneProject(storedProject));
             }
           }}
           onLoadPlatformer={() => launchProject(createSampleProject('platformer'))}
