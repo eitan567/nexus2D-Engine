@@ -26,6 +26,12 @@ declare global {
 
 type VirtualInput = 'left' | 'right' | 'up' | 'down' | 'jump' | 'action' | 'altAction';
 type EditorViewportMode = 'world' | 'camera';
+type CameraFrame = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
 
 type EntityInstance = {
   sprite: Phaser.GameObjects.Sprite;
@@ -282,6 +288,9 @@ class MainScene extends Phaser.Scene {
   private worldFillReferenceZoom: number | null = null;
   private editorZoomFactor = 1;
   private editorCameraCenter: Vector2 | null = null;
+  private editorPreviewFrameOverride: CameraFrame | null = null;
+  private lastGameplayCameraFrame: CameraFrame | null = null;
+  private previewSettingsSignature = '';
   private manualCameraControlActive = false;
   private currentSceneId: string | null = null;
   private isPlaying = false;
@@ -490,8 +499,27 @@ class MainScene extends Phaser.Scene {
   }
 
   setRunning(value: boolean) {
+    if (value === this.isPlaying) {
+      if (!value && this.hasWon && this.project) {
+        this.resetRuntime();
+        this.syncProject(this.project);
+        this.physics.pause();
+        this.refreshRuntimeSnapshot(true);
+      }
+      return;
+    }
+
+    if (!value) {
+      this.captureEditorPreviewFrame(true);
+    } else {
+      this.editorPreviewFrameOverride = null;
+      this.lastGameplayCameraFrame = null;
+    }
+
     this.isPlaying = value;
     this.manualCameraControlActive = false;
+    this.editorZoomFactor = 1;
+    this.editorCameraCenter = null;
 
     if (this.project) {
       this.resetRuntime();
@@ -513,11 +541,25 @@ class MainScene extends Phaser.Scene {
     }
 
     const nextScene = getActiveScene(project);
+    const nextPreviewSettingsSignature = [
+      nextScene.settings.cameraStart.x,
+      nextScene.settings.cameraStart.y,
+      nextScene.settings.cameraSize.x,
+      nextScene.settings.cameraSize.y,
+      nextScene.settings.cameraFollowPlayer ? 1 : 0,
+    ].join(':');
     if (this.currentSceneId !== nextScene.id) {
       this.currentSceneId = nextScene.id;
       this.worldFillReferenceZoom = null;
       this.editorZoomFactor = 1;
       this.editorCameraCenter = null;
+      this.editorPreviewFrameOverride = null;
+      this.lastGameplayCameraFrame = null;
+      this.previewSettingsSignature = nextPreviewSettingsSignature;
+    } else if (this.previewSettingsSignature !== nextPreviewSettingsSignature) {
+      this.previewSettingsSignature = nextPreviewSettingsSignature;
+      this.editorPreviewFrameOverride = null;
+      this.lastGameplayCameraFrame = null;
     }
 
     this.project = project;
@@ -592,7 +634,7 @@ class MainScene extends Phaser.Scene {
     this.cameras.main.setViewport(viewport.x, viewport.y, viewport.width, viewport.height);
     this.editorZoomFactor = clamp(this.editorZoomFactor, this.getMinZoomFactor(scene), 6);
 
-    const previewFrame = this.getPreviewCameraFrame(scene);
+    const previewFrame = !this.isPlaying && this.editorViewportMode === 'camera' ? this.getCameraModePreviewFrame(scene) : this.getPreviewCameraFrame(scene);
     const player = this.getPlayerInstance();
     const cameraBaseZoom = this.getCameraBaseZoom(scene);
 
@@ -1711,8 +1753,16 @@ return {
         case 'goal':
           if (this.collectiblesRemaining === 0) {
             this.hasWon = true;
+            this.captureEditorPreviewFrame(true);
             this.isPlaying = false;
+            this.manualCameraControlActive = false;
+            this.editorZoomFactor = 1;
+            this.editorCameraCenter = null;
             this.physics.pause();
+            this.refreshCamera(scene);
+            this.drawSceneBackground();
+            this.drawOverlay();
+            this.refreshRuntimeSnapshot(true);
           }
           break;
         case 'hazard': {
@@ -1755,7 +1805,7 @@ return {
     const scene = getActiveScene(this.project);
     const player = this.getPlayerInstance();
     const playerBody = player?.sprite.body as Phaser.Physics.Arcade.Body | undefined;
-    const previewFrame = this.getPreviewCameraFrame(scene);
+    const previewFrame = !this.isPlaying && this.editorViewportMode === 'camera' ? this.getCameraModePreviewFrame(scene) : this.getPreviewCameraFrame(scene);
     const activeCameraFrame = this.isPlaying
       ? {
           x: this.cameras.main.scrollX,
@@ -1768,6 +1818,15 @@ return {
           ...previewFrame,
           zoom: 1,
         };
+
+    if (this.isPlaying && this.editorViewportMode === 'camera') {
+      this.lastGameplayCameraFrame = {
+        x: activeCameraFrame.x,
+        y: activeCameraFrame.y,
+        width: activeCameraFrame.width,
+        height: activeCameraFrame.height,
+      };
+    }
 
     this.runtimeSnapshot = {
       mode: this.hasWon ? 'win' : this.isPlaying ? 'play' : 'editor',
@@ -1930,7 +1989,7 @@ return {
     }
 
     const scene = getActiveScene(this.project);
-    const previewFrame = this.getPreviewCameraFrame(scene);
+    const previewFrame = !this.isPlaying && this.editorViewportMode === 'camera' ? this.getCameraModePreviewFrame(scene) : this.getPreviewCameraFrame(scene);
 
     if (!this.isPlaying && this.editorViewportMode === 'world') {
       this.overlayGraphics.lineStyle(2, 0xc8a27a, 0.7);
@@ -1969,6 +2028,20 @@ return {
   }
 
   private getPreviewCameraFrame(scene: Scene) {
+    if (!this.isPlaying && this.editorPreviewFrameOverride) {
+      const width = Math.min(Math.max(1, this.editorPreviewFrameOverride.width), scene.settings.worldSize.x);
+      const height = Math.min(Math.max(1, this.editorPreviewFrameOverride.height), scene.settings.worldSize.y);
+      const maxScrollX = Math.max(0, scene.settings.worldSize.x - width);
+      const maxScrollY = Math.max(0, scene.settings.worldSize.y - height);
+
+      return {
+        x: clamp(this.editorPreviewFrameOverride.x, 0, maxScrollX),
+        y: clamp(this.editorPreviewFrameOverride.y, 0, maxScrollY),
+        width,
+        height,
+      };
+    }
+
     const cameraWidth = Math.max(1, scene.settings.cameraSize.x);
     const cameraHeight = Math.max(1, scene.settings.cameraSize.y);
     const width = Math.min(cameraWidth, scene.settings.worldSize.x);
@@ -1981,6 +2054,149 @@ return {
       y: clamp(scene.settings.cameraStart.y, 0, maxScrollY),
       width,
       height,
+    };
+  }
+
+  private getCameraModePreviewFrame(scene: Scene) {
+    const authoredFrame = this.getAuthoredCameraFrame(scene);
+
+    if (this.isPlaying || this.editorViewportMode !== 'camera') {
+      return this.getPreviewCameraFrame(scene);
+    }
+
+    if (this.editorPreviewFrameOverride) {
+      return {
+        x: this.editorPreviewFrameOverride.x,
+        y: this.editorPreviewFrameOverride.y,
+        width: Math.min(Math.max(1, this.editorPreviewFrameOverride.width), scene.settings.worldSize.x),
+        height: Math.min(Math.max(1, this.editorPreviewFrameOverride.height), scene.settings.worldSize.y),
+      };
+    }
+
+    const followedFrame = this.getPredictedFollowPreviewFrame(scene, authoredFrame);
+    return followedFrame ?? authoredFrame;
+  }
+
+  private getAuthoredCameraFrame(scene: Scene) {
+    const cameraWidth = Math.max(1, scene.settings.cameraSize.x);
+    const cameraHeight = Math.max(1, scene.settings.cameraSize.y);
+    const width = Math.min(cameraWidth, scene.settings.worldSize.x);
+    const height = Math.min(cameraHeight, scene.settings.worldSize.y);
+    const maxScrollX = Math.max(0, scene.settings.worldSize.x - width);
+    const maxScrollY = Math.max(0, scene.settings.worldSize.y - height);
+
+    return {
+      x: clamp(scene.settings.cameraStart.x, 0, maxScrollX),
+      y: clamp(scene.settings.cameraStart.y, 0, maxScrollY),
+      width,
+      height,
+    };
+  }
+
+  private getPredictedFollowPreviewFrame(scene: Scene, fallbackFrame: CameraFrame): CameraFrame | null {
+    if (!scene.settings.cameraFollowPlayer) {
+      return null;
+    }
+
+    const playerEntity = scene.entities.find((entity) => entity.prefab === 'player');
+    const transform = playerEntity ? getComponent<TransformComponent>(playerEntity, ComponentType.Transform) : undefined;
+    if (!playerEntity || !transform) {
+      return null;
+    }
+
+    const predictedY = this.getPredictedGroundedPlayerY(scene, playerEntity) ?? transform.position.y;
+    const maxScrollX = Math.max(0, scene.settings.worldSize.x - fallbackFrame.width);
+
+    return {
+      x: clamp(transform.position.x - fallbackFrame.width / 2, 0, maxScrollX),
+      y: predictedY - fallbackFrame.height / 2,
+      width: fallbackFrame.width,
+      height: fallbackFrame.height,
+    };
+  }
+
+  private getPredictedGroundedPlayerY(scene: Scene, playerEntity: Entity) {
+    const playerBounds = this.getPreviewSolidBounds(playerEntity, true);
+    if (!playerBounds) {
+      return null;
+    }
+
+    let nearestSurfaceTop = Number.POSITIVE_INFINITY;
+
+    for (const entity of scene.entities) {
+      if (entity.id === playerEntity.id || entity.hidden) {
+        continue;
+      }
+
+      const bounds = this.getPreviewSolidBounds(entity, false);
+      if (!bounds) {
+        continue;
+      }
+
+      const horizontalOverlap = Math.min(playerBounds.right, bounds.right) - Math.max(playerBounds.left, bounds.left);
+      if (horizontalOverlap <= 1) {
+        continue;
+      }
+
+      if (bounds.top + 1 < playerBounds.bottom) {
+        continue;
+      }
+
+      nearestSurfaceTop = Math.min(nearestSurfaceTop, bounds.top);
+    }
+
+    if (!Number.isFinite(nearestSurfaceTop)) {
+      return null;
+    }
+
+    return playerBounds.centerY + (nearestSurfaceTop - playerBounds.bottom);
+  }
+
+  private getPreviewSolidBounds(entity: Entity, allowDynamicBody: boolean) {
+    const transform = getComponent<TransformComponent>(entity, ComponentType.Transform);
+    const sprite = getComponent<SpriteComponent>(entity, ComponentType.Sprite);
+    const collider = getComponent<ColliderComponent>(entity, ComponentType.Collider);
+    const body = getComponent<RigidBodyComponent>(entity, ComponentType.RigidBody);
+    if (!transform || !sprite || !collider || entity.hidden || collider.isTrigger || collider.isPassThrough) {
+      return null;
+    }
+
+    if (!allowDynamicBody && body && !body.isStatic) {
+      return null;
+    }
+
+    const visualWidth = Math.max(1, Math.abs(sprite.width * transform.scale.x));
+    const visualHeight = Math.max(1, Math.abs(sprite.height * transform.scale.y));
+    const rotationRadians = (transform.rotation * Math.PI) / 180;
+
+    if (collider.shape === 'circle') {
+      const radius = collider.autoSize ? Math.max(4, Math.min(visualWidth, visualHeight) / 2) : collider.radius;
+      const centerX = transform.position.x + collider.offsetX;
+      const centerY = transform.position.y + collider.offsetY;
+      return {
+        left: centerX - radius,
+        right: centerX + radius,
+        top: centerY - radius,
+        bottom: centerY + radius,
+        centerY,
+      };
+    }
+
+    const baseWidth = collider.autoSize ? visualWidth : collider.width;
+    const baseHeight = collider.autoSize ? visualHeight : collider.height;
+    const cos = Math.abs(Math.cos(rotationRadians));
+    const sin = Math.abs(Math.sin(rotationRadians));
+    const halfWidth = Math.max(8, baseWidth * cos + baseHeight * sin) / 2;
+    const halfHeight = Math.max(8, baseWidth * sin + baseHeight * cos) / 2;
+    const centerX = transform.position.x + collider.offsetX;
+    const centerY = transform.position.y + collider.offsetY;
+
+    return {
+      left: centerX - halfWidth,
+      right: centerX + halfWidth,
+      top: centerY - halfHeight,
+      bottom: centerY + halfHeight,
+      centerY,
     };
   }
 
@@ -2061,10 +2277,10 @@ return {
 
     const visibleWidth = this.cameras.main.width / this.cameras.main.zoom;
     const visibleHeight = this.cameras.main.height / this.cameras.main.zoom;
-    const previewFrame = this.getPreviewCameraFrame(scene);
     const lockToCameraFrame = !this.isPlaying && this.editorViewportMode === 'camera';
 
     if (lockToCameraFrame) {
+      const previewFrame = this.getCameraModePreviewFrame(scene);
       const maxScrollX = previewFrame.x + Math.max(0, previewFrame.width - visibleWidth);
       const maxScrollY = previewFrame.y + Math.max(0, previewFrame.height - visibleHeight);
       this.cameras.main.setScroll(
@@ -2074,6 +2290,7 @@ return {
       return;
     }
 
+    const previewFrame = this.getPreviewCameraFrame(scene);
     const maxScrollX = scene.settings.worldSize.x - visibleWidth;
     const maxScrollY = scene.settings.worldSize.y - visibleHeight;
     const allowFreePan = !this.isPlaying || this.manualCameraControlActive;
@@ -2096,6 +2313,26 @@ return {
     const nextScrollY = clamp(this.cameras.main.scrollY, minScrollY, maxAllowedScrollY);
 
     this.cameras.main.setScroll(nextScrollX, nextScrollY);
+  }
+
+  private captureEditorPreviewFrame(preferGameplayFrame = false) {
+    if (preferGameplayFrame && this.lastGameplayCameraFrame) {
+      this.editorPreviewFrameOverride = {
+        ...this.lastGameplayCameraFrame,
+      };
+      return;
+    }
+
+    if (!this.cameras?.main) {
+      return;
+    }
+
+    this.editorPreviewFrameOverride = {
+      x: this.cameras.main.scrollX,
+      y: this.cameras.main.scrollY,
+      width: this.cameras.main.width / Math.max(this.cameras.main.zoom, 0.0001),
+      height: this.cameras.main.height / Math.max(this.cameras.main.zoom, 0.0001),
+    };
   }
 
   private getWorldFitZoom(scene: Scene) {

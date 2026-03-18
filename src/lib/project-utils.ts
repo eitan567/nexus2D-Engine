@@ -662,6 +662,9 @@ function normalizeEntity(input: unknown, fallback?: Entity): Entity {
   const base = fallback ?? createEntityFromPrefab(inferredPrefab, { x: 240, y: 240 });
   const prefab = isPrefab(source.prefab) ? source.prefab : base.prefab;
   const normalizedInputComponents = normalizeComponentInputList(source.components);
+  const hasExplicitColliderAutoSize = normalizedInputComponents.some(
+    (component) => component.type === ComponentType.Collider && typeof component.autoSize === 'boolean',
+  );
   const legacyHints = resolveLegacyEntityHints(source.components);
   const fallbackComponentsByType = new Map(base.components.map((component) => [component.type, component] as const));
   const components = normalizedInputComponents.length > 0
@@ -674,7 +677,7 @@ function normalizeEntity(input: unknown, fallback?: Entity): Entity {
       .filter(Boolean)
     : base.components;
 
-  return {
+  const normalizedEntity = {
     id: stringOr(source.id, generateId(prefab)),
     name: stringOr(source.name, base.name),
     parent: typeof source.parent === 'string' ? source.parent : null,
@@ -686,6 +689,35 @@ function normalizeEntity(input: unknown, fallback?: Entity): Entity {
     prefab,
     components: components.length > 0 ? components : base.components,
   };
+
+  if (prefab === 'collectible' && !hasExplicitColliderAutoSize) {
+    normalizedEntity.components = normalizedEntity.components.map((component) =>
+      component.type === ComponentType.Collider ? { ...component, autoSize: true } : component,
+    );
+  }
+
+  if (prefab === 'collectible') {
+    const sprite = getComponent<SpriteComponent>(normalizedEntity, ComponentType.Sprite);
+    const transform = getComponent<TransformComponent>(normalizedEntity, ComponentType.Transform);
+    const collider = getComponent<ColliderComponent>(normalizedEntity, ComponentType.Collider);
+    if (sprite && transform && collider && collider.isTrigger && !collider.isPassThrough) {
+      const visualWidth = Math.max(1, Math.abs(sprite.width * transform.scale.x));
+      const visualHeight = Math.max(1, Math.abs(sprite.height * transform.scale.y));
+      const closelyMatchesVisual =
+        Math.abs(collider.width - visualWidth) <= 4 &&
+        Math.abs(collider.height - visualHeight) <= 4 &&
+        Math.abs(collider.offsetX) <= 0.5 &&
+        Math.abs(collider.offsetY) <= 0.5;
+
+      if (closelyMatchesVisual) {
+        normalizedEntity.components = normalizedEntity.components.map((component) =>
+          component.type === ComponentType.Collider ? { ...component, autoSize: true } : component,
+        );
+      }
+    }
+  }
+
+  return normalizedEntity;
 }
 
 function isPrefab(value: unknown): value is EntityPrefab {

@@ -11,3 +11,5 @@ coverage/
 .agent/*
 .agent/ 
 /output
+/test-results
+opencode.json
