@@ -410,9 +410,6 @@ class MainScene extends Phaser.Scene {
     if (!this.project || !this.cameras?.main) {
       return;
     }
-    if (!this.isPlaying && this.editorViewportMode === 'camera') {
-      return;
-    }
 
     const scene = getActiveScene(this.project);
     if (this.isPlaying && scene.settings.cameraFollowPlayer) {
@@ -439,9 +436,6 @@ class MainScene extends Phaser.Scene {
 
   adjustEditorZoom(deltaY: number, screenX: number, screenY: number) {
     if (!this.project || !this.cameras?.main) {
-      return;
-    }
-    if (!this.isPlaying && this.editorViewportMode === 'camera') {
       return;
     }
 
@@ -619,13 +613,21 @@ class MainScene extends Phaser.Scene {
     this.cameras.main.setDeadzone();
 
     if (!this.isPlaying && this.editorViewportMode === 'camera') {
-      this.cameras.main.setZoom(cameraBaseZoom);
-      this.cameras.main.setScroll(previewFrame.x, previewFrame.y);
-      this.editorCameraCenter = {
+      const zoom = this.getEditorZoom(scene);
+      this.cameras.main.setZoom(zoom);
+      const visibleWidth = this.cameras.main.width / zoom;
+      const visibleHeight = this.cameras.main.height / zoom;
+      const defaultCenter = {
         x: previewFrame.x + previewFrame.width / 2,
         y: previewFrame.y + previewFrame.height / 2,
       };
+      const center = this.editorCameraCenter ?? defaultCenter;
+      this.cameras.main.setScroll(center.x - visibleWidth / 2, center.y - visibleHeight / 2);
       this.clampCameraToScene(scene);
+      this.editorCameraCenter = {
+        x: this.cameras.main.scrollX + visibleWidth / 2,
+        y: this.cameras.main.scrollY + visibleHeight / 2,
+      };
       return;
     }
 
@@ -1933,17 +1935,6 @@ return {
     if (!this.isPlaying && this.editorViewportMode === 'world') {
       this.overlayGraphics.lineStyle(2, 0xc8a27a, 0.7);
       this.overlayGraphics.strokeRect(previewFrame.x, previewFrame.y, previewFrame.width, previewFrame.height);
-    }
-
-    if (!this.isPlaying && this.editorViewportMode === 'camera') {
-      const frameInset = 1;
-      this.overlayGraphics.lineStyle(2, 0xc8a27a, 0.7);
-      this.overlayGraphics.strokeRect(
-        previewFrame.x + frameInset,
-        previewFrame.y + frameInset,
-        Math.max(0, previewFrame.width - frameInset * 2),
-        Math.max(0, previewFrame.height - frameInset * 2),
-      );
     }
 
     if (!this.isPlaying) {

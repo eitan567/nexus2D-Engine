@@ -228,6 +228,24 @@ img {
   outline: none;
 }
 
+.nexus-camera-preview-mask {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.nexus-camera-preview-shade {
+  position: absolute;
+  background: #232529;
+}
+
+.nexus-camera-preview-frame {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px solid rgba(200, 162, 122, 0.72);
+}
+
 .nexus-transform-gizmo {
   position: absolute;
   inset: 0;

@@ -1,6 +1,5 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { GoogleGenAI, ThinkingLevel } from '@google/genai';
-import type {IncomingMessage, ServerResponse} from 'node:http';
 import path from 'node:path';
 import {AI_MODEL, buildAiSystemInstruction, buildAiUserPrompt} from '../src/lib/ai-contract';
 import {createDefaultProject, getComponent, normalizeAiResponse, projectStats} from '../src/lib/project-utils';
@@ -21,11 +20,6 @@ import {
   ComponentType,
 } from '../src/types';
 
-type Next = (error?: unknown) => void;
-type MiddlewareContainer = {
-  use: (route: string, handler: (req: IncomingMessage, res: ServerResponse, next: Next) => void | Promise<void>) => void;
-};
-
 const AI_MAX_OUTPUT_TOKENS = 16_384;
 const AI_PLAN_OUTPUT_TOKENS = 1_024;
 const AI_THINKING_BUDGET = 2_048;
@@ -41,27 +35,7 @@ class AiGenerationError extends Error {
   }
 }
 
-function sendJson(res: ServerResponse, statusCode: number, payload: unknown) {
-  res.statusCode = statusCode;
-  res.setHeader('Content-Type', 'application/json; charset=utf-8');
-  res.end(JSON.stringify(payload));
-}
-
-async function readJsonBody<T>(req: IncomingMessage): Promise<T> {
-  const chunks: Buffer[] = [];
-
-  for await (const chunk of req) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-
-    const size = chunks.reduce((total, entry) => total + entry.byteLength, 0);
-    if (size > 2_000_000) {
-      throw new Error('Request body is too large.');
-    }
-  }
-
-  const raw = Buffer.concat(chunks).toString('utf8').trim();
-  return (raw ? JSON.parse(raw) : {}) as T;
-}
+export {AiGenerationError};
 
 function createVertexClient() {
   const project = process.env.GOOGLE_CLOUD_PROJECT;
@@ -477,15 +451,22 @@ async function persistAiDebugArtifact(debug: AIDebugPayload, artifact: Record<st
   return relativePath;
 }
 
-async function handleGenerateProject(req: IncomingMessage, res: ServerResponse) {
-  const body = await readJsonBody<AIRequestPayload>(req);
+export function getAiHealthPayload() {
+  return {
+    ok: true,
+    vertexAiConfigured:
+      process.env.GOOGLE_GENAI_USE_VERTEXAI === 'true' &&
+      Boolean(process.env.GOOGLE_CLOUD_PROJECT),
+    project: process.env.GOOGLE_CLOUD_PROJECT || null,
+    location: process.env.GOOGLE_CLOUD_LOCATION || null,
+  };
+}
+
+export async function generateProjectFromPayload(body: AIRequestPayload): Promise<AIResponsePayload> {
   const fallbackProject = body.project ?? createDefaultProject();
 
   if (!body.prompt?.trim()) {
-    sendJson(res, 400, {
-      error: 'Prompt is required.',
-    });
-    return;
+    throw new Error('Prompt is required.');
   }
 
   const ai = createVertexClient();
@@ -591,51 +572,24 @@ async function handleGenerateProject(req: IncomingMessage, res: ServerResponse) 
     response: normalized,
   });
 
-  sendJson(res, 200, {
+  return {
     ...normalized,
     debug,
-  } satisfies AIResponsePayload);
+  } satisfies AIResponsePayload;
 }
 
-export function attachVertexAiMiddleware(container: MiddlewareContainer) {
-  container.use('/api/health', async (req, res, next) => {
-    if (req.method !== 'GET') {
-      next();
-      return;
-    }
+export function formatAiRouteError(error: unknown) {
+  const message =
+    error instanceof Error
+      ? error.message
+      : 'Unknown Vertex AI error.';
 
-    sendJson(res, 200, {
-      ok: true,
-      vertexAiConfigured:
-        process.env.GOOGLE_GENAI_USE_VERTEXAI === 'true' &&
-        Boolean(process.env.GOOGLE_CLOUD_PROJECT),
-      project: process.env.GOOGLE_CLOUD_PROJECT || null,
-      location: process.env.GOOGLE_CLOUD_LOCATION || null,
-    });
-  });
+  const authHint = message.toLowerCase().includes('credentials')
+    ? ' Vertex AI on Node requires credentials at runtime, for example Application Default Credentials via `gcloud auth application-default login` or a workload identity/service account on the host.'
+    : '';
 
-  container.use('/api/ai/generate-project', async (req, res, next) => {
-    if (req.method !== 'POST') {
-      next();
-      return;
-    }
-
-    try {
-      await handleGenerateProject(req, res);
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : 'Unknown Vertex AI error.';
-
-      const authHint = message.toLowerCase().includes('credentials')
-        ? ' Vertex AI on Node requires credentials at runtime, for example Application Default Credentials via `gcloud auth application-default login` or a workload identity/service account on the host.'
-        : '';
-
-      sendJson(res, 500, {
-        error: `${message}${authHint}`,
-        debug: error instanceof AiGenerationError ? error.debug : undefined,
-      });
-    }
-  });
+  return {
+    error: `${message}${authHint}`,
+    debug: error instanceof AiGenerationError ? error.debug : undefined,
+  };
 }

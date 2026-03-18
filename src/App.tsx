@@ -1,10 +1,12 @@
+'use client';
+
 import {
   startTransition,
   type CSSProperties,
   type ReactNode,
   useEffect,
-  useEffectEvent,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -94,6 +96,14 @@ const AI_IDEAS = [
   'הוסף לשלב הנוכחי moving platforms, hazard lava ו־checkpoint אחד',
   'הפוך את המשחק ל־top-down dungeon עם מטרה לאסוף 5 אנרגיות',
 ];
+
+function useStableEvent<T extends (...args: never[]) => unknown>(handler: T): T {
+  const handlerRef = useRef(handler);
+  handlerRef.current = handler;
+
+  const stableHandlerRef = useRef<T>(((...args: never[]) => handlerRef.current(...args)) as T);
+  return stableHandlerRef.current;
+}
 
 function getPrefabIcon(prefab: EntityPrefab) {
   switch (prefab) {
@@ -259,6 +269,10 @@ function loadInitialProject() {
 }
 
 function readStoredProject() {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
   const saved = localStorage.getItem(STORAGE_KEY);
   if (!saved) {
     return null;
@@ -325,6 +339,10 @@ function normalizeRecentProjectEntry(input: unknown): RecentProjectEntry | null 
 }
 
 function readRecentProjects() {
+  if (typeof window === 'undefined') {
+    return [];
+  }
+
   const saved = localStorage.getItem(RECENT_PROJECTS_KEY);
   if (!saved) {
     return [];
@@ -347,6 +365,10 @@ function readRecentProjects() {
 }
 
 function writeRecentProjects(entries: RecentProjectEntry[]) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
   const cappedEntries = entries.slice(0, MAX_RECENT_PROJECTS);
 
   for (let count = cappedEntries.length; count >= 0; count -= 1) {
@@ -1963,7 +1985,7 @@ export default function App() {
   const [rightTab, setRightTab] = useState<'inspector' | 'ai'>('inspector');
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
-  const [isCompact, setIsCompact] = useState(window.innerWidth < 1280);
+  const [isCompact, setIsCompact] = useState(() => (typeof window !== 'undefined' ? window.innerWidth < 1280 : false));
   const [runtimeSnapshot, setRuntimeSnapshot] = useState<RuntimeSnapshot | null>(null);
   const [dragState, setDragState] = useState<DragState>(null);
   const [panState, setPanState] = useState<PanState>(null);
@@ -2587,6 +2609,46 @@ export default function App() {
           return outline ? [outline] : [];
         })
       : [];
+  const cameraPreviewOverlayRect = useMemo(() => {
+    if (stageViewportMode !== 'camera') {
+      return null;
+    }
+
+    const canvasWidth = viewportMode === 'mobile' ? 390 : Math.max(1, Math.round(stageCanvasSize?.width ?? 1280));
+    const canvasHeight = viewportMode === 'mobile' ? 844 : Math.max(1, Math.round(stageCanvasSize?.height ?? 820));
+    const frameWidth = Math.min(cameraViewportSize.x, activeScene.settings.worldSize.x);
+    const frameHeight = Math.min(cameraViewportSize.y, activeScene.settings.worldSize.y);
+    const scale = Math.min(canvasWidth / Math.max(1, frameWidth), canvasHeight / Math.max(1, frameHeight));
+    const width = Math.max(1, Math.round(frameWidth * scale));
+    const height = Math.max(1, Math.round(frameHeight * scale));
+    const frameInset = 1;
+    const frameLeft = Math.max(frameInset, Math.round((canvasWidth - width) / 2));
+    const frameTop = Math.max(frameInset, Math.round((canvasHeight - height) / 2));
+    const frameRight = Math.min(canvasWidth - frameInset, frameLeft + width);
+    const frameBottom = Math.min(canvasHeight - frameInset, frameTop + height);
+
+    return {
+      x: Math.round((canvasWidth - width) / 2),
+      y: Math.round((canvasHeight - height) / 2),
+      width,
+      height,
+      frameX: frameLeft,
+      frameY: frameTop,
+      frameWidth: Math.max(1, frameRight - frameLeft),
+      frameHeight: Math.max(1, frameBottom - frameTop),
+      canvasWidth,
+      canvasHeight,
+    };
+  }, [
+    activeScene.settings.worldSize.x,
+    activeScene.settings.worldSize.y,
+    cameraViewportSize.x,
+    cameraViewportSize.y,
+    stageCanvasSize?.height,
+    stageCanvasSize?.width,
+    stageViewportMode,
+    viewportMode,
+  ]);
   const selectedTransformGizmo =
     !isPlaying && selectionCount === 1 && !boxSelectionState && selectedEntity && selectedTransform && selectedSprite
       ? getSelectedTransformGizmo()
@@ -2660,7 +2722,7 @@ export default function App() {
     height: Math.abs(end.y - start.y),
   });
 
-  const finalizeBoxSelection = useEffectEvent(() => {
+  const finalizeBoxSelection = useStableEvent(() => {
     if (!boxSelectionState) {
       return;
     }
@@ -2815,7 +2877,7 @@ export default function App() {
     beginTransformDrag(event, hit, 'move', {groupSelectionIds: multiDragSelection ?? undefined});
   };
 
-  const handleCanvasPointerMove = useEffectEvent((clientX: number, clientY: number) => {
+  const handleCanvasPointerMove = useStableEvent((clientX: number, clientY: number) => {
     if (panState?.mode === 'editor-pan') {
       setHoveredCanvasEntityId((current) => (current === null ? current : null));
       const screenPoint = getCanvasScreenPointFromClient(clientX, clientY);
@@ -3083,7 +3145,7 @@ export default function App() {
     event.preventDefault();
   };
 
-  const handleCanvasWheel = useEffectEvent((event: WheelEvent) => {
+  const handleCanvasWheel = useStableEvent((event: WheelEvent) => {
     if (launcherOpen || dragState || (isPlaying && stageViewportMode === 'camera')) {
       return;
     }
@@ -3399,14 +3461,14 @@ export default function App() {
     engineRef.current?.setInput(input, value);
   };
 
-  const handleResize = useEffectEvent(() => {
+  const handleResize = useStableEvent(() => {
     const compact = window.innerWidth < 1280;
     setIsCompact(compact);
     setLeftSidebarOpen(!compact);
     setRightSidebarOpen(!compact);
   });
 
-  const fitStageCanvas = useEffectEvent(() => {
+  const fitStageCanvas = useStableEvent(() => {
     const shell = stageShellRef.current;
     if (!shell) {
       return;
@@ -3443,7 +3505,7 @@ export default function App() {
     setCanvasSizeIfChanged(availableWidth, availableHeight);
   });
 
-  const handleHotkeys = useEffectEvent((event: KeyboardEvent) => {
+  const handleHotkeys = useStableEvent((event: KeyboardEvent) => {
     if (!sessionStarted || launcherOpen) {
       return;
     }
@@ -4456,6 +4518,64 @@ export default function App() {
                 onMouseLeave={handleCanvasMouseLeave}
                 onMouseUp={handleCanvasMouseUp}
               />
+
+              {cameraPreviewOverlayRect && (
+                <div className="nexus-camera-preview-mask" aria-hidden="true">
+                  {cameraPreviewOverlayRect.y > 0 && (
+                    <div
+                      className="nexus-camera-preview-shade"
+                      style={{
+                        left: 0,
+                        top: 0,
+                        width: `${cameraPreviewOverlayRect.canvasWidth}px`,
+                        height: `${cameraPreviewOverlayRect.y}px`,
+                      }}
+                    />
+                  )}
+                  {cameraPreviewOverlayRect.x > 0 && (
+                    <div
+                      className="nexus-camera-preview-shade"
+                      style={{
+                        left: 0,
+                        top: `${cameraPreviewOverlayRect.y}px`,
+                        width: `${cameraPreviewOverlayRect.x}px`,
+                        height: `${cameraPreviewOverlayRect.height}px`,
+                      }}
+                    />
+                  )}
+                  {cameraPreviewOverlayRect.x + cameraPreviewOverlayRect.width < cameraPreviewOverlayRect.canvasWidth && (
+                    <div
+                      className="nexus-camera-preview-shade"
+                      style={{
+                        left: `${cameraPreviewOverlayRect.x + cameraPreviewOverlayRect.width}px`,
+                        top: `${cameraPreviewOverlayRect.y}px`,
+                        width: `${cameraPreviewOverlayRect.canvasWidth - (cameraPreviewOverlayRect.x + cameraPreviewOverlayRect.width)}px`,
+                        height: `${cameraPreviewOverlayRect.height}px`,
+                      }}
+                    />
+                  )}
+                  {cameraPreviewOverlayRect.y + cameraPreviewOverlayRect.height < cameraPreviewOverlayRect.canvasHeight && (
+                    <div
+                      className="nexus-camera-preview-shade"
+                      style={{
+                        left: 0,
+                        top: `${cameraPreviewOverlayRect.y + cameraPreviewOverlayRect.height}px`,
+                        width: `${cameraPreviewOverlayRect.canvasWidth}px`,
+                        height: `${cameraPreviewOverlayRect.canvasHeight - (cameraPreviewOverlayRect.y + cameraPreviewOverlayRect.height)}px`,
+                      }}
+                    />
+                  )}
+                  <div
+                    className="nexus-camera-preview-frame"
+                    style={{
+                      left: `${cameraPreviewOverlayRect.frameX}px`,
+                      top: `${cameraPreviewOverlayRect.frameY}px`,
+                      width: `${cameraPreviewOverlayRect.frameWidth}px`,
+                      height: `${cameraPreviewOverlayRect.frameHeight}px`,
+                    }}
+                  />
+                </div>
+              )}
 
               {selectedEntityOutlines.length > 0 && (
                 <div className="nexus-transform-gizmo" aria-hidden="true">

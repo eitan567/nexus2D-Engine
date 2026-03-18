@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import {Controls} from '../types';
 
 type InputAction = keyof Controls;
