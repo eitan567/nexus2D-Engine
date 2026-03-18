@@ -8,8 +8,7 @@ coverage/
 *.log
 .env*
 !.env.example
-.agent/*
-.agent/ 
-/output
-/test-results
-opencode.json
+# .agent/*
+# .agent/ 
+# /output
+# /test-results

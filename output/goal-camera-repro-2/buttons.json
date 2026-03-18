@@ -1,0 +1,317 @@
+[
+  {
+    "text": "File",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "Edit",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "Scene",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "Window",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "Assistant",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "Projects",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "",
+    "aria": null,
+    "title": "Undo"
+  },
+  {
+    "text": "",
+    "aria": null,
+    "title": "Redo"
+  },
+  {
+    "text": "",
+    "aria": null,
+    "title": "Import project"
+  },
+  {
+    "text": "",
+    "aria": null,
+    "title": "Export project"
+  },
+  {
+    "text": "",
+    "aria": null,
+    "title": "Save local snapshot"
+  },
+  {
+    "text": "",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "Stop",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "LevelsTemplates and stage switching",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "Blank",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "Platformer",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "Top-Down",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "",
+    "aria": null,
+    "title": "Delete Scene 1"
+  },
+  {
+    "text": "Place ActorsEngine-ready entities",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "PlayerControllable hero",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "PlatformStatic collision surface",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "EnemyPatrol behavior ready",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "CollectibleScore pickup",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "GoalLevel objective",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "HazardRespawn trigger",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "DecorationVisual dressing",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "CustomManual setup object",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "World OutlinerScene, object and component hierarchy",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "List",
+    "aria": "List view",
+    "title": "List view"
+  },
+  {
+    "text": "Tree",
+    "aria": "Tree view",
+    "title": "Tree view"
+  },
+  {
+    "text": "",
+    "aria": "Collapse Scene 1",
+    "title": null
+  },
+  {
+    "text": "Scene 1active scene • 3 objects • 13 componentsScene",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "",
+    "aria": "Expand Goal",
+    "title": null
+  },
+  {
+    "text": "Goalgoal • 4 components • layer 0Obj",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "",
+    "aria": null,
+    "title": "Delete Goal"
+  },
+  {
+    "text": "",
+    "aria": "Expand Ground",
+    "title": null
+  },
+  {
+    "text": "Groundplatform • 4 components • layer 0Obj",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "",
+    "aria": null,
+    "title": "Delete Ground"
+  },
+  {
+    "text": "",
+    "aria": "Expand Player",
+    "title": null
+  },
+  {
+    "text": "Playerplayer • 5 components • layer 0Obj",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "",
+    "aria": null,
+    "title": "Delete Player"
+  },
+  {
+    "text": "",
+    "aria": "Resize outliner panel",
+    "title": "Drag to resize the outliner"
+  },
+  {
+    "text": "",
+    "aria": "Move",
+    "title": "Move"
+  },
+  {
+    "text": "",
+    "aria": "Rotate",
+    "title": "Rotate"
+  },
+  {
+    "text": "",
+    "aria": "Scale",
+    "title": "Scale"
+  },
+  {
+    "text": "World",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "Camera",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "Duplicate",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "Reset Scene",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "ProjectProject identity and export metadata",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "Scene SettingsWorld, camera, gravity and grid",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "Use Current View",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "Show GridOFF",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "Snap To GridON",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "Camera Follow PlayerON",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "ControlsBindings passed into the engine input layer",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "Smart Assistant StatusLatest AI activity inside the engine",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "Content Drawer",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "Import Sprite",
+    "aria": null,
+    "title": null
+  },
+  {
+    "text": "Content",
+    "aria": null,
+    "title": null
+  }
+]

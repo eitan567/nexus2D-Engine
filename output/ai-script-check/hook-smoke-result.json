@@ -1,0 +1,37 @@
+{
+  "state": {
+    "coordinateSystem": "origin top-left, +x right, +y down",
+    "mode": "play",
+    "score": 0,
+    "collectiblesRemaining": 0,
+    "deaths": 0,
+    "camera": {
+      "x": 0,
+      "y": -0.26,
+      "zoom": 0.97,
+      "width": 800,
+      "height": 600.51
+    },
+    "scene": {
+      "id": "scene-nzbesnwb",
+      "name": "Scene 1",
+      "worldWidth": 800,
+      "worldHeight": 600
+    },
+    "selectedEntityId": "hook-entity",
+    "entities": [
+      {
+        "id": "hook-entity",
+        "name": "Hook Entity",
+        "prefab": "custom",
+        "hidden": false,
+        "x": 400,
+        "y": 100,
+        "width": 40,
+        "height": 40,
+        "behavior": "none"
+      }
+    ]
+  },
+  "errors": []
+}

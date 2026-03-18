@@ -1,0 +1,48 @@
+{
+  "state": {
+    "coordinateSystem": "origin top-left, +x right, +y down",
+    "mode": "play",
+    "score": 0,
+    "collectiblesRemaining": 0,
+    "deaths": 0,
+    "camera": {
+      "x": 0,
+      "y": 0,
+      "zoom": 0.97,
+      "width": 800,
+      "height": 600.51
+    },
+    "scene": {
+      "id": "scene-rdy8ypra",
+      "name": "Scene 1",
+      "worldWidth": 1200,
+      "worldHeight": 800
+    },
+    "selectedEntityId": "boss",
+    "entities": [
+      {
+        "id": "boss",
+        "name": "Boss",
+        "prefab": "custom",
+        "hidden": false,
+        "x": 300,
+        "y": 300,
+        "width": 50,
+        "height": 50,
+        "behavior": "none"
+      },
+      {
+        "id": "projectile",
+        "name": "Projectile",
+        "prefab": "custom",
+        "hidden": false,
+        "x": 360,
+        "y": 300,
+        "width": 20,
+        "height": 20,
+        "behavior": "none"
+      }
+    ]
+  },
+  "errors": []
+}

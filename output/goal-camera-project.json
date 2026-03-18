@@ -1,0 +1,91 @@
+{
+  "version": 2,
+  "name": "Goal Camera Repro",
+  "description": "Repro for goal camera preview persistence",
+  "updatedAt": "2026-03-18T00:00:00.000Z",
+  "assets": [],
+  "controls": {
+    "left": "ArrowLeft",
+    "right": "ArrowRight",
+    "up": "ArrowUp",
+    "down": "ArrowDown",
+    "jump": "Space",
+    "action": "KeyE",
+    "altAction": "ShiftLeft"
+  },
+  "scenes": [
+    {
+      "id": "scene-1",
+      "name": "Scene 1",
+      "notes": "Goal repro scene",
+      "settings": {
+        "worldSize": { "x": 2000, "y": 800 },
+        "cameraSize": { "x": 1200, "y": 600 },
+        "cameraStart": { "x": 0, "y": 95 },
+        "gravity": { "x": 0, "y": 980 },
+        "gridSize": 32,
+        "snapToGrid": true,
+        "showGrid": false,
+        "cameraFollowPlayer": true,
+        "backgroundTop": "#1a1a2e",
+        "backgroundBottom": "#16213e",
+        "ambientColor": "#ffffff"
+      },
+      "entities": [
+        {
+          "id": "ground",
+          "name": "Ground",
+          "parent": null,
+          "children": [],
+          "tags": [],
+          "layer": 0,
+          "locked": false,
+          "hidden": false,
+          "prefab": "platform",
+          "components": [
+            { "id": "t1", "type": "Transform", "enabled": true, "position": { "x": 1000, "y": 720 }, "rotation": 0, "scale": { "x": 1, "y": 1 } },
+            { "id": "s1", "type": "Sprite", "enabled": true, "assetId": "", "color": "#666d77", "opacity": 1, "width": 2000, "height": 80, "shape": "rectangle", "flipX": false, "flipY": false },
+            { "id": "b1", "type": "RigidBody", "enabled": true, "velocity": { "x": 0, "y": 0 }, "mass": 1, "isStatic": true, "gravityScale": 0, "drag": { "x": 0, "y": 0 }, "bounce": { "x": 0, "y": 0 }, "maxVelocity": { "x": 450, "y": 1400 } },
+            { "id": "c1", "type": "Collider", "enabled": true, "shape": "box", "autoSize": false, "width": 2000, "height": 80, "radius": 48, "offsetX": 0, "offsetY": 0, "isTrigger": false, "isPassThrough": false }
+          ]
+        },
+        {
+          "id": "player",
+          "name": "Player",
+          "parent": null,
+          "children": [],
+          "tags": ["player"],
+          "layer": 0,
+          "locked": false,
+          "hidden": false,
+          "prefab": "player",
+          "components": [
+            { "id": "t2", "type": "Transform", "enabled": true, "position": { "x": 120, "y": 640 }, "rotation": 0, "scale": { "x": 1, "y": 1 } },
+            { "id": "s2", "type": "Sprite", "enabled": true, "assetId": "", "color": "#d4c095", "opacity": 1, "width": 48, "height": 64, "shape": "rectangle", "flipX": false, "flipY": false },
+            { "id": "b2", "type": "RigidBody", "enabled": true, "velocity": { "x": 0, "y": 0 }, "mass": 1, "isStatic": false, "gravityScale": 1, "drag": { "x": 800, "y": 0 }, "bounce": { "x": 0, "y": 0 }, "maxVelocity": { "x": 320, "y": 1200 } },
+            { "id": "c2", "type": "Collider", "enabled": true, "shape": "box", "autoSize": false, "width": 48, "height": 64, "radius": 48, "offsetX": 0, "offsetY": 0, "isTrigger": false, "isPassThrough": false },
+            { "id": "beh2", "type": "Behavior", "enabled": true, "kind": "player-platformer", "moveSpeed": 240, "jumpForce": 620, "patrolDistance": 220, "patrolSpeed": 90, "patrolAxis": "x", "collectibleValue": 10, "respawnDelay": 0, "checkpointId": "" }
+          ]
+        },
+        {
+          "id": "goal",
+          "name": "Goal",
+          "parent": null,
+          "children": [],
+          "tags": [],
+          "layer": 0,
+          "locked": false,
+          "hidden": false,
+          "prefab": "goal",
+          "components": [
+            { "id": "t3", "type": "Transform", "enabled": true, "position": { "x": 1820, "y": 650 }, "rotation": 0, "scale": { "x": 1, "y": 1 } },
+            { "id": "s3", "type": "Sprite", "enabled": true, "assetId": "", "color": "#00ff88", "opacity": 1, "width": 64, "height": 96, "shape": "rectangle", "flipX": false, "flipY": false },
+            { "id": "c3", "type": "Collider", "enabled": true, "shape": "box", "autoSize": false, "width": 64, "height": 96, "radius": 48, "offsetX": 0, "offsetY": 0, "isTrigger": true, "isPassThrough": false },
+            { "id": "beh3", "type": "Behavior", "enabled": true, "kind": "goal", "moveSpeed": 240, "jumpForce": 560, "patrolDistance": 220, "patrolSpeed": 90, "patrolAxis": "x", "collectibleValue": 10, "respawnDelay": 0, "checkpointId": "" }
+          ]
+        }
+      ]
+    }
+  ],
+  "activeSceneId": "scene-1"
+}

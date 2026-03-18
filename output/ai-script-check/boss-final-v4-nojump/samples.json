@@ -1,0 +1,1158 @@
+[
+  {
+    "t": 0.1,
+    "deaths": 0,
+    "player": {
+      "x": 126.44,
+      "y": 524.77,
+      "vx": 0,
+      "vy": 228.67
+    },
+    "camera": {
+      "x": -79.36,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 0.2,
+    "deaths": 0,
+    "player": {
+      "x": 145.33,
+      "y": 562.88,
+      "vx": 0,
+      "vy": 359.33
+    },
+    "camera": {
+      "x": -79.36,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 0.3,
+    "deaths": 0,
+    "player": {
+      "x": 171.78,
+      "y": 614,
+      "vx": 0,
+      "vy": 0
+    },
+    "camera": {
+      "x": -79.36,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 0.4,
+    "deaths": 0,
+    "player": {
+      "x": 194.44,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "camera": {
+      "x": -79.36,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 0.5,
+    "deaths": 0,
+    "player": {
+      "x": 220.89,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "camera": {
+      "x": -79.36,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 0.6,
+    "deaths": 0,
+    "player": {
+      "x": 247.33,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "camera": {
+      "x": -79.36,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 0.7,
+    "deaths": 0,
+    "player": {
+      "x": 273.78,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "camera": {
+      "x": -79.36,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 0.8,
+    "deaths": 0,
+    "player": {
+      "x": 300.22,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "camera": {
+      "x": -79.36,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 0.9,
+    "deaths": 0,
+    "player": {
+      "x": 326.67,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "camera": {
+      "x": -79.36,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 1,
+    "deaths": 0,
+    "player": {
+      "x": 353.11,
+      "y": 614,
+      "vx": 0,
+      "vy": 0
+    },
+    "camera": {
+      "x": -79.36,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 1.1,
+    "deaths": 0,
+    "player": {
+      "x": 375.78,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "camera": {
+      "x": -79.36,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 1.2,
+    "deaths": 0,
+    "player": {
+      "x": 402.22,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "camera": {
+      "x": -77.28,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 1.3,
+    "deaths": 0,
+    "player": {
+      "x": 428.67,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "camera": {
+      "x": -50.83,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 1.4,
+    "deaths": 0,
+    "player": {
+      "x": 455.11,
+      "y": 614,
+      "vx": 0,
+      "vy": 0
+    },
+    "camera": {
+      "x": -24.39,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 1.5,
+    "deaths": 0,
+    "player": {
+      "x": 477.78,
+      "y": 614,
+      "vx": 0,
+      "vy": 0
+    },
+    "camera": {
+      "x": -1.72,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 1.6,
+    "deaths": 0,
+    "player": {
+      "x": 504.22,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "camera": {
+      "x": 24.72,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 1.7,
+    "deaths": 0,
+    "player": {
+      "x": 530.67,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "camera": {
+      "x": 51.17,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 1.8,
+    "deaths": 0,
+    "player": {
+      "x": 557.11,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "camera": {
+      "x": 77.61,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 1.9,
+    "deaths": 0,
+    "player": {
+      "x": 583.56,
+      "y": 614,
+      "vx": 0,
+      "vy": 0
+    },
+    "camera": {
+      "x": 104.06,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 2,
+    "deaths": 0,
+    "player": {
+      "x": 606.22,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "camera": {
+      "x": 126.72,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 2.1,
+    "deaths": 0,
+    "player": {
+      "x": 632.67,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "camera": {
+      "x": 153.17,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 2.2,
+    "deaths": 0,
+    "player": {
+      "x": 659.11,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "camera": {
+      "x": 179.61,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 2.3,
+    "deaths": 0,
+    "player": {
+      "x": 689.33,
+      "y": 614,
+      "vx": 0,
+      "vy": 0
+    },
+    "camera": {
+      "x": 209.83,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 2.4,
+    "deaths": 0,
+    "player": {
+      "x": 712,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "camera": {
+      "x": 232.5,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 2.5,
+    "deaths": 0,
+    "player": {
+      "x": 738.44,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "camera": {
+      "x": 258.94,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 2.6,
+    "deaths": 0,
+    "player": {
+      "x": 764.89,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "camera": {
+      "x": 285.39,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 2.7,
+    "deaths": 0,
+    "player": {
+      "x": 787.56,
+      "y": 614,
+      "vx": 0,
+      "vy": 0
+    },
+    "camera": {
+      "x": 308.06,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 2.8,
+    "deaths": 0,
+    "player": {
+      "x": 810.22,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "camera": {
+      "x": 330.72,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": 1357.03,
+        "y": 592
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 2.9,
+    "deaths": 0,
+    "player": {
+      "x": 836.67,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "camera": {
+      "x": 357.17,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": 1291.71,
+        "y": 592
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 3,
+    "deaths": 0,
+    "player": {
+      "x": 863.11,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "camera": {
+      "x": 383.61,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": 1226.39,
+        "y": 592
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 3.1,
+    "deaths": 0,
+    "player": {
+      "x": 889.56,
+      "y": 614,
+      "vx": 0,
+      "vy": 0
+    },
+    "camera": {
+      "x": 410.06,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": 1161.06,
+        "y": 592
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 3.2,
+    "deaths": 0,
+    "player": {
+      "x": 912.22,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "camera": {
+      "x": 432.72,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": 1086.39,
+        "y": 592
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 3.3,
+    "deaths": 0,
+    "player": {
+      "x": 934.89,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "camera": {
+      "x": 455.39,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": 1030.39,
+        "y": 592
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  },
+  {
+    "t": 3.4,
+    "deaths": 1,
+    "player": {
+      "x": 115.11,
+      "y": 504.08,
+      "vx": 240,
+      "vy": 98
+    },
+    "camera": {
+      "x": -79.36,
+      "y": 140.5,
+      "zoom": 1.2,
+      "width": 800.28,
+      "height": 600
+    },
+    "projectiles": [
+      {
+        "name": "BossProjectile-1",
+        "x": 909.06,
+        "y": 592
+      },
+      {
+        "name": "BossProjectile-2",
+        "x": -500,
+        "y": -500
+      },
+      {
+        "name": "BossProjectile-3",
+        "x": -500,
+        "y": -500
+      }
+    ]
+  }
+]

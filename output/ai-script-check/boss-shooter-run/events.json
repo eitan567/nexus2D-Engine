@@ -1,0 +1,26 @@
+[
+  {
+    "type": "warning",
+    "message": "[.WebGL-0xd3c03182300]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+  },
+  {
+    "type": "warning",
+    "message": "[.WebGL-0xd3c03182300]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+  },
+  {
+    "type": "warning",
+    "message": "[.WebGL-0xd3c03182300]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+  },
+  {
+    "type": "warning",
+    "message": "[.WebGL-0xd3c03182300]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+  },
+  {
+    "type": "error",
+    "message": "Script error in entity Boss SyntaxError: Unexpected token 'export'\n    at new Function (<anonymous>)\n    at MainScene.compileScript (http://127.0.0.1:3000/src/engine/Core.ts:1034:22)\n    at MainScene.runEntityScript (http://127.0.0.1:3000/src/engine/Core.ts:1094:35)\n    at MainScene.stepGameplay (http://127.0.0.1:3000/src/engine/Core.ts:632:12)\n    at MainScene.update (http://127.0.0.1:3000/src/engine/Core.ts:392:12)\n    at Systems2.step (http://127.0.0.1:3000/node_modules/.vite/deps/phaser.js?v=7e36d53b:112621:38)\n    at SceneManager2.update (http://127.0.0.1:3000/node_modules/.vite/deps/phaser.js?v=7e36d53b:110773:29)\n    at Game2.step (http://127.0.0.1:3000/node_modules/.vite/deps/phaser.js?v=7e36d53b:8624:32)\n    at TimeStep2.step (http://127.0.0.1:3000/node_modules/.vite/deps/phaser.js?v=7e36d53b:9078:26)\n    at step (http://127.0.0.1:3000/node_modules/.vite/deps/phaser.js?v=7e36d53b:16405:29)"
+  },
+  {
+    "type": "error",
+    "message": "Script error in entity BossProjectile SyntaxError: Unexpected token 'export'\n    at new Function (<anonymous>)\n    at MainScene.compileScript (http://127.0.0.1:3000/src/engine/Core.ts:1034:22)\n    at MainScene.runEntityScript (http://127.0.0.1:3000/src/engine/Core.ts:1094:35)\n    at MainScene.stepGameplay (http://127.0.0.1:3000/src/engine/Core.ts:632:12)\n    at MainScene.update (http://127.0.0.1:3000/src/engine/Core.ts:392:12)\n    at Systems2.step (http://127.0.0.1:3000/node_modules/.vite/deps/phaser.js?v=7e36d53b:112621:38)\n    at SceneManager2.update (http://127.0.0.1:3000/node_modules/.vite/deps/phaser.js?v=7e36d53b:110773:29)\n    at Game2.step (http://127.0.0.1:3000/node_modules/.vite/deps/phaser.js?v=7e36d53b:8624:32)\n    at TimeStep2.step (http://127.0.0.1:3000/node_modules/.vite/deps/phaser.js?v=7e36d53b:9078:26)\n    at step (http://127.0.0.1:3000/node_modules/.vite/deps/phaser.js?v=7e36d53b:16405:29)"
+  }
+]

@@ -1,0 +1,181 @@
+{
+  "version": 2,
+  "name": "Scene Hook Smoke",
+  "description": "Blank 2D project ready for scene construction, scripting and AI-assisted iteration.",
+  "updatedAt": "2026-03-17T07:23:04.353Z",
+  "assets": [],
+  "controls": {
+    "left": "ArrowLeft",
+    "right": "ArrowRight",
+    "up": "ArrowUp",
+    "down": "ArrowDown",
+    "jump": "Space",
+    "action": "KeyE",
+    "altAction": "ShiftLeft"
+  },
+  "scenes": [
+    {
+      "id": "scene-rdy8ypra",
+      "name": "Scene 1",
+      "notes": "Empty scene. Build the level from scratch or load a sample project.",
+      "settings": {
+        "worldSize": {
+          "x": 1200,
+          "y": 800
+        },
+        "cameraSize": {
+          "x": 800,
+          "y": 600
+        },
+        "cameraStart": {
+          "x": 0,
+          "y": 0
+        },
+        "gravity": {
+          "x": 0,
+          "y": 980
+        },
+        "gridSize": 32,
+        "snapToGrid": false,
+        "showGrid": true,
+        "cameraFollowPlayer": true,
+        "backgroundTop": "#292c31",
+        "backgroundBottom": "#1e2126",
+        "ambientColor": "#5f656e"
+      },
+      "entities": [
+        {
+          "id": "boss",
+          "name": "Boss",
+          "parent": null,
+          "children": [],
+          "tags": [],
+          "layer": 0,
+          "locked": false,
+          "hidden": false,
+          "prefab": "custom",
+          "components": [
+            {
+              "id": "transform-fzknly",
+              "type": "Transform",
+              "enabled": true,
+              "position": {
+                "x": 300,
+                "y": 300
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              }
+            },
+            {
+              "id": "sprite-4y7i06",
+              "type": "Sprite",
+              "enabled": true,
+              "assetId": "",
+              "color": "#ff4444",
+              "opacity": 1,
+              "width": 50,
+              "height": 50,
+              "shape": "rectangle",
+              "flipX": false,
+              "flipY": false
+            },
+            {
+              "id": "script-qlylnz",
+              "type": "Script",
+              "enabled": true,
+              "code": "export function update(entity, dt, world) {\n  if (!entity.state) {\n    entity.state = { timer: 0 };\n  }\n  entity.state.timer += dt;\n  if (entity.state.timer > 1) {\n    const proj = world.entities.find((target) => target.name === 'Projectile');\n    if (proj && proj.rigidBody) {\n      proj.transform.x = entity.transform.x + 60;\n      proj.transform.y = entity.transform.y;\n      proj.rigidBody.velocity = { x: 250, y: 0 };\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "id": "projectile",
+          "name": "Projectile",
+          "parent": null,
+          "children": [],
+          "tags": [],
+          "layer": 0,
+          "locked": false,
+          "hidden": false,
+          "prefab": "custom",
+          "components": [
+            {
+              "id": "transform-vmzisd",
+              "type": "Transform",
+              "enabled": true,
+              "position": {
+                "x": -1000,
+                "y": -1000
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              }
+            },
+            {
+              "id": "sprite-3caop6",
+              "type": "Sprite",
+              "enabled": true,
+              "assetId": "",
+              "color": "#00ddff",
+              "opacity": 1,
+              "width": 20,
+              "height": 20,
+              "shape": "rectangle",
+              "flipX": false,
+              "flipY": false
+            },
+            {
+              "id": "body-t9c94m",
+              "type": "RigidBody",
+              "enabled": true,
+              "velocity": {
+                "x": 0,
+                "y": 0
+              },
+              "mass": 1,
+              "isStatic": false,
+              "gravityScale": 1,
+              "drag": {
+                "x": 0,
+                "y": 0
+              },
+              "bounce": {
+                "x": 0,
+                "y": 0
+              },
+              "maxVelocity": {
+                "x": 450,
+                "y": 1400
+              }
+            },
+            {
+              "id": "collider-n88ath",
+              "type": "Collider",
+              "enabled": true,
+              "shape": "circle",
+              "autoSize": false,
+              "width": 20,
+              "height": 20,
+              "radius": 24,
+              "offsetX": 0,
+              "offsetY": 0,
+              "isTrigger": false,
+              "isPassThrough": false
+            },
+            {
+              "id": "script-79934v",
+              "type": "Script",
+              "enabled": true,
+              "code": "export function update(entity) {\n  if (entity.rigidBody) {\n    entity.rigidBody.velocity.y = 0;\n  }\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "activeSceneId": "scene-rdy8ypra"
+}

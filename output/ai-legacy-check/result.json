@@ -1,0 +1,281 @@
+{
+  "editorState": {
+    "coordinateSystem": "origin top-left, +x right, +y down",
+    "mode": "editor",
+    "score": 0,
+    "collectiblesRemaining": 3,
+    "deaths": 0,
+    "player": {
+      "x": 100,
+      "y": 650,
+      "vx": 0,
+      "vy": 0
+    },
+    "camera": {
+      "x": 0,
+      "y": 200,
+      "zoom": 1,
+      "width": 800,
+      "height": 600
+    },
+    "scene": {
+      "id": "scene-1",
+      "name": "Level 1",
+      "worldWidth": 2000,
+      "worldHeight": 800
+    },
+    "selectedEntityId": "ent-ground",
+    "entities": [
+      {
+        "id": "ent-ground",
+        "name": "Ground",
+        "prefab": "platform",
+        "hidden": false,
+        "x": 1000,
+        "y": 700,
+        "width": 2000,
+        "height": 64,
+        "behavior": "none"
+      },
+      {
+        "id": "ent-player",
+        "name": "Player",
+        "prefab": "player",
+        "hidden": false,
+        "x": 100,
+        "y": 650,
+        "width": 32,
+        "height": 32,
+        "behavior": "player-platformer"
+      },
+      {
+        "id": "ent-plat1",
+        "name": "Platform 1",
+        "prefab": "platform",
+        "hidden": false,
+        "x": 400,
+        "y": 550,
+        "width": 128,
+        "height": 32,
+        "behavior": "none"
+      },
+      {
+        "id": "ent-col1",
+        "name": "Collectible 1",
+        "prefab": "collectible",
+        "hidden": false,
+        "x": 400,
+        "y": 500,
+        "width": 24,
+        "height": 24,
+        "behavior": "collectible"
+      },
+      {
+        "id": "ent-plat2",
+        "name": "Platform 2",
+        "prefab": "platform",
+        "hidden": false,
+        "x": 700,
+        "y": 420,
+        "width": 128,
+        "height": 32,
+        "behavior": "none"
+      },
+      {
+        "id": "ent-col2",
+        "name": "Collectible 2",
+        "prefab": "collectible",
+        "hidden": false,
+        "x": 700,
+        "y": 370,
+        "width": 24,
+        "height": 24,
+        "behavior": "collectible"
+      },
+      {
+        "id": "ent-plat3",
+        "name": "Platform 3",
+        "prefab": "platform",
+        "hidden": false,
+        "x": 1000,
+        "y": 550,
+        "width": 128,
+        "height": 32,
+        "behavior": "none"
+      },
+      {
+        "id": "ent-col3",
+        "name": "Collectible 3",
+        "prefab": "collectible",
+        "hidden": false,
+        "x": 1000,
+        "y": 500,
+        "width": 24,
+        "height": 24,
+        "behavior": "collectible"
+      },
+      {
+        "id": "ent-boss",
+        "name": "Small Boss",
+        "prefab": "enemy",
+        "hidden": false,
+        "x": 1500,
+        "y": 620,
+        "width": 96,
+        "height": 96,
+        "behavior": "enemy-patrol"
+      },
+      {
+        "id": "ent-goal",
+        "name": "Goal",
+        "prefab": "goal",
+        "hidden": false,
+        "x": 1850,
+        "y": 636,
+        "width": 64,
+        "height": 64,
+        "behavior": "goal"
+      }
+    ]
+  },
+  "runtimeState": {
+    "coordinateSystem": "origin top-left, +x right, +y down",
+    "mode": "play",
+    "score": 0,
+    "collectiblesRemaining": 3,
+    "deaths": 0,
+    "player": {
+      "x": 768.89,
+      "y": 652,
+      "vx": 0,
+      "vy": 0
+    },
+    "camera": {
+      "x": 498.39,
+      "y": 296.82,
+      "zoom": 0.68,
+      "width": 800,
+      "height": 600.37
+    },
+    "scene": {
+      "id": "scene-1",
+      "name": "Level 1",
+      "worldWidth": 2000,
+      "worldHeight": 800
+    },
+    "selectedEntityId": "ent-ground",
+    "entities": [
+      {
+        "id": "ent-ground",
+        "name": "Ground",
+        "prefab": "platform",
+        "hidden": false,
+        "x": 1000,
+        "y": 700,
+        "width": 2000,
+        "height": 64,
+        "behavior": "none"
+      },
+      {
+        "id": "ent-player",
+        "name": "Player",
+        "prefab": "player",
+        "hidden": false,
+        "x": 768.89,
+        "y": 652,
+        "width": 32,
+        "height": 32,
+        "behavior": "player-platformer"
+      },
+      {
+        "id": "ent-plat1",
+        "name": "Platform 1",
+        "prefab": "platform",
+        "hidden": false,
+        "x": 400,
+        "y": 550,
+        "width": 128,
+        "height": 32,
+        "behavior": "none"
+      },
+      {
+        "id": "ent-col1",
+        "name": "Collectible 1",
+        "prefab": "collectible",
+        "hidden": false,
+        "x": 400,
+        "y": 500,
+        "width": 24,
+        "height": 24,
+        "behavior": "collectible"
+      },
+      {
+        "id": "ent-plat2",
+        "name": "Platform 2",
+        "prefab": "platform",
+        "hidden": false,
+        "x": 700,
+        "y": 420,
+        "width": 128,
+        "height": 32,
+        "behavior": "none"
+      },
+      {
+        "id": "ent-col2",
+        "name": "Collectible 2",
+        "prefab": "collectible",
+        "hidden": false,
+        "x": 700,
+        "y": 370,
+        "width": 24,
+        "height": 24,
+        "behavior": "collectible"
+      },
+      {
+        "id": "ent-plat3",
+        "name": "Platform 3",
+        "prefab": "platform",
+        "hidden": false,
+        "x": 1000,
+        "y": 550,
+        "width": 128,
+        "height": 32,
+        "behavior": "none"
+      },
+      {
+        "id": "ent-col3",
+        "name": "Collectible 3",
+        "prefab": "collectible",
+        "hidden": false,
+        "x": 1000,
+        "y": 500,
+        "width": 24,
+        "height": 24,
+        "behavior": "collectible"
+      },
+      {
+        "id": "ent-boss",
+        "name": "Small Boss",
+        "prefab": "enemy",
+        "hidden": false,
+        "x": 1569,
+        "y": 620,
+        "width": 96,
+        "height": 96,
+        "behavior": "enemy-patrol"
+      },
+      {
+        "id": "ent-goal",
+        "name": "Goal",
+        "prefab": "goal",
+        "hidden": false,
+        "x": 1850,
+        "y": 636,
+        "width": 64,
+        "height": 64,
+        "behavior": "goal"
+      }
+    ]
+  },
+  "errors": []
+}

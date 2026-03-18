@@ -1,0 +1,1205 @@
+{
+  "version": 2,
+  "name": "Boss Shooter Platformer",
+  "description": "Short platformer with a shooting boss.",
+  "updatedAt": "2026-03-17T06:36:11.149Z",
+  "assets": [],
+  "controls": {
+    "left": "ArrowLeft",
+    "right": "ArrowRight",
+    "up": "ArrowUp",
+    "down": "ArrowDown",
+    "jump": "Space",
+    "action": "KeyE",
+    "altAction": "ShiftLeft"
+  },
+  "scenes": [
+    {
+      "id": "scene-boss-level",
+      "name": "Level 1",
+      "notes": "Main level containing platforms, collectibles, and the boss.",
+      "settings": {
+        "worldSize": {
+          "x": 2000,
+          "y": 800
+        },
+        "cameraSize": {
+          "x": 800,
+          "y": 600
+        },
+        "cameraStart": {
+          "x": 0,
+          "y": 200
+        },
+        "gravity": {
+          "x": 0,
+          "y": 980
+        },
+        "gridSize": 32,
+        "snapToGrid": true,
+        "showGrid": false,
+        "cameraFollowPlayer": true,
+        "backgroundTop": "#1a1a2e",
+        "backgroundBottom": "#16213e",
+        "ambientColor": "#ffffff"
+      },
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "parent": null,
+          "children": [],
+          "tags": [
+            "player"
+          ],
+          "layer": 0,
+          "locked": false,
+          "hidden": false,
+          "prefab": "player",
+          "components": [
+            {
+              "id": "transform-07oy79sy",
+              "type": "Transform",
+              "enabled": true,
+              "position": {
+                "x": 100,
+                "y": 500
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              }
+            },
+            {
+              "id": "sprite-t8vi6eh7",
+              "type": "Sprite",
+              "enabled": true,
+                "assetId": "",
+                "color": "#4ade80",
+              "opacity": 1,
+              "width": 32,
+              "height": 32,
+              "shape": "rectangle",
+              "flipX": false,
+              "flipY": false
+            },
+            {
+              "id": "body-akbu8pa0",
+              "type": "RigidBody",
+              "enabled": true,
+              "velocity": {
+                "x": 0,
+                "y": 0
+              },
+              "mass": 1,
+              "isStatic": false,
+              "gravityScale": 1,
+              "drag": {
+                "x": 800,
+                "y": 0
+              },
+              "bounce": {
+                "x": 0,
+                "y": 0
+              },
+              "maxVelocity": {
+                "x": 320,
+                "y": 1200
+              }
+            },
+            {
+              "id": "collider-a7ho4qb9",
+              "type": "Collider",
+              "enabled": true,
+              "shape": "box",
+              "autoSize": false,
+              "width": 32,
+              "height": 32,
+              "radius": 48,
+              "offsetX": 0,
+              "offsetY": 0,
+              "isTrigger": false,
+              "isPassThrough": false
+            },
+            {
+              "id": "behavior-u5k0w4tc",
+              "type": "Behavior",
+              "enabled": true,
+              "kind": "player-platformer",
+              "moveSpeed": 240,
+              "jumpForce": 620,
+              "patrolDistance": 220,
+              "patrolSpeed": 90,
+              "patrolAxis": "x",
+              "collectibleValue": 10,
+              "respawnDelay": 0,
+              "checkpointId": ""
+            }
+          ]
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "parent": null,
+          "children": [],
+          "tags": [],
+          "layer": 0,
+          "locked": false,
+          "hidden": false,
+          "prefab": "platform",
+          "components": [
+            {
+              "id": "transform-nyps33o6",
+              "type": "Transform",
+              "enabled": true,
+              "position": {
+                "x": 400,
+                "y": 650
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              }
+            },
+            {
+              "id": "sprite-5l4mcql8",
+              "type": "Sprite",
+              "enabled": true,
+                "assetId": "",
+                "color": "#3f3f46",
+              "opacity": 1,
+              "width": 1200,
+              "height": 40,
+              "shape": "rectangle",
+              "flipX": false,
+              "flipY": false
+            },
+            {
+              "id": "body-dwfc9uwg",
+              "type": "RigidBody",
+              "enabled": true,
+              "velocity": {
+                "x": 0,
+                "y": 0
+              },
+              "mass": 1,
+              "isStatic": true,
+              "gravityScale": 0,
+              "drag": {
+                "x": 0,
+                "y": 0
+              },
+              "bounce": {
+                "x": 0,
+                "y": 0
+              },
+              "maxVelocity": {
+                "x": 450,
+                "y": 1400
+              }
+            },
+            {
+              "id": "collider-vqqkwguc",
+              "type": "Collider",
+              "enabled": true,
+              "shape": "box",
+              "autoSize": false,
+              "width": 1200,
+              "height": 40,
+              "radius": 48,
+              "offsetX": 0,
+              "offsetY": 0,
+              "isTrigger": false,
+              "isPassThrough": false
+            }
+          ]
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "parent": null,
+          "children": [],
+          "tags": [],
+          "layer": 0,
+          "locked": false,
+          "hidden": false,
+          "prefab": "platform",
+          "components": [
+            {
+              "id": "transform-0s0e3ypr",
+              "type": "Transform",
+              "enabled": true,
+              "position": {
+                "x": 1500,
+                "y": 650
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              }
+            },
+            {
+              "id": "sprite-cdl02z11",
+              "type": "Sprite",
+              "enabled": true,
+                "assetId": "",
+                "color": "#3f3f46",
+              "opacity": 1,
+              "width": 1000,
+              "height": 40,
+              "shape": "rectangle",
+              "flipX": false,
+              "flipY": false
+            },
+            {
+              "id": "body-apfnm4ye",
+              "type": "RigidBody",
+              "enabled": true,
+              "velocity": {
+                "x": 0,
+                "y": 0
+              },
+              "mass": 1,
+              "isStatic": true,
+              "gravityScale": 0,
+              "drag": {
+                "x": 0,
+                "y": 0
+              },
+              "bounce": {
+                "x": 0,
+                "y": 0
+              },
+              "maxVelocity": {
+                "x": 450,
+                "y": 1400
+              }
+            },
+            {
+              "id": "collider-9ugweha2",
+              "type": "Collider",
+              "enabled": true,
+              "shape": "box",
+              "autoSize": false,
+              "width": 1000,
+              "height": 40,
+              "radius": 48,
+              "offsetX": 0,
+              "offsetY": 0,
+              "isTrigger": false,
+              "isPassThrough": false
+            }
+          ]
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "parent": null,
+          "children": [],
+          "tags": [],
+          "layer": 0,
+          "locked": false,
+          "hidden": false,
+          "prefab": "platform",
+          "components": [
+            {
+              "id": "transform-swj656ds",
+              "type": "Transform",
+              "enabled": true,
+              "position": {
+                "x": 320,
+                "y": 540
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              }
+            },
+            {
+              "id": "sprite-fxkm1ruf",
+              "type": "Sprite",
+              "enabled": true,
+                "assetId": "",
+                "color": "#52525b",
+              "opacity": 1,
+              "width": 100,
+              "height": 20,
+              "shape": "rectangle",
+              "flipX": false,
+              "flipY": false
+            },
+            {
+              "id": "body-gt0rja2g",
+              "type": "RigidBody",
+              "enabled": true,
+              "velocity": {
+                "x": 0,
+                "y": 0
+              },
+              "mass": 1,
+              "isStatic": true,
+              "gravityScale": 0,
+              "drag": {
+                "x": 0,
+                "y": 0
+              },
+              "bounce": {
+                "x": 0,
+                "y": 0
+              },
+              "maxVelocity": {
+                "x": 450,
+                "y": 1400
+              }
+            },
+            {
+              "id": "collider-9wirsd9e",
+              "type": "Collider",
+              "enabled": true,
+              "shape": "box",
+              "autoSize": false,
+              "width": 100,
+              "height": 20,
+              "radius": 48,
+              "offsetX": 0,
+              "offsetY": 0,
+              "isTrigger": false,
+              "isPassThrough": false
+            }
+          ]
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "parent": null,
+          "children": [],
+          "tags": [],
+          "layer": 0,
+          "locked": false,
+          "hidden": false,
+          "prefab": "platform",
+          "components": [
+            {
+              "id": "transform-9xltm9wv",
+              "type": "Transform",
+              "enabled": true,
+              "position": {
+                "x": 560,
+                "y": 430
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              }
+            },
+            {
+              "id": "sprite-mhoomlgx",
+              "type": "Sprite",
+              "enabled": true,
+                "assetId": "",
+                "color": "#52525b",
+              "opacity": 1,
+              "width": 100,
+              "height": 20,
+              "shape": "rectangle",
+              "flipX": false,
+              "flipY": false
+            },
+            {
+              "id": "body-3b8o9cam",
+              "type": "RigidBody",
+              "enabled": true,
+              "velocity": {
+                "x": 0,
+                "y": 0
+              },
+              "mass": 1,
+              "isStatic": true,
+              "gravityScale": 0,
+              "drag": {
+                "x": 0,
+                "y": 0
+              },
+              "bounce": {
+                "x": 0,
+                "y": 0
+              },
+              "maxVelocity": {
+                "x": 450,
+                "y": 1400
+              }
+            },
+            {
+              "id": "collider-53gqb60q",
+              "type": "Collider",
+              "enabled": true,
+              "shape": "box",
+              "autoSize": false,
+              "width": 100,
+              "height": 20,
+              "radius": 48,
+              "offsetX": 0,
+              "offsetY": 0,
+              "isTrigger": false,
+              "isPassThrough": false
+            }
+          ]
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "parent": null,
+          "children": [],
+          "tags": [],
+          "layer": 0,
+          "locked": false,
+          "hidden": false,
+          "prefab": "platform",
+          "components": [
+            {
+              "id": "transform-b8vqvmfw",
+              "type": "Transform",
+              "enabled": true,
+              "position": {
+                "x": 800,
+                "y": 340
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              }
+            },
+            {
+              "id": "sprite-kjuy2z9f",
+              "type": "Sprite",
+              "enabled": true,
+                "assetId": "",
+                "color": "#52525b",
+              "opacity": 1,
+              "width": 100,
+              "height": 20,
+              "shape": "rectangle",
+              "flipX": false,
+              "flipY": false
+            },
+            {
+              "id": "body-99xnueas",
+              "type": "RigidBody",
+              "enabled": true,
+              "velocity": {
+                "x": 0,
+                "y": 0
+              },
+              "mass": 1,
+              "isStatic": true,
+              "gravityScale": 0,
+              "drag": {
+                "x": 0,
+                "y": 0
+              },
+              "bounce": {
+                "x": 0,
+                "y": 0
+              },
+              "maxVelocity": {
+                "x": 450,
+                "y": 1400
+              }
+            },
+            {
+              "id": "collider-cq3w4xug",
+              "type": "Collider",
+              "enabled": true,
+              "shape": "box",
+              "autoSize": false,
+              "width": 100,
+              "height": 20,
+              "radius": 48,
+              "offsetX": 0,
+              "offsetY": 0,
+              "isTrigger": false,
+              "isPassThrough": false
+            }
+          ]
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "parent": null,
+          "children": [],
+          "tags": [],
+          "layer": 0,
+          "locked": false,
+          "hidden": false,
+          "prefab": "collectible",
+          "components": [
+            {
+              "id": "transform-a9o1y5g9",
+              "type": "Transform",
+              "enabled": true,
+              "position": {
+                "x": 320,
+                "y": 490
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              }
+            },
+            {
+              "id": "sprite-2y4yw0f9",
+              "type": "Sprite",
+              "enabled": true,
+                "assetId": "",
+                "color": "#facc15",
+              "opacity": 1,
+              "width": 24,
+              "height": 24,
+              "shape": "ellipse",
+              "flipX": false,
+              "flipY": false
+            },
+            {
+              "id": "collider-3rhbr8vj",
+              "type": "Collider",
+              "enabled": true,
+              "shape": "circle",
+              "autoSize": false,
+              "width": 24,
+              "height": 24,
+              "radius": 48,
+              "offsetX": 0,
+              "offsetY": 0,
+              "isTrigger": true,
+              "isPassThrough": false
+            },
+            {
+              "id": "behavior-6ewcqlu2",
+              "type": "Behavior",
+              "enabled": true,
+              "kind": "collectible",
+              "moveSpeed": 240,
+              "jumpForce": 560,
+              "patrolDistance": 220,
+              "patrolSpeed": 90,
+              "patrolAxis": "x",
+              "collectibleValue": 10,
+              "respawnDelay": 0,
+              "checkpointId": ""
+            }
+          ]
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "parent": null,
+          "children": [],
+          "tags": [],
+          "layer": 0,
+          "locked": false,
+          "hidden": false,
+          "prefab": "collectible",
+          "components": [
+            {
+              "id": "transform-vnhihhpm",
+              "type": "Transform",
+              "enabled": true,
+              "position": {
+                "x": 560,
+                "y": 380
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              }
+            },
+            {
+              "id": "sprite-9soalc1d",
+              "type": "Sprite",
+              "enabled": true,
+                "assetId": "",
+                "color": "#facc15",
+              "opacity": 1,
+              "width": 24,
+              "height": 24,
+              "shape": "ellipse",
+              "flipX": false,
+              "flipY": false
+            },
+            {
+              "id": "collider-6nuep3dc",
+              "type": "Collider",
+              "enabled": true,
+              "shape": "circle",
+              "autoSize": false,
+              "width": 24,
+              "height": 24,
+              "radius": 48,
+              "offsetX": 0,
+              "offsetY": 0,
+              "isTrigger": true,
+              "isPassThrough": false
+            },
+            {
+              "id": "behavior-f2du7xec",
+              "type": "Behavior",
+              "enabled": true,
+              "kind": "collectible",
+              "moveSpeed": 240,
+              "jumpForce": 560,
+              "patrolDistance": 220,
+              "patrolSpeed": 90,
+              "patrolAxis": "x",
+              "collectibleValue": 10,
+              "respawnDelay": 0,
+              "checkpointId": ""
+            }
+          ]
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "parent": null,
+          "children": [],
+          "tags": [],
+          "layer": 0,
+          "locked": false,
+          "hidden": false,
+          "prefab": "collectible",
+          "components": [
+            {
+              "id": "transform-z8ju3ufq",
+              "type": "Transform",
+              "enabled": true,
+              "position": {
+                "x": 800,
+                "y": 290
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              }
+            },
+            {
+              "id": "sprite-fhuu9sf5",
+              "type": "Sprite",
+              "enabled": true,
+                "assetId": "",
+                "color": "#facc15",
+              "opacity": 1,
+              "width": 24,
+              "height": 24,
+              "shape": "ellipse",
+              "flipX": false,
+              "flipY": false
+            },
+            {
+              "id": "collider-12lq54xb",
+              "type": "Collider",
+              "enabled": true,
+              "shape": "circle",
+              "autoSize": false,
+              "width": 24,
+              "height": 24,
+              "radius": 48,
+              "offsetX": 0,
+              "offsetY": 0,
+              "isTrigger": true,
+              "isPassThrough": false
+            },
+            {
+              "id": "behavior-yyk7l6e6",
+              "type": "Behavior",
+              "enabled": true,
+              "kind": "collectible",
+              "moveSpeed": 240,
+              "jumpForce": 560,
+              "patrolDistance": 220,
+              "patrolSpeed": 90,
+              "patrolAxis": "x",
+              "collectibleValue": 10,
+              "respawnDelay": 0,
+              "checkpointId": ""
+            }
+          ]
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "parent": null,
+          "children": [],
+          "tags": [],
+          "layer": 0,
+          "locked": false,
+          "hidden": false,
+          "prefab": "enemy",
+          "components": [
+            {
+              "id": "transform-cvk8haos",
+              "type": "Transform",
+              "enabled": true,
+              "position": {
+                "x": 1420,
+                "y": 580
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              }
+            },
+            {
+              "id": "sprite-17r0fsyf",
+              "type": "Sprite",
+              "enabled": true,
+                "assetId": "",
+                "color": "#ef4444",
+              "opacity": 1,
+              "width": 64,
+              "height": 64,
+              "shape": "diamond",
+              "flipX": false,
+              "flipY": false
+            },
+            {
+              "id": "body-x3019i7w",
+              "type": "RigidBody",
+              "enabled": true,
+              "velocity": {
+                "x": 0,
+                "y": 0
+              },
+              "mass": 1,
+              "isStatic": false,
+              "gravityScale": 1,
+              "drag": {
+                "x": 600,
+                "y": 0
+              },
+              "bounce": {
+                "x": 0,
+                "y": 0
+              },
+              "maxVelocity": {
+                "x": 220,
+                "y": 1200
+              }
+            },
+            {
+              "id": "collider-xzrwfvm7",
+              "type": "Collider",
+              "enabled": true,
+              "shape": "box",
+              "autoSize": false,
+              "width": 64,
+              "height": 64,
+              "radius": 48,
+              "offsetX": 0,
+              "offsetY": 0,
+              "isTrigger": false,
+              "isPassThrough": false
+            },
+            {
+              "id": "behavior-35e5rd42",
+              "type": "Behavior",
+              "enabled": true,
+              "kind": "enemy-patrol",
+              "moveSpeed": 240,
+              "jumpForce": 560,
+              "patrolDistance": 170,
+              "patrolSpeed": 0,
+              "patrolAxis": "x",
+              "collectibleValue": 10,
+              "respawnDelay": 0,
+              "checkpointId": ""
+            },
+            {
+              "id": "script-x5v140bl",
+              "type": "Script",
+              "enabled": true,
+                "code": "export default class BossShooter {\n  constructor() {\n    this.cooldown = 1;\n    this.timer = 0.9;\n    this.facing = -1;\n    this.patrolSpeed = 120;\n    this.leftBound = 1320;\n    this.rightBound = 1760;\n    this.shotIndex = -1;\n  }\n\n  update(dt) {\n    if (this.entity.transform.x <= this.leftBound) {\n      this.facing = 1;\n    } else if (this.entity.transform.x >= this.rightBound) {\n      this.facing = -1;\n    }\n\n    this.entity.transform.x += this.facing * this.patrolSpeed * dt;\n    const currentX = this.entity.transform.x;\n    const player = this.scene.entities.find((candidate) => candidate.prefab === 'player');\n    if (!player || player.transform.x < 780) {\n      this.timer = Math.min(this.timer, 0.9);\n      return;\n    }\n\n    this.timer += dt;\n    if (this.timer < this.cooldown) {\n      return;\n    }\n\n    this.timer = 0;\n    const projectiles = this.scene.entities.filter((candidate) => String(candidate.name || '').startsWith('BossProjectile-'));\n    if (!projectiles.length) {\n      return;\n    }\n\n    this.shotIndex = (this.shotIndex + 1) % projectiles.length;\n    const projectile = projectiles[this.shotIndex];\n    const projectileHalfWidth = 14;\n    const spawnX = currentX + this.facing * 48;\n    const spawnY = this.entity.transform.y + 10;\n    const worldWidth = this.scene.settings.worldSize.x;\n    const speed = 520;\n    const exitPadding = projectileHalfWidth + 6;\n    const targetX = this.facing < 0 ? -exitPadding : worldWidth + exitPadding;\n    const distance = Math.abs(targetX - spawnX);\n    const duration = distance / speed;\n    projectile.transform.x = spawnX;\n    projectile.transform.y = spawnY;\n    projectile.state = {\n      active: true,\n      direction: this.facing,\n      startX: spawnX,\n      distance: distance,\n      duration: duration,\n      life: duration,\n      originY: spawnY,\n    };\n  }\n}"
+            }
+          ]
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile-1",
+          "parent": null,
+          "children": [],
+          "tags": [
+            "boss-projectile"
+          ],
+          "layer": 0,
+          "locked": false,
+          "hidden": false,
+          "prefab": "hazard",
+          "components": [
+            {
+              "id": "transform-1mtx9bmn",
+              "type": "Transform",
+              "enabled": true,
+              "position": {
+                "x": -500,
+                "y": -500
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              }
+            },
+            {
+              "id": "sprite-m9h7ig64",
+              "type": "Sprite",
+              "enabled": true,
+                "assetId": "",
+                "color": "#ff2d7a",
+              "opacity": 1,
+                "width": 28,
+                "height": 14,
+                "shape": "ellipse",
+              "flipX": false,
+              "flipY": false
+            },
+            {
+              "id": "body-azbd7ryn",
+              "type": "RigidBody",
+              "enabled": true,
+              "velocity": {
+                "x": 0,
+                "y": 0
+              },
+                "mass": 0,
+                "isStatic": true,
+              "gravityScale": 0,
+              "drag": {
+                "x": 0,
+                "y": 0
+              },
+              "bounce": {
+                "x": 0,
+                "y": 0
+              },
+              "maxVelocity": {
+                "x": 450,
+                "y": 1400
+              }
+            },
+            {
+              "id": "collider-v7xmp45u",
+              "type": "Collider",
+              "enabled": true,
+              "shape": "circle",
+              "autoSize": false,
+                "width": 12,
+                "height": 12,
+                "radius": 6,
+              "offsetX": 0,
+              "offsetY": 0,
+              "isTrigger": true,
+              "isPassThrough": false
+            },
+            {
+              "id": "behavior-9t22n31d",
+              "type": "Behavior",
+              "enabled": true,
+              "kind": "hazard",
+              "moveSpeed": 240,
+              "jumpForce": 560,
+              "patrolDistance": 220,
+              "patrolSpeed": 90,
+              "patrolAxis": "x",
+              "collectibleValue": 10,
+              "respawnDelay": 0,
+              "checkpointId": ""
+            },
+            {
+              "id": "script-m5s5y1yd",
+              "type": "Script",
+              "enabled": true,
+                "code": "function update(entity, dt) {\n  if (!entity.state || !entity.state.active) {\n    entity.transform.x = -500;\n    entity.transform.y = -500;\n    return;\n  }\n\n  entity.state.life = Math.max(0, entity.state.life - dt);\n  const duration = Math.max(0.001, entity.state.duration || 1);\n  const progress = Math.min(1, Math.max(0, 1 - entity.state.life / duration));\n  entity.transform.y = entity.state.originY;\n  entity.transform.x = entity.state.startX + entity.state.direction * entity.state.distance * progress;\n\n  if (entity.state.life <= 0) {\n    entity.state = {\n      active: false,\n      direction: 0,\n      startX: -500,\n      distance: 0,\n      duration: 1,\n      life: 0,\n      originY: -500,\n    };\n    entity.transform.x = -500;\n    entity.transform.y = -500;\n  }\n}"
+            }
+          ]
+        },
+        {
+          "id": "ent-boss-projectile-2",
+          "name": "BossProjectile-2",
+          "parent": null,
+          "children": [],
+          "tags": [
+            "boss-projectile"
+          ],
+          "layer": 0,
+          "locked": false,
+          "hidden": false,
+          "prefab": "hazard",
+          "components": [
+            {
+              "id": "transform-boss-proj-2",
+              "type": "Transform",
+              "enabled": true,
+              "position": {
+                "x": -560,
+                "y": -500
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              }
+            },
+            {
+              "id": "sprite-boss-proj-2",
+              "type": "Sprite",
+              "enabled": true,
+              "assetId": "",
+              "color": "#ff2d7a",
+              "opacity": 1,
+              "width": 28,
+              "height": 14,
+              "shape": "ellipse",
+              "flipX": false,
+              "flipY": false
+            },
+            {
+              "id": "body-boss-proj-2",
+              "type": "RigidBody",
+              "enabled": true,
+              "velocity": {
+                "x": 0,
+                "y": 0
+              },
+              "mass": 0,
+              "isStatic": true,
+              "gravityScale": 0,
+              "drag": {
+                "x": 0,
+                "y": 0
+              },
+              "bounce": {
+                "x": 0,
+                "y": 0
+              },
+              "maxVelocity": {
+                "x": 450,
+                "y": 1400
+              }
+            },
+            {
+              "id": "collider-boss-proj-2",
+              "type": "Collider",
+              "enabled": true,
+              "shape": "circle",
+              "autoSize": false,
+              "width": 12,
+              "height": 12,
+              "radius": 6,
+              "offsetX": 0,
+              "offsetY": 0,
+              "isTrigger": true,
+              "isPassThrough": false
+            },
+            {
+              "id": "behavior-boss-proj-2",
+              "type": "Behavior",
+              "enabled": true,
+              "kind": "hazard",
+              "moveSpeed": 240,
+              "jumpForce": 560,
+              "patrolDistance": 220,
+              "patrolSpeed": 90,
+              "patrolAxis": "x",
+              "collectibleValue": 10,
+              "respawnDelay": 0,
+              "checkpointId": ""
+            },
+            {
+              "id": "script-boss-proj-2",
+              "type": "Script",
+              "enabled": true,
+              "code": "function update(entity, dt) {\n  if (!entity.state || !entity.state.active) {\n    entity.transform.x = -500;\n    entity.transform.y = -500;\n    return;\n  }\n\n  entity.state.life = Math.max(0, entity.state.life - dt);\n  const duration = Math.max(0.001, entity.state.duration || 1);\n  const progress = Math.min(1, Math.max(0, 1 - entity.state.life / duration));\n  entity.transform.y = entity.state.originY;\n  entity.transform.x = entity.state.startX + entity.state.direction * entity.state.distance * progress;\n\n  if (entity.state.life <= 0) {\n    entity.state = {\n      active: false,\n      direction: 0,\n      startX: -500,\n      distance: 0,\n      duration: 1,\n      life: 0,\n      originY: -500,\n    };\n    entity.transform.x = -500;\n    entity.transform.y = -500;\n  }\n}"
+            }
+          ]
+        },
+        {
+          "id": "ent-boss-projectile-3",
+          "name": "BossProjectile-3",
+          "parent": null,
+          "children": [],
+          "tags": [
+            "boss-projectile"
+          ],
+          "layer": 0,
+          "locked": false,
+          "hidden": false,
+          "prefab": "hazard",
+          "components": [
+            {
+              "id": "transform-boss-proj-3",
+              "type": "Transform",
+              "enabled": true,
+              "position": {
+                "x": -620,
+                "y": -500
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              }
+            },
+            {
+              "id": "sprite-boss-proj-3",
+              "type": "Sprite",
+              "enabled": true,
+              "assetId": "",
+              "color": "#ff2d7a",
+              "opacity": 1,
+              "width": 28,
+              "height": 14,
+              "shape": "ellipse",
+              "flipX": false,
+              "flipY": false
+            },
+            {
+              "id": "body-boss-proj-3",
+              "type": "RigidBody",
+              "enabled": true,
+              "velocity": {
+                "x": 0,
+                "y": 0
+              },
+              "mass": 0,
+              "isStatic": true,
+              "gravityScale": 0,
+              "drag": {
+                "x": 0,
+                "y": 0
+              },
+              "bounce": {
+                "x": 0,
+                "y": 0
+              },
+              "maxVelocity": {
+                "x": 450,
+                "y": 1400
+              }
+            },
+            {
+              "id": "collider-boss-proj-3",
+              "type": "Collider",
+              "enabled": true,
+              "shape": "circle",
+              "autoSize": false,
+              "width": 12,
+              "height": 12,
+              "radius": 6,
+              "offsetX": 0,
+              "offsetY": 0,
+              "isTrigger": true,
+              "isPassThrough": false
+            },
+            {
+              "id": "behavior-boss-proj-3",
+              "type": "Behavior",
+              "enabled": true,
+              "kind": "hazard",
+              "moveSpeed": 240,
+              "jumpForce": 560,
+              "patrolDistance": 220,
+              "patrolSpeed": 90,
+              "patrolAxis": "x",
+              "collectibleValue": 10,
+              "respawnDelay": 0,
+              "checkpointId": ""
+            },
+            {
+              "id": "script-boss-proj-3",
+              "type": "Script",
+              "enabled": true,
+              "code": "function update(entity, dt) {\n  if (!entity.state || !entity.state.active) {\n    entity.transform.x = -500;\n    entity.transform.y = -500;\n    return;\n  }\n\n  entity.state.life = Math.max(0, entity.state.life - dt);\n  const duration = Math.max(0.001, entity.state.duration || 1);\n  const progress = Math.min(1, Math.max(0, 1 - entity.state.life / duration));\n  entity.transform.y = entity.state.originY;\n  entity.transform.x = entity.state.startX + entity.state.direction * entity.state.distance * progress;\n\n  if (entity.state.life <= 0) {\n    entity.state = {\n      active: false,\n      direction: 0,\n      startX: -500,\n      distance: 0,\n      duration: 1,\n      life: 0,\n      originY: -500,\n    };\n    entity.transform.x = -500;\n    entity.transform.y = -500;\n  }\n}"
+            }
+          ]
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "parent": null,
+          "children": [],
+          "tags": [],
+          "layer": 0,
+          "locked": false,
+          "hidden": false,
+          "prefab": "goal",
+          "components": [
+            {
+              "id": "transform-hczh6zr5",
+              "type": "Transform",
+              "enabled": true,
+              "position": {
+                "x": 1820,
+                "y": 580
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              }
+            },
+            {
+              "id": "sprite-9olv5wh5",
+              "type": "Sprite",
+              "enabled": true,
+                "assetId": "",
+                "color": "#06b6d4",
+              "opacity": 1,
+              "width": 48,
+              "height": 48,
+              "shape": "rectangle",
+              "flipX": false,
+              "flipY": false
+            },
+            {
+              "id": "collider-i5f8h58g",
+              "type": "Collider",
+              "enabled": true,
+              "shape": "box",
+              "autoSize": false,
+              "width": 48,
+              "height": 48,
+              "radius": 48,
+              "offsetX": 0,
+              "offsetY": 0,
+              "isTrigger": true,
+              "isPassThrough": false
+            },
+            {
+              "id": "behavior-1388w6up",
+              "type": "Behavior",
+              "enabled": true,
+              "kind": "goal",
+              "moveSpeed": 240,
+              "jumpForce": 560,
+              "patrolDistance": 220,
+              "patrolSpeed": 90,
+              "patrolAxis": "x",
+              "collectibleValue": 10,
+              "respawnDelay": 0,
+              "checkpointId": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "activeSceneId": "scene-boss-level"
+}

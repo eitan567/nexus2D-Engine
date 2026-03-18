@@ -1,0 +1,14 @@
+[
+  {
+    "type": "console.error",
+    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  },
+  {
+    "type": "pageerror",
+    "text": "ChunkLoadError: Loading chunk _app-pages-browser_node_modules_next_dist_client_dev_noop-turbopack-hmr_js failed.\n(error: http://127.0.0.1:3004/_next/static/chunks/_app-pages-browser_node_modules_next_dist_client_dev_noop-turbopack-hmr_js.js)"
+  },
+  {
+    "type": "pageerror",
+    "text": "ChunkLoadError: Loading chunk _app-pages-browser_src_App_tsx failed.\n(error: http://127.0.0.1:3004/_next/static/chunks/_app-pages-browser_src_App_tsx.js)"
+  }
+]

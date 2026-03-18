@@ -1,0 +1,947 @@
+[
+  {
+    "t": 0.1,
+    "deaths": 0,
+    "player": {
+      "x": 118.89,
+      "y": 514.97,
+      "vx": 240,
+      "vy": 179.67
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 0.2,
+    "deaths": 0,
+    "player": {
+      "x": 145.33,
+      "y": 541.65,
+      "vx": 240,
+      "vy": 294
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 0.3,
+    "deaths": 0,
+    "player": {
+      "x": 171.78,
+      "y": 581.67,
+      "vx": 240,
+      "vy": 408.33
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 0.4,
+    "deaths": 0,
+    "player": {
+      "x": 198.22,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 0.5,
+    "deaths": 0,
+    "player": {
+      "x": 224.67,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 0.6,
+    "deaths": 0,
+    "player": {
+      "x": 251.11,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 0.7,
+    "deaths": 0,
+    "player": {
+      "x": 281.33,
+      "y": 614,
+      "vx": 0,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 0.8,
+    "deaths": 0,
+    "player": {
+      "x": 304,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 0.9,
+    "deaths": 0,
+    "player": {
+      "x": 330.44,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 1,
+    "deaths": 0,
+    "player": {
+      "x": 356.89,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 1.1,
+    "deaths": 0,
+    "player": {
+      "x": 387.11,
+      "y": 614,
+      "vx": 0,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 1.2,
+    "deaths": 0,
+    "player": {
+      "x": 409.78,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 1.3,
+    "deaths": 0,
+    "player": {
+      "x": 436.22,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 1.4,
+    "deaths": 0,
+    "player": {
+      "x": 462.67,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 1.5,
+    "deaths": 0,
+    "player": {
+      "x": 489.11,
+      "y": 614,
+      "vx": 0,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 1.6,
+    "deaths": 0,
+    "player": {
+      "x": 507.78,
+      "y": 614,
+      "vx": 0,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 1.7,
+    "deaths": 0,
+    "player": {
+      "x": 533.56,
+      "y": 614,
+      "vx": 0,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 1.8,
+    "deaths": 0,
+    "player": {
+      "x": 559.33,
+      "y": 614,
+      "vx": 0,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 1.9,
+    "deaths": 0,
+    "player": {
+      "x": 578,
+      "y": 614,
+      "vx": 0,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 2,
+    "deaths": 0,
+    "player": {
+      "x": 615.11,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 2.1,
+    "deaths": 0,
+    "player": {
+      "x": 641.56,
+      "y": 614,
+      "vx": 0,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 2.2,
+    "deaths": 0,
+    "player": {
+      "x": 664.22,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 2.3,
+    "deaths": 0,
+    "player": {
+      "x": 690.67,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 2.4,
+    "deaths": 0,
+    "player": {
+      "x": 717.11,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 2.5,
+    "deaths": 0,
+    "player": {
+      "x": 743.56,
+      "y": 614,
+      "vx": 0,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 2.6,
+    "deaths": 0,
+    "player": {
+      "x": 766.22,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 2.7,
+    "deaths": 0,
+    "player": {
+      "x": 792.67,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 2.8,
+    "deaths": 0,
+    "player": {
+      "x": 819.11,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 2.9,
+    "deaths": 0,
+    "player": {
+      "x": 845.56,
+      "y": 614,
+      "vx": 0,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 3,
+    "deaths": 0,
+    "player": {
+      "x": 868.22,
+      "y": 614,
+      "vx": 0,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 3.1,
+    "deaths": 0,
+    "player": {
+      "x": 894.67,
+      "y": 614,
+      "vx": 0,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": 1257.99,
+      "y": 594,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 3.2,
+    "deaths": 0,
+    "player": {
+      "x": 921.11,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": 1219.46,
+      "y": 594,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 3.3,
+    "deaths": 0,
+    "player": {
+      "x": 943.78,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": 1190.58,
+      "y": 594,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 3.4,
+    "deaths": 0,
+    "player": {
+      "x": 970.22,
+      "y": 614,
+      "vx": 0,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": 1156.88,
+      "y": 594,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 3.5,
+    "deaths": 0,
+    "player": {
+      "x": 992.89,
+      "y": 566.42,
+      "vx": 240,
+      "vy": -522
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": 1118.35,
+      "y": 594,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 3.6,
+    "deaths": 0,
+    "player": {
+      "x": 1019.33,
+      "y": 511.23,
+      "vx": 240,
+      "vy": -407.67
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": 1084.65,
+      "y": 594,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 3.7,
+    "deaths": 0,
+    "player": {
+      "x": 1045.78,
+      "y": 469.39,
+      "vx": 240,
+      "vy": -293.33
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": 1050.96,
+      "y": 594,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 3.8,
+    "deaths": 0,
+    "player": {
+      "x": 1072.22,
+      "y": 440.88,
+      "vx": 0,
+      "vy": -179
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": 1017.26,
+      "y": 594,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 3.9,
+    "deaths": 0,
+    "player": {
+      "x": 1094.89,
+      "y": 424.64,
+      "vx": 240,
+      "vy": -48.33
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": 1170.75,
+      "y": 594,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 4,
+    "deaths": 0,
+    "player": {
+      "x": 1121.33,
+      "y": 424.72,
+      "vx": 240,
+      "vy": 66
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": 1137.06,
+      "y": 594,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 4.1,
+    "deaths": 0,
+    "player": {
+      "x": 1147.78,
+      "y": 438.13,
+      "vx": 240,
+      "vy": 180.33
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": 1103.36,
+      "y": 594,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 4.2,
+    "deaths": 0,
+    "player": {
+      "x": 1174.22,
+      "y": 464.89,
+      "vx": 0,
+      "vy": 294.67
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": 1069.65,
+      "y": 594,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 4.3,
+    "deaths": 0,
+    "player": {
+      "x": 1196.89,
+      "y": 511.8,
+      "vx": 0,
+      "vy": 425.33
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": 1031.13,
+      "y": 594,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 4.4,
+    "deaths": 0,
+    "player": {
+      "x": 1223.33,
+      "y": 585.4,
+      "vx": 240,
+      "vy": 572.33
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": 987.8,
+      "y": 594,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  },
+  {
+    "t": 4.5,
+    "deaths": 0,
+    "player": {
+      "x": 1249.78,
+      "y": 614,
+      "vx": 240,
+      "vy": 0
+    },
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": 954.1,
+      "y": 594,
+      "width": 42,
+      "height": 22,
+      "behavior": "hazard"
+    }
+  }
+]

@@ -1,0 +1,402 @@
+[
+  {
+    "t": 0.25,
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 28,
+      "height": 28,
+      "behavior": "hazard"
+    },
+    "boss": {
+      "id": "ent-boss",
+      "name": "Boss",
+      "prefab": "enemy",
+      "hidden": false,
+      "x": 1450,
+      "y": 598,
+      "width": 64,
+      "height": 64,
+      "behavior": "enemy-patrol"
+    }
+  },
+  {
+    "t": 0.5,
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 28,
+      "height": 28,
+      "behavior": "hazard"
+    },
+    "boss": {
+      "id": "ent-boss",
+      "name": "Boss",
+      "prefab": "enemy",
+      "hidden": false,
+      "x": 1476.67,
+      "y": 598,
+      "width": 64,
+      "height": 64,
+      "behavior": "enemy-patrol"
+    }
+  },
+  {
+    "t": 0.75,
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 28,
+      "height": 28,
+      "behavior": "hazard"
+    },
+    "boss": {
+      "id": "ent-boss",
+      "name": "Boss",
+      "prefab": "enemy",
+      "hidden": false,
+      "x": 1503.33,
+      "y": 598,
+      "width": 64,
+      "height": 64,
+      "behavior": "enemy-patrol"
+    }
+  },
+  {
+    "t": 1,
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 28,
+      "height": 28,
+      "behavior": "hazard"
+    },
+    "boss": {
+      "id": "ent-boss",
+      "name": "Boss",
+      "prefab": "enemy",
+      "hidden": false,
+      "x": 1528.33,
+      "y": 598,
+      "width": 64,
+      "height": 64,
+      "behavior": "enemy-patrol"
+    }
+  },
+  {
+    "t": 1.25,
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 28,
+      "height": 28,
+      "behavior": "hazard"
+    },
+    "boss": {
+      "id": "ent-boss",
+      "name": "Boss",
+      "prefab": "enemy",
+      "hidden": false,
+      "x": 1555,
+      "y": 598,
+      "width": 64,
+      "height": 64,
+      "behavior": "enemy-patrol"
+    }
+  },
+  {
+    "t": 1.5,
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 28,
+      "height": 28,
+      "behavior": "hazard"
+    },
+    "boss": {
+      "id": "ent-boss",
+      "name": "Boss",
+      "prefab": "enemy",
+      "hidden": false,
+      "x": 1581.67,
+      "y": 598,
+      "width": 64,
+      "height": 64,
+      "behavior": "enemy-patrol"
+    }
+  },
+  {
+    "t": 1.75,
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 28,
+      "height": 28,
+      "behavior": "hazard"
+    },
+    "boss": {
+      "id": "ent-boss",
+      "name": "Boss",
+      "prefab": "enemy",
+      "hidden": false,
+      "x": 1575,
+      "y": 598,
+      "width": 64,
+      "height": 64,
+      "behavior": "enemy-patrol"
+    }
+  },
+  {
+    "t": 2,
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 28,
+      "height": 28,
+      "behavior": "hazard"
+    },
+    "boss": {
+      "id": "ent-boss",
+      "name": "Boss",
+      "prefab": "enemy",
+      "hidden": false,
+      "x": 1548.33,
+      "y": 598,
+      "width": 64,
+      "height": 64,
+      "behavior": "enemy-patrol"
+    }
+  },
+  {
+    "t": 2.25,
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 28,
+      "height": 28,
+      "behavior": "hazard"
+    },
+    "boss": {
+      "id": "ent-boss",
+      "name": "Boss",
+      "prefab": "enemy",
+      "hidden": false,
+      "x": 1526.67,
+      "y": 598,
+      "width": 64,
+      "height": 64,
+      "behavior": "enemy-patrol"
+    }
+  },
+  {
+    "t": 2.5,
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 28,
+      "height": 28,
+      "behavior": "hazard"
+    },
+    "boss": {
+      "id": "ent-boss",
+      "name": "Boss",
+      "prefab": "enemy",
+      "hidden": false,
+      "x": 1497.67,
+      "y": 598,
+      "width": 64,
+      "height": 64,
+      "behavior": "enemy-patrol"
+    }
+  },
+  {
+    "t": 2.75,
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 28,
+      "height": 28,
+      "behavior": "hazard"
+    },
+    "boss": {
+      "id": "ent-boss",
+      "name": "Boss",
+      "prefab": "enemy",
+      "hidden": false,
+      "x": 1470.33,
+      "y": 598,
+      "width": 64,
+      "height": 64,
+      "behavior": "enemy-patrol"
+    }
+  },
+  {
+    "t": 3,
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 28,
+      "height": 28,
+      "behavior": "hazard"
+    },
+    "boss": {
+      "id": "ent-boss",
+      "name": "Boss",
+      "prefab": "enemy",
+      "hidden": false,
+      "x": 1446.17,
+      "y": 598,
+      "width": 64,
+      "height": 64,
+      "behavior": "enemy-patrol"
+    }
+  },
+  {
+    "t": 3.25,
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 28,
+      "height": 28,
+      "behavior": "hazard"
+    },
+    "boss": {
+      "id": "ent-boss",
+      "name": "Boss",
+      "prefab": "enemy",
+      "hidden": false,
+      "x": 1423.83,
+      "y": 598,
+      "width": 64,
+      "height": 64,
+      "behavior": "enemy-patrol"
+    }
+  },
+  {
+    "t": 3.5,
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 28,
+      "height": 28,
+      "behavior": "hazard"
+    },
+    "boss": {
+      "id": "ent-boss",
+      "name": "Boss",
+      "prefab": "enemy",
+      "hidden": false,
+      "x": 1392,
+      "y": 598,
+      "width": 64,
+      "height": 64,
+      "behavior": "enemy-patrol"
+    }
+  },
+  {
+    "t": 3.75,
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 28,
+      "height": 28,
+      "behavior": "hazard"
+    },
+    "boss": {
+      "id": "ent-boss",
+      "name": "Boss",
+      "prefab": "enemy",
+      "hidden": false,
+      "x": 1367.83,
+      "y": 598,
+      "width": 64,
+      "height": 64,
+      "behavior": "enemy-patrol"
+    }
+  },
+  {
+    "t": 4,
+    "projectile": {
+      "id": "ent-boss-projectile",
+      "name": "BossProjectile",
+      "prefab": "hazard",
+      "hidden": false,
+      "x": -500,
+      "y": -500,
+      "width": 28,
+      "height": 28,
+      "behavior": "hazard"
+    },
+    "boss": {
+      "id": "ent-boss",
+      "name": "Boss",
+      "prefab": "enemy",
+      "hidden": false,
+      "x": 1343.67,
+      "y": 598,
+      "width": 64,
+      "height": 64,
+      "behavior": "enemy-patrol"
+    }
+  }
+]

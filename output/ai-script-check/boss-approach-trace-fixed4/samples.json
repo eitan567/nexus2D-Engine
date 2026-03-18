@@ -1,0 +1,6070 @@
+[
+  {
+    "t": 0.1,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 118.89,
+        "y": 521.23,
+        "vx": 240,
+        "vy": 212.33
+      },
+      "camera": {
+        "x": -79.36,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 118.89,
+          "y": 521.23,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1440,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 0.2,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 145.33,
+        "y": 557.17,
+        "vx": 0,
+        "vy": 343
+      },
+      "camera": {
+        "x": -79.36,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 145.33,
+          "y": 557.17,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1453.33,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 0.3,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 168,
+        "y": 610.52,
+        "vx": 240,
+        "vy": 0
+      },
+      "camera": {
+        "x": -79.36,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 168,
+          "y": 610.52,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1466.67,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 0.4,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 194.44,
+        "y": 614,
+        "vx": 0,
+        "vy": 0
+      },
+      "camera": {
+        "x": -79.36,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 194.44,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1478.33,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 0.5,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 217.11,
+        "y": 614,
+        "vx": 240,
+        "vy": 0
+      },
+      "camera": {
+        "x": -79.36,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 217.11,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1490,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 0.6,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 243.56,
+        "y": 614,
+        "vx": 0,
+        "vy": 0
+      },
+      "camera": {
+        "x": -79.36,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 243.56,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1501.67,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 0.7,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 270,
+        "y": 614,
+        "vx": 0,
+        "vy": 0
+      },
+      "camera": {
+        "x": -79.36,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 270,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1516.67,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 0.8,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 296.44,
+        "y": 614,
+        "vx": 240,
+        "vy": 0
+      },
+      "camera": {
+        "x": -79.36,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 296.44,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1531.67,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 0.9,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 322.89,
+        "y": 614,
+        "vx": 240,
+        "vy": 0
+      },
+      "camera": {
+        "x": -79.36,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 322.89,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1543.33,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 1,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 349.33,
+        "y": 614,
+        "vx": 240,
+        "vy": 0
+      },
+      "camera": {
+        "x": -79.36,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 349.33,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1555,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 1.1,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 379.56,
+        "y": 614,
+        "vx": 0,
+        "vy": 0
+      },
+      "camera": {
+        "x": -79.36,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 379.56,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1568.33,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 1.2,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 402.22,
+        "y": 614,
+        "vx": 0,
+        "vy": 0
+      },
+      "camera": {
+        "x": -77.28,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 402.22,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1580,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 1.3,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 428.67,
+        "y": 614,
+        "vx": 240,
+        "vy": 0
+      },
+      "camera": {
+        "x": -50.83,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 428.67,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1588.33,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 1.4,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 455.11,
+        "y": 614,
+        "vx": 240,
+        "vy": 0
+      },
+      "camera": {
+        "x": -24.39,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 455.11,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1576.67,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 1.5,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 481.56,
+        "y": 614,
+        "vx": 240,
+        "vy": 0
+      },
+      "camera": {
+        "x": 2.06,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 481.56,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1565,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 1.6,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 511.78,
+        "y": 614,
+        "vx": 0,
+        "vy": 0
+      },
+      "camera": {
+        "x": 32.28,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 511.78,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1551.67,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 1.7,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 534.44,
+        "y": 614,
+        "vx": 240,
+        "vy": 0
+      },
+      "camera": {
+        "x": 54.94,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 534.44,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1540,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 1.8,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 560.89,
+        "y": 614,
+        "vx": 240,
+        "vy": 0
+      },
+      "camera": {
+        "x": 81.39,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 560.89,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1528.33,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 1.9,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 587.33,
+        "y": 614,
+        "vx": 240,
+        "vy": 0
+      },
+      "camera": {
+        "x": 107.83,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 587.33,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1516.67,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 2,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 617.56,
+        "y": 614,
+        "vx": 0,
+        "vy": 0
+      },
+      "camera": {
+        "x": 138.06,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 617.56,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1503.33,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 2.1,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 640.22,
+        "y": 614,
+        "vx": 240,
+        "vy": 0
+      },
+      "camera": {
+        "x": 160.72,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 640.22,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1491.67,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 2.2,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 666.67,
+        "y": 614,
+        "vx": 240,
+        "vy": 0
+      },
+      "camera": {
+        "x": 187.17,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 666.67,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1480,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 2.3,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 693.11,
+        "y": 614,
+        "vx": 240,
+        "vy": 0
+      },
+      "camera": {
+        "x": 213.61,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 693.11,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1468.33,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 2.4,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 723.33,
+        "y": 614,
+        "vx": 0,
+        "vy": 0
+      },
+      "camera": {
+        "x": 243.83,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 723.33,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1455,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 2.5,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 746,
+        "y": 614,
+        "vx": 0,
+        "vy": 0
+      },
+      "camera": {
+        "x": 266.5,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 746,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1443.33,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 2.6,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 772.44,
+        "y": 614,
+        "vx": 240,
+        "vy": 0
+      },
+      "camera": {
+        "x": 292.94,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 772.44,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1428.33,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 2.7,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 798.89,
+        "y": 614,
+        "vx": 240,
+        "vy": 0
+      },
+      "camera": {
+        "x": 319.39,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 798.89,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1416.67,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 2.8,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 825.33,
+        "y": 614,
+        "vx": 240,
+        "vy": 0
+      },
+      "camera": {
+        "x": 345.83,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 825.33,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1405,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 2.9,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 855.56,
+        "y": 614,
+        "vx": 0,
+        "vy": 0
+      },
+      "camera": {
+        "x": 376.06,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 855.56,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1391.67,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 3,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 878.22,
+        "y": 614,
+        "vx": 240,
+        "vy": 0
+      },
+      "camera": {
+        "x": 398.72,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 878.22,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1380,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": -500,
+          "y": -500,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 3.1,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 904.67,
+        "y": 614,
+        "vx": 240,
+        "vy": 0
+      },
+      "camera": {
+        "x": 425.17,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 904.67,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1368.33,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": 1266.63,
+          "y": 606,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 3.2,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 931.11,
+        "y": 614,
+        "vx": 240,
+        "vy": 0
+      },
+      "camera": {
+        "x": 451.61,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 931.11,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1356.67,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": 1232.92,
+          "y": 606,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 3.3,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 957.56,
+        "y": 614,
+        "vx": 240,
+        "vy": 0
+      },
+      "camera": {
+        "x": 478.06,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 957.56,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1338.33,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": 1179.97,
+          "y": 606,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 3.4,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 980.22,
+        "y": 614,
+        "vx": 240,
+        "vy": 0
+      },
+      "camera": {
+        "x": 500.72,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 980.22,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1328.33,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": 1151.08,
+          "y": 606,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 3.5,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 1006.67,
+        "y": 614,
+        "vx": 0,
+        "vy": 0
+      },
+      "camera": {
+        "x": 527.17,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 1006.67,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1315,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": 1112.56,
+          "y": 606,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 3.6,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 0,
+      "player": {
+        "x": 1029.33,
+        "y": 614,
+        "vx": 240,
+        "vy": 0
+      },
+      "camera": {
+        "x": 549.83,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 1029.33,
+          "y": 614,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1301.67,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": 1074.05,
+          "y": 606,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  },
+  {
+    "t": 3.7,
+    "state": {
+      "coordinateSystem": "origin top-left, +x right, +y down",
+      "mode": "play",
+      "score": 0,
+      "collectiblesRemaining": 3,
+      "deaths": 1,
+      "player": {
+        "x": 115.11,
+        "y": 504.08,
+        "vx": 240,
+        "vy": 98
+      },
+      "camera": {
+        "x": -79.36,
+        "y": 140.5,
+        "zoom": 1.2,
+        "width": 800.28,
+        "height": 600
+      },
+      "scene": {
+        "id": "scene-boss-level",
+        "name": "Level 1",
+        "worldWidth": 2000,
+        "worldHeight": 800
+      },
+      "selectedEntityId": "ent-player",
+      "entities": [
+        {
+          "id": "ent-player",
+          "name": "Player",
+          "prefab": "player",
+          "hidden": false,
+          "x": 115.11,
+          "y": 504.08,
+          "width": 32,
+          "height": 32,
+          "behavior": "player-platformer"
+        },
+        {
+          "id": "ent-ground-1",
+          "name": "Start Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 400,
+          "y": 650,
+          "width": 1200,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-ground-2",
+          "name": "Boss Arena Ground",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 1500,
+          "y": 650,
+          "width": 1000,
+          "height": 40,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-1",
+          "name": "Platform 1",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 320,
+          "y": 540,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-2",
+          "name": "Platform 2",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 560,
+          "y": 430,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-plat-3",
+          "name": "Platform 3",
+          "prefab": "platform",
+          "hidden": false,
+          "x": 800,
+          "y": 340,
+          "width": 100,
+          "height": 20,
+          "behavior": "none"
+        },
+        {
+          "id": "ent-col-1",
+          "name": "Collectible 1",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 320,
+          "y": 490,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-2",
+          "name": "Collectible 2",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 560,
+          "y": 380,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-col-3",
+          "name": "Collectible 3",
+          "prefab": "collectible",
+          "hidden": false,
+          "x": 800,
+          "y": 290,
+          "width": 24,
+          "height": 24,
+          "behavior": "collectible"
+        },
+        {
+          "id": "ent-boss",
+          "name": "Boss",
+          "prefab": "enemy",
+          "hidden": false,
+          "x": 1290,
+          "y": 598,
+          "width": 64,
+          "height": 64,
+          "behavior": "enemy-patrol"
+        },
+        {
+          "id": "ent-boss-projectile",
+          "name": "BossProjectile",
+          "prefab": "hazard",
+          "hidden": false,
+          "x": 1040.34,
+          "y": 606,
+          "width": 42,
+          "height": 22,
+          "behavior": "hazard"
+        },
+        {
+          "id": "ent-goal",
+          "name": "Goal",
+          "prefab": "goal",
+          "hidden": false,
+          "x": 1820,
+          "y": 580,
+          "width": 48,
+          "height": 48,
+          "behavior": "goal"
+        }
+      ]
+    }
+  }
+]
