@@ -1259,6 +1259,7 @@ export function buildAiPromptContext(project: Project) {
         'Regular platforms should usually be much thinner than actors; avoid giant projectiles, oversized collectibles, or bosses that dominate the whole camera.',
         'Spread actors across the stage instead of stacking many entities at the same coordinates.',
         'Keep hitboxes close to visible sprites. Avoid giant invisible colliders.',
+        'For bullet/projectile entity pools, you can spawn them with hidden: true, and unhide them in scripts via `entity.visible = true;`.',
         'Projectile scripts should despawn only after the projectile is fully outside the world bounds, not when it first touches the edge.',
         'Player entities should include RigidBody, Collider and a player behavior.',
         'Scene settings must include worldSize, cameraSize, gravity, gridSize and background colors.',

@@ -504,6 +504,8 @@ class MainScene extends Phaser.Scene {
         this.resetRuntime();
         this.syncProject(this.project);
         this.physics.pause();
+        this.editorPreviewFrameOverride = null;
+        this.lastGameplayCameraFrame = null;
         this.refreshRuntimeSnapshot(true);
       }
       return;
@@ -678,12 +680,16 @@ class MainScene extends Phaser.Scene {
     const visibleWidth = this.cameras.main.width / zoom;
     const visibleHeight = this.cameras.main.height / zoom;
     const defaultCenter = {
-      x: previewFrame.x + visibleWidth / 2,
-      y: previewFrame.y + visibleHeight / 2,
+      x: scene.settings.worldSize.x / 2,
+      y: scene.settings.worldSize.y / 2,
     };
     const center = this.editorCameraCenter ?? defaultCenter;
     this.cameras.main.setScroll(center.x - visibleWidth / 2, center.y - visibleHeight / 2);
     this.clampCameraToScene(scene);
+    this.editorCameraCenter = {
+      x: this.cameras.main.scrollX + visibleWidth / 2,
+      y: this.cameras.main.scrollY + visibleHeight / 2,
+    };
   }
 
   private syncEntities(scene: Scene) {
@@ -717,7 +723,7 @@ class MainScene extends Phaser.Scene {
     const behavior = getComponent<BehaviorComponent>(entity, ComponentType.Behavior);
     const script = getComponent<ScriptComponent>(entity, ComponentType.Script);
 
-    if (!transform || !spriteComponent || entity.hidden) {
+    if (!transform || !spriteComponent) {
       const existing = this.entityMap.get(entity.id);
       if (existing) {
         existing.sprite.setVisible(false);
@@ -782,7 +788,7 @@ class MainScene extends Phaser.Scene {
         }
       : null;
 
-    sprite.setVisible(true);
+    sprite.setVisible(!entity.hidden);
     sprite.setTexture(textureKey);
     sprite.setPosition(
       preserveRuntimeState?.x ?? transform.position.x,
@@ -803,12 +809,12 @@ class MainScene extends Phaser.Scene {
       sprite.clearTint();
     }
 
-    body.setEnable(Boolean(rigidBody || collider));
+    body.setEnable(Boolean((rigidBody || collider) && !entity.hidden));
     body.setCollideWorldBounds(Boolean(rigidBody && !rigidBody.isStatic && !collider?.isTrigger));
     body.moves = true;
     const colliderMetrics = collider ? this.resolveColliderMetrics(collider, sprite) : null;
     const bodyColliderMetrics = collider ? this.resolveBodyColliderMetrics(collider, sprite) : null;
-    const isSolidCollider = Boolean(colliderMetrics && !colliderMetrics.isTrigger);
+    const isSolidCollider = Boolean(colliderMetrics && !colliderMetrics.isTrigger && !entity.hidden);
 
     if (isSolidCollider) {
       // Add to the collision group before configuring body physics, because the
@@ -1084,6 +1090,29 @@ class MainScene extends Phaser.Scene {
         },
         enumerable: true,
       });
+      Object.defineProperty(facade, 'visible', {
+        get: () => {
+          if (targetInstance) {
+            return targetInstance.sprite.visible;
+          }
+          return !target.hidden;
+        },
+        set: (value: unknown) => {
+          const isVisible = Boolean(value);
+          if (targetInstance) {
+            targetInstance.sprite.setVisible(isVisible);
+            const rigidBody = getComponent<RigidBodyComponent>(target, ComponentType.RigidBody);
+            const collider = getComponent<ColliderComponent>(target, ComponentType.Collider);
+            if (targetInstance.sprite.body && (rigidBody || collider)) {
+              (targetInstance.sprite.body as Phaser.Physics.Arcade.Body).setEnable(isVisible);
+            }
+          }
+          if (!this.isPlaying) {
+            target.hidden = !isVisible;
+          }
+        },
+        enumerable: true,
+      });
 
       entityFacadeCache.set(target.id, facade);
       return facade;
@@ -1162,7 +1191,7 @@ class MainScene extends Phaser.Scene {
         return;
       }
 
-      if (transform) {
+      if (transform && !this.isPlaying) {
         transform.position[axis] = numeric;
       }
 
@@ -1198,9 +1227,67 @@ class MainScene extends Phaser.Scene {
       },
     });
 
+    const setScaleAxis = (axis: 'x' | 'y', value: unknown) => {
+      const numeric = Number(value);
+      if (!Number.isFinite(numeric)) {
+        return;
+      }
+
+      if (transform && !this.isPlaying) {
+        transform.scale[axis] = numeric;
+      }
+
+      if (sprite) {
+        const spriteComponent = getComponent<SpriteComponent>(entity, ComponentType.Sprite);
+        if (spriteComponent) {
+          const currentX = spriteComponent.width > 0 ? sprite.displayWidth / spriteComponent.width : (transform?.scale.x ?? 1);
+          const currentY = spriteComponent.height > 0 ? sprite.displayHeight / spriteComponent.height : (transform?.scale.y ?? 1);
+          sprite.setDisplaySize(
+            spriteComponent.width * (axis === 'x' ? numeric : currentX),
+            spriteComponent.height * (axis === 'y' ? numeric : currentY),
+          );
+        }
+
+        if (body) {
+          if (!rigidBody || rigidBody.isStatic) {
+            body.reset(sprite.x, sprite.y);
+            body.setVelocity(0, 0);
+          } else {
+            body.updateFromGameObject();
+          }
+        }
+      }
+    };
+
+    const scaleFacade: Record<string, unknown> = {};
+    Object.defineProperties(scaleFacade, {
+      x: {
+        get: () => {
+          if (sprite) {
+            const sc = getComponent<SpriteComponent>(entity, ComponentType.Sprite);
+            if (sc && sc.width > 0) return sprite.displayWidth / sc.width;
+          }
+          return transform?.scale.x ?? 1;
+        },
+        set: (value: unknown) => setScaleAxis('x', value),
+        enumerable: true,
+      },
+      y: {
+        get: () => {
+          if (sprite) {
+            const sc = getComponent<SpriteComponent>(entity, ComponentType.Sprite);
+            if (sc && sc.height > 0) return sprite.displayHeight / sc.height;
+          }
+          return transform?.scale.y ?? 1;
+        },
+        set: (value: unknown) => setScaleAxis('y', value),
+        enumerable: true,
+      },
+    });
+
     const facade: Record<string, unknown> = {
       position: positionFacade,
-      scale: transform?.scale ?? {x: 1, y: 1},
+      scale: scaleFacade,
     };
     Object.defineProperties(facade, {
       x: {
@@ -1220,7 +1307,7 @@ class MainScene extends Phaser.Scene {
           if (!Number.isFinite(numeric)) {
             return;
           }
-          if (transform) {
+          if (transform && !this.isPlaying) {
             transform.rotation = numeric;
           }
           if (sprite) {
@@ -2256,14 +2343,14 @@ return {
   }
 
   private getWorldBaseZoom(scene: Scene) {
-    const fillZoom = this.getWorldFillZoom(scene);
-    if (!Number.isFinite(fillZoom) || fillZoom <= 0) {
+    const fitZoom = this.getWorldFitZoom(scene);
+    if (!Number.isFinite(fitZoom) || fitZoom <= 0) {
       return 1;
     }
 
     if (!Number.isFinite(this.worldFillReferenceZoom ?? Number.NaN)) {
-      this.worldFillReferenceZoom = fillZoom;
-      return fillZoom;
+      this.worldFillReferenceZoom = fitZoom;
+      return fitZoom;
     }
     // Keep world-view baseline stable while scene dimensions are being edited.
     // This prevents transient tiny values during typing from locking zoom behavior.

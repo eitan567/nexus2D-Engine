@@ -1870,27 +1870,22 @@ function ProjectLauncher({
             </div>
             {recentProjects.length > 0 ? (
               <div className="nexus-launcher-recent-list">
-                {recentProjects.map((recentProject, index) => (
+                {recentProjects.slice(0, 3).map((recentProject) => (
                   <button
                     key={recentProject.id}
                     type="button"
                     onClick={() => onLoadRecentProject(recentProject.project)}
                     className="nexus-launcher-recent-item"
+                    style={{ padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="nexus-launcher-recent-title">{recentProject.name}</div>
-                        <div className="nexus-launcher-recent-subtitle">
-                          {recentProject.activeSceneName} • {recentProject.sceneCount} scene{recentProject.sceneCount === 1 ? '' : 's'} •{' '}
-                          {recentProject.entityCount} entit{recentProject.entityCount === 1 ? 'y' : 'ies'}
-                        </div>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="nexus-launcher-recent-title truncate">{recentProject.name}</div>
+                      <div className="text-[11px] text-[#aeb4bf] truncate">
+                        {recentProject.activeSceneName}
                       </div>
-                      {index === 0 && <span className="nexus-launcher-badge">Latest</span>}
                     </div>
-                    <p className="nexus-launcher-recent-description">{recentProject.description}</p>
-                    <div className="nexus-launcher-recent-meta">
-                      <span>{formatRecentProjectTimestamp(recentProject.updatedAt)}</span>
-                      <span>Load project</span>
+                    <div className="text-[10px] text-[#8b929d] whitespace-nowrap font-semibold uppercase tracking-widest">
+                      {formatRecentProjectTimestamp(recentProject.updatedAt)}
                     </div>
                   </button>
                 ))}
@@ -3745,10 +3740,14 @@ export default function App() {
         runtimeDigestRef.current = digest;
         setRuntimeSnapshot(snapshot ?? null);
       }
+
+      if (isPlaying && snapshot?.mode === 'win') {
+        stopSimulation();
+      }
     }, 160);
 
     return () => window.clearInterval(timer);
-  }, []);
+  }, [isPlaying]);
 
   useLayoutEffect(() => {
     if (!sessionStarted) {
